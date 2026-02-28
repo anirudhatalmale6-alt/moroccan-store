@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../database');
+const { db } = require('../database');
 
 // Get product info (for checkout dynamic pricing)
 router.get('/product/:slug', (req, res) => {

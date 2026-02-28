@@ -1,7 +1,7 @@
 const express = require('express');
 const session = require('express-session');
 const path = require('path');
-const db = require('./database');
+const { initDatabase } = require('./database');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -39,6 +39,12 @@ app.use((req, res) => {
   res.status(404).render('404');
 });
 
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+// Initialize database then start server
+initDatabase().then(() => {
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Server running on http://localhost:${PORT}`);
+  });
+}).catch(err => {
+  console.error('Failed to initialize database:', err);
+  process.exit(1);
 });
