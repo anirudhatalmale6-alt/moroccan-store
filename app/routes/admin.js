@@ -16,6 +16,12 @@ const productStorage = multer.diskStorage({
   }
 });
 const productUpload = multer({ storage: productStorage, limits: { fileSize: 50 * 1024 * 1024 } });
+const productFields = productUpload.fields([
+  { name: 'video', maxCount: 1 },
+  { name: 'main_image', maxCount: 1 },
+  { name: 'gallery_images', maxCount: 20 },
+  { name: 'description_images', maxCount: 10 }
+]);
 
 // Login page
 router.get('/login', (req, res) => {
@@ -80,18 +86,33 @@ router.get('/products/new', requireAdmin, (req, res) => {
 });
 
 // Create product
-router.post('/products', requireAdmin, productUpload.single('video'), (req, res) => {
-  const { title, description, price, old_price, discount, slug, deposit_amount, features } = req.body;
-  const videoFilename = req.file ? req.file.filename : '';
+router.post('/products', requireAdmin, productFields, (req, res) => {
+  const { title, description, price, old_price, discount, slug, deposit_amount, features, show_gallery, whatsapp_number, delivery_fee } = req.body;
+  const videoFilename = req.files && req.files.video ? req.files.video[0].filename : '';
+  const mainImageFilename = req.files && req.files.main_image ? req.files.main_image[0].filename : '';
+
+  // Description images as JSON array of filenames
+  let descriptionImagesJson = '[]';
+  if (req.files && req.files.description_images) {
+    descriptionImagesJson = JSON.stringify(req.files.description_images.map(f => f.filename));
+  }
 
   // Generate slug if empty
   const finalSlug = slug || title.toLowerCase().replace(/[^\w\u0600-\u06FF]+/g, '-').replace(/^-|-$/g, '') || 'product-' + Date.now();
 
   try {
-    db.prepare(`
-      INSERT INTO products (title, description, price, old_price, discount, slug, deposit_amount, video_filename, features)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `).run(title, description || '', parseFloat(price) || 200, parseFloat(old_price) || 0, discount || '', finalSlug, parseFloat(deposit_amount) || 50, videoFilename, features || '[]');
+    const result = db.prepare(`
+      INSERT INTO products (title, description, price, old_price, discount, slug, deposit_amount, video_filename, features, main_image, show_gallery, description_images, whatsapp_number, delivery_fee)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(title, description || '', parseFloat(price) || 200, parseFloat(old_price) || 0, discount || '', finalSlug, parseFloat(deposit_amount) || 50, videoFilename, features || '[]', mainImageFilename, show_gallery === 'on' || show_gallery === '1' ? 1 : 0, descriptionImagesJson, whatsapp_number || '', parseFloat(delivery_fee) || 50);
+
+    // Insert gallery images into product_images table
+    if (req.files && req.files.gallery_images) {
+      const productId = result.lastInsertRowid;
+      req.files.gallery_images.forEach((file, index) => {
+        db.prepare('INSERT INTO product_images (product_id, filename, sort_order) VALUES (?, ?, ?)').run(productId, file.filename, index);
+      });
+    }
 
     res.redirect('/admin/products');
   } catch (err) {
@@ -104,23 +125,74 @@ router.post('/products', requireAdmin, productUpload.single('video'), (req, res)
 router.get('/products/:id/edit', requireAdmin, (req, res) => {
   const product = db.prepare('SELECT * FROM products WHERE id = ?').get(req.params.id);
   if (!product) return res.redirect('/admin/products');
+  const galleryImages = db.prepare('SELECT * FROM product_images WHERE product_id = ? ORDER BY sort_order').all(product.id);
+  product.gallery_images = galleryImages;
   res.render('admin/product-form', { product });
 });
 
 // Update product
-router.post('/products/:id', requireAdmin, productUpload.single('video'), (req, res) => {
-  const { title, description, price, old_price, discount, slug, deposit_amount, features, is_active } = req.body;
+router.post('/products/:id', requireAdmin, productFields, (req, res) => {
+  const { title, description, price, old_price, discount, slug, deposit_amount, features, is_active, show_gallery, whatsapp_number, delivery_fee } = req.body;
   const product = db.prepare('SELECT * FROM products WHERE id = ?').get(req.params.id);
   if (!product) return res.redirect('/admin/products');
 
-  const videoFilename = req.file ? req.file.filename : product.video_filename;
+  const videoFilename = req.files && req.files.video ? req.files.video[0].filename : product.video_filename;
+  const mainImageFilename = req.files && req.files.main_image ? req.files.main_image[0].filename : (product.main_image || '');
+
+  // Handle description images: merge existing with new uploads
+  let existingDescImages = [];
+  try { existingDescImages = JSON.parse(product.description_images || '[]'); } catch(e) {}
+  if (req.files && req.files.description_images) {
+    const newDescImages = req.files.description_images.map(f => f.filename);
+    existingDescImages = existingDescImages.concat(newDescImages);
+  }
+  const descriptionImagesJson = JSON.stringify(existingDescImages);
 
   db.prepare(`
-    UPDATE products SET title=?, description=?, price=?, old_price=?, discount=?, slug=?, deposit_amount=?, video_filename=?, features=?, is_active=?, updated_at=datetime('now')
+    UPDATE products SET title=?, description=?, price=?, old_price=?, discount=?, slug=?, deposit_amount=?, video_filename=?, features=?, is_active=?, main_image=?, show_gallery=?, description_images=?, whatsapp_number=?, delivery_fee=?, updated_at=datetime('now')
     WHERE id=?
-  `).run(title, description || '', parseFloat(price) || 200, parseFloat(old_price) || 0, discount || '', slug, parseFloat(deposit_amount) || 50, videoFilename, features || '[]', is_active === 'on' ? 1 : 0, req.params.id);
+  `).run(title, description || '', parseFloat(price) || 200, parseFloat(old_price) || 0, discount || '', slug, parseFloat(deposit_amount) || 50, videoFilename, features || '[]', is_active === 'on' || is_active === '1' ? 1 : 0, mainImageFilename, show_gallery === 'on' || show_gallery === '1' ? 1 : 0, descriptionImagesJson, whatsapp_number || '', parseFloat(delivery_fee) || 50, req.params.id);
+
+  // Insert new gallery images into product_images table
+  if (req.files && req.files.gallery_images) {
+    // Get current max sort_order
+    const maxOrder = db.prepare('SELECT COALESCE(MAX(sort_order), -1) as max_order FROM product_images WHERE product_id = ?').get(req.params.id);
+    let sortOrder = (maxOrder ? maxOrder.max_order : -1) + 1;
+    req.files.gallery_images.forEach((file) => {
+      db.prepare('INSERT INTO product_images (product_id, filename, sort_order) VALUES (?, ?, ?)').run(req.params.id, file.filename, sortOrder++);
+    });
+  }
 
   res.redirect('/admin/products');
+});
+
+// Delete a gallery image (product_images entry)
+router.post('/products/:id/delete-image', requireAdmin, (req, res) => {
+  const { image_id } = req.body;
+  const image = db.prepare('SELECT * FROM product_images WHERE id = ? AND product_id = ?').get(image_id, req.params.id);
+  if (image) {
+    // Delete file from disk
+    const filePath = path.join(__dirname, '..', 'public', 'uploads', 'products', image.filename);
+    try { if (fs.existsSync(filePath)) fs.unlinkSync(filePath); } catch(e) {}
+    db.prepare('DELETE FROM product_images WHERE id = ?').run(image_id);
+  }
+  res.redirect('/admin/products/' + req.params.id + '/edit');
+});
+
+// Delete a description image
+router.post('/products/:id/delete-desc-image', requireAdmin, (req, res) => {
+  const { filename } = req.body;
+  const product = db.prepare('SELECT * FROM products WHERE id = ?').get(req.params.id);
+  if (product) {
+    let descImages = [];
+    try { descImages = JSON.parse(product.description_images || '[]'); } catch(e) {}
+    descImages = descImages.filter(img => img !== filename);
+    db.prepare('UPDATE products SET description_images = ? WHERE id = ?').run(JSON.stringify(descImages), req.params.id);
+    // Delete file from disk
+    const filePath = path.join(__dirname, '..', 'public', 'uploads', 'products', filename);
+    try { if (fs.existsSync(filePath)) fs.unlinkSync(filePath); } catch(e) {}
+  }
+  res.redirect('/admin/products/' + req.params.id + '/edit');
 });
 
 // Delete product

@@ -63,9 +63,12 @@ router.get('/product/:slug', (req, res) => {
 
   product.features = JSON.parse(product.features || '[]');
 
+  const galleryImages = db.prepare('SELECT * FROM product_images WHERE product_id = ? ORDER BY sort_order').all(product.id);
+
   res.render('product', {
     product,
     reviews,
+    galleryImages,
     avgRating: avgRating.avg ? avgRating.avg.toFixed(1) : '5.0',
     reviewCount: avgRating.count || 0
   });
@@ -119,7 +122,7 @@ router.post('/product/:slug/order', receiptUpload.single('receipt'), (req, res) 
       INSERT INTO orders (product_id, order_ref, full_name, phone, quantity, unit_price, total_price, delivery_option, payment_amount, remaining_amount, receipt_filename, status)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).run(
-      product.id, orderRef, fullName, '+212' + phone, qty, product.price,
+      product.id, orderRef, fullName, phone, qty, product.price,
       totalPrice, deliveryOption, paymentAmount, remainingAmount,
       req.file ? req.file.filename : '', 'pending'
     );
@@ -162,6 +165,20 @@ router.post('/product/:slug/review', reviewUpload.fields([
 // Thank you page
 router.get('/thankyou', (req, res) => {
   res.render('thankyou');
+});
+
+// Static pages
+router.get('/returns', (req, res) => {
+  res.render('returns');
+});
+
+router.get('/payment-delivery', (req, res) => {
+  res.render('payment-delivery');
+});
+
+router.get('/contact', (req, res) => {
+  const product = db.prepare('SELECT whatsapp_number FROM products WHERE is_active = 1 LIMIT 1').get();
+  res.render('contact', { whatsappNumber: product ? product.whatsapp_number : '' });
 });
 
 module.exports = router;

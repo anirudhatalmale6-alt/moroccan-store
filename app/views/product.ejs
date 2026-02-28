@@ -31,6 +31,19 @@
           <p class="hero__desc">
             <%= product.description %>
           </p>
+          <%
+            var descImages = [];
+            try { descImages = JSON.parse(product.description_images || '[]'); } catch(e) {}
+          %>
+          <% if (descImages && descImages.length > 0) { %>
+          <div class="hero__desc-images" style="display: flex; flex-wrap: wrap; gap: 12px; margin-top: 16px; margin-bottom: 16px;">
+            <% descImages.forEach(function(imgFile) { %>
+              <div style="flex: 1 1 200px; max-width: 300px;">
+                <img src="/uploads/products/<%= imgFile %>" alt="<%= product.title %>" style="width: 100%; border-radius: var(--radius-md); object-fit: cover;">
+              </div>
+            <% }); %>
+          </div>
+          <% } %>
           <div class="hero__price">
             <span class="hero__price-current"><%= product.price %> درهم</span>
             <% if (product.old_price) { %>
@@ -90,6 +103,7 @@
   <% } %>
 
   <!-- Gallery Section -->
+  <% if (product.show_gallery && galleryImages && galleryImages.length > 0) { %>
   <section class="gallery">
     <div class="container">
       <div class="section-header animate-on-scroll">
@@ -98,21 +112,15 @@
         <div class="section-header__divider"></div>
       </div>
       <div class="gallery__grid">
-        <div class="gallery__item animate-on-scroll">
-          <div class="gallery__placeholder gallery__placeholder--1">🧴</div>
-        </div>
-        <div class="gallery__item animate-on-scroll">
-          <div class="gallery__placeholder gallery__placeholder--2">📦</div>
-        </div>
-        <div class="gallery__item animate-on-scroll">
-          <div class="gallery__placeholder gallery__placeholder--3">✨</div>
-        </div>
-        <div class="gallery__item animate-on-scroll">
-          <div class="gallery__placeholder gallery__placeholder--4">🎁</div>
-        </div>
+        <% galleryImages.forEach(function(img) { %>
+          <div class="gallery__item animate-on-scroll">
+            <img src="/uploads/products/<%= img.filename %>" alt="<%= product.title %>" style="width:100%; height:100%; object-fit:cover; border-radius: var(--radius-md);">
+          </div>
+        <% }); %>
       </div>
     </div>
   </section>
+  <% } %>
 
   <!-- Reviews Section -->
   <section class="trust">
@@ -122,33 +130,37 @@
         <h2 class="section-header__title">ماذا يقول عملاؤنا</h2>
         <div class="section-header__divider"></div>
       </div>
+      <div style="text-align: center; margin-bottom: 24px;">
+        <button type="button" class="btn btn--primary" id="showFeedbackFormBtn" onclick="toggleFeedbackView(true)">اكتب تقييمك</button>
+      </div>
+      <div id="reviewsDisplay">
       <% if (reviews && reviews.length) { %>
         <div class="trust__grid">
           <% reviews.forEach(function(review) { %>
             <div class="trust-card animate-on-scroll">
+              <div class="trust-card__author" style="margin-bottom: 12px;">
+                <div class="trust-card__avatar"><%= review.name.charAt(0) %></div>
+                <div>
+                  <div class="trust-card__name"><%= review.name %></div>
+                </div>
+              </div>
               <div class="trust-card__stars">
                 <% for (let i = 1; i <= 5; i++) { %><%= i <= review.rating ? '★' : '☆' %><% } %>
               </div>
               <p class="trust-card__text">"<%= review.message %>"</p>
               <% if (review.image_filename) { %>
-                <div style="margin-bottom: 16px;">
+                <div style="margin-bottom: 16px; text-align: center;">
                   <img src="/uploads/reviews/<%= review.image_filename %>" alt="صورة من <%= review.name %>" style="max-width: 100%; border-radius: var(--radius-sm); max-height: 200px; object-fit: cover;">
                 </div>
               <% } %>
               <% if (review.audio_filename) { %>
-                <div style="margin-bottom: 16px;">
+                <div style="margin-bottom: 16px; text-align: center;">
                   <audio controls style="width: 100%;">
                     <source src="/uploads/reviews/<%= review.audio_filename %>" type="audio/webm">
                     المتصفح لا يدعم تشغيل الصوت
                   </audio>
                 </div>
               <% } %>
-              <div class="trust-card__author">
-                <div class="trust-card__avatar"><%= review.name.charAt(0) %></div>
-                <div>
-                  <div class="trust-card__name"><%= review.name %></div>
-                </div>
-              </div>
             </div>
           <% }); %>
         </div>
@@ -158,15 +170,19 @@
           <p style="font-size: 14px;">كن أول من يشارك تجربته!</p>
         </div>
       <% } %>
+      </div>
     </div>
   </section>
 
   <!-- Feedback Submission Section -->
-  <section class="feedback-section" id="feedback">
+  <section class="feedback-section" id="feedback" style="display: none;">
     <div class="container container--narrow">
+      <div style="text-align: center; margin-bottom: 24px;">
+        <button type="button" class="btn btn--outline" onclick="toggleFeedbackView(false)">العودة للتقييمات</button>
+      </div>
       <div class="section-header animate-on-scroll">
         <span class="section-header__label">شاركنا رأيك</span>
-        <h2 class="section-header__title">نحب نسمعو منك! ✍️</h2>
+        <h2 class="section-header__title">نحب نسمعو منك!</h2>
         <div class="section-header__divider"></div>
       </div>
       <div class="feedback-card animate-on-scroll">
@@ -262,6 +278,24 @@
   <!-- Footer -->
   <%- include('partials/footer') %>
 
+  <script>
+    function toggleFeedbackView(showForm) {
+      var reviewsDisplay = document.getElementById('reviewsDisplay');
+      var feedbackSection = document.getElementById('feedback');
+      var showBtn = document.getElementById('showFeedbackFormBtn');
+      if (showForm) {
+        reviewsDisplay.style.display = 'none';
+        showBtn.style.display = 'none';
+        feedbackSection.style.display = 'block';
+        feedbackSection.scrollIntoView({ behavior: 'smooth' });
+      } else {
+        reviewsDisplay.style.display = '';
+        showBtn.style.display = '';
+        feedbackSection.style.display = 'none';
+        document.querySelector('.trust').scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+  </script>
   <script src="/js/main.js"></script>
 </body>
 </html>

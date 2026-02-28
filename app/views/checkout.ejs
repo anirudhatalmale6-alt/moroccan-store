@@ -67,10 +67,7 @@
                   <span class="required">*</span>
                   رقم الهاتف
                 </label>
-                <div class="form-input-phone-wrapper">
-                  <div class="form-input-phone-prefix">+212</div>
-                  <input type="tel" id="phone" name="phone" class="form-input" placeholder="6XXXXXXXX" required dir="ltr">
-                </div>
+                <input type="tel" id="phone" name="phone" class="form-input" placeholder="0612345678" required dir="ltr" style="text-align: left;">
                 <div class="form-error" id="phoneError"></div>
               </div>
             </div>
@@ -97,43 +94,44 @@
               </div>
             </div>
 
-            <!-- Section 3: Delivery Options -->
+            <!-- Section 3: Payment/Delivery Options -->
             <div class="form-section">
               <h2 class="form-section__title">
                 <span class="form-section__title-icon">🚚</span>
-                خيار التوصيل
+                خيار الدفع والتوصيل
               </h2>
 
               <div class="delivery-options">
-                <!-- Deposit Option -->
+                <!-- Full Payment Option (FIRST) -->
                 <label class="delivery-option">
-                  <input type="radio" name="deliveryOption" value="deposit" checked>
-                  <div class="delivery-option__card">
-                    <div class="delivery-option__radio"></div>
-                    <div class="delivery-option__content">
-                      <div class="delivery-option__title">دفع العربون</div>
-                      <div class="delivery-option__desc">
-                        ادفع <strong><%= product.deposit_amount %> درهم</strong> الآن والباقي عند التوصيل
-                      </div>
-                      <div class="delivery-option__meta">⏰ التوصيل خلال 48 ساعة</div>
-                    </div>
-                    <div class="delivery-option__price" id="depositPrice"><%= product.deposit_amount %> درهم</div>
-                  </div>
-                </label>
-
-                <!-- Full Payment Option -->
-                <label class="delivery-option">
-                  <input type="radio" name="deliveryOption" value="full">
+                  <input type="radio" name="deliveryOption" value="full" checked>
                   <div class="delivery-option__card">
                     <div class="delivery-option__radio"></div>
                     <div class="delivery-option__content">
                       <div class="delivery-option__title">الدفع الكامل</div>
                       <div class="delivery-option__desc">
-                        ادفع المبلغ الكامل واحصل على توصيل مجاني في نفس اليوم
+                        ادفع المبلغ الكامل واحصل على <strong>توصيل مجاني</strong> في نفس اليوم
                       </div>
                       <div class="delivery-option__meta">🎁 توصيل مجاني — نفس اليوم</div>
                     </div>
                     <div class="delivery-option__price" id="fullPrice"><%= product.price %> درهم</div>
+                  </div>
+                </label>
+
+                <!-- Deposit Option (SECOND) -->
+                <label class="delivery-option">
+                  <input type="radio" name="deliveryOption" value="deposit">
+                  <div class="delivery-option__card">
+                    <div class="delivery-option__radio"></div>
+                    <div class="delivery-option__content">
+                      <div class="delivery-option__title">دفع العربون</div>
+                      <div class="delivery-option__desc">
+                        ادفع <strong><%= product.deposit_amount %> درهم</strong> كعربون + <strong>رسوم التوصيل 50 درهم</strong>.
+                        المتبقي عند الاستلام: <strong id="depositRemainingInline"><%= product.price - product.deposit_amount %> درهم</strong>
+                      </div>
+                      <div class="delivery-option__meta">⏰ التوصيل خلال 48 ساعة — رسوم التوصيل 50 درهم</div>
+                    </div>
+                    <div class="delivery-option__price" id="depositPrice"><%= product.deposit_amount %> درهم</div>
                   </div>
                 </label>
               </div>
@@ -148,7 +146,7 @@
 
               <div class="bank-transfer-amount">
                 <span class="bank-transfer-amount__label">المبلغ المطلوب تحويله</span>
-                <span class="bank-transfer-amount__value" id="bankAmount"><%= product.deposit_amount %> درهم</span>
+                <span class="bank-transfer-amount__value" id="bankAmount"><%= product.price %> درهم</span>
               </div>
 
               <div class="bank-details">
@@ -158,7 +156,10 @@
                 </div>
                 <div class="bank-detail">
                   <span class="bank-detail__label">صاحب الحساب</span>
-                  <span class="bank-detail__value">متجرنا SARL</span>
+                  <span class="bank-detail__value">
+                    متجرنا SARL
+                    <button type="button" class="bank-detail__copy" data-value="متجرنا SARL" title="نسخ">📋</button>
+                  </span>
                 </div>
                 <div class="bank-detail">
                   <span class="bank-detail__label">رقم الحساب (RIB)</span>
@@ -188,10 +189,10 @@
                   <div class="upload-zone__hint">JPG, PNG, PDF — الحد الأقصى 10MB</div>
                   <input type="file" id="receiptUpload" name="receipt" accept="image/*,.pdf">
                 </div>
-                <div class="upload-preview">
-                  <img class="upload-preview__img" src="" alt="معاينة الإيصال">
-                  <div class="upload-preview__name"></div>
-                  <button type="button" class="upload-preview__remove">✕</button>
+                <div class="upload-preview" id="uploadPreview">
+                  <img class="upload-preview__img" id="uploadPreviewImg" src="" alt="معاينة الإيصال" style="display:none;">
+                  <div class="upload-preview__name" id="uploadPreviewName"></div>
+                  <button type="button" class="upload-preview__remove" id="uploadPreviewRemove">✕</button>
                 </div>
                 <div class="form-error" id="receiptError">يرجى رفع إيصال الدفع</div>
               </div>
@@ -210,7 +211,13 @@
           <h3 class="order-summary__title">ملخص الطلب</h3>
 
           <div class="order-summary__product">
-            <div class="order-summary__product-img">🛍️</div>
+            <% if (product.main_image) { %>
+              <img class="order-summary__product-img" src="/uploads/products/<%= product.main_image %>" alt="<%= product.title %>" style="width: 80px; height: 80px; object-fit: cover; border-radius: 12px;">
+            <% } else if (product.video_filename) { %>
+              <img class="order-summary__product-img" src="/uploads/products/<%= product.video_filename.replace(/\.[^.]+$/, '.jpg') %>" alt="<%= product.title %>" style="width: 80px; height: 80px; object-fit: cover; border-radius: 12px;" onerror="this.outerHTML='<div class=\'order-summary__product-img\'>🛍️</div>'">
+            <% } else { %>
+              <div class="order-summary__product-img">🛍️</div>
+            <% } %>
             <div class="order-summary__product-info">
               <div class="order-summary__product-name"><%= product.title %></div>
               <div class="order-summary__product-variant">المنتج الأصلي</div>
@@ -225,20 +232,25 @@
 
           <div class="order-summary__row">
             <span class="order-summary__row-label" id="summaryOptionLabel">خيار الدفع</span>
-            <span class="order-summary__row-value" id="summaryOptionValue">عربون (<%= product.deposit_amount %> درهم)</span>
+            <span class="order-summary__row-value" id="summaryOptionValue">الدفع الكامل</span>
           </div>
 
           <div class="order-summary__row">
             <span class="order-summary__row-label">التوصيل</span>
-            <span class="order-summary__row-value" id="summaryDelivery">خلال 48 ساعة</span>
+            <span class="order-summary__row-value" id="summaryDelivery" style="color: var(--color-success);">مجاني — نفس اليوم</span>
+          </div>
+
+          <div class="order-summary__row" id="summaryDeliveryFeeRow" style="display: none;">
+            <span class="order-summary__row-label">رسوم التوصيل</span>
+            <span class="order-summary__row-value" id="summaryDeliveryFee">50 درهم</span>
           </div>
 
           <div class="order-summary__row order-summary__row--total">
             <span class="order-summary__row-label">المبلغ المطلوب</span>
-            <span class="order-summary__row-value" id="summaryTotal"><%= product.deposit_amount %> درهم</span>
+            <span class="order-summary__row-value" id="summaryTotal"><%= product.price %> درهم</span>
           </div>
 
-          <div class="order-summary__remaining" id="summaryRemaining">
+          <div class="order-summary__remaining" id="summaryRemaining" style="display: none;">
             المتبقي عند التوصيل: <strong id="summaryRemainingAmount"><%= product.price - product.deposit_amount %> درهم</strong>
           </div>
 
@@ -250,7 +262,7 @@
   </div>
 
   <!-- Loading Overlay -->
-  <div class="loading-overlay">
+  <div class="loading-overlay" id="loadingOverlay">
     <div class="loading-spinner"></div>
     <div class="loading-text">جاري معالجة طلبك...</div>
   </div>
@@ -260,89 +272,457 @@
   <script>
     const UNIT_PRICE = <%= product.price %>;
     const DEPOSIT_AMOUNT = <%= product.deposit_amount %>;
+    const DELIVERY_FEE = <%= product.delivery_fee || 50 %>;
   </script>
+
   <script>
-    // Override checkout form submission to use fetch with FormData
+  (function() {
+    'use strict';
+
+    /* =========================================================
+       INLINE CHECKOUT JS — All logic self-contained
+       ========================================================= */
+
     document.addEventListener('DOMContentLoaded', () => {
-      const form = document.getElementById('checkoutForm');
-      if (!form) return;
 
-      // Remove the default handler by replacing with our own
-      form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        e.stopImmediatePropagation();
+      /* ----- Element references ----- */
+      const qtyValueEl     = document.getElementById('qtyValue');
+      const qtyMinusBtn    = document.getElementById('qtyMinus');
+      const qtyPlusBtn     = document.getElementById('qtyPlus');
+      const qtyPriceEl     = document.getElementById('qtyPrice');
+      const qtyDetailEl    = document.getElementById('qtyDetail');
+      const qtyCalcEl      = document.getElementById('qtyCalc');
 
-        // Clear previous errors
-        clearErrors();
+      const depositPriceEl = document.getElementById('depositPrice');
+      const fullPriceEl    = document.getElementById('fullPrice');
+      const bankAmountEl   = document.getElementById('bankAmount');
+      const depositRemainingInlineEl = document.getElementById('depositRemainingInline');
 
-        const fullName = document.getElementById('fullName');
-        const phone = document.getElementById('phone');
-        const receiptFile = document.getElementById('receiptUpload');
+      const summaryQtyEl           = document.getElementById('summaryQty');
+      const summaryQtyRow          = document.getElementById('summaryQtyRow');
+      const summaryQtyLabel        = document.getElementById('summaryQtyLabel');
+      const summarySubtotal        = document.getElementById('summarySubtotal');
+      const summaryOptionLabel     = document.getElementById('summaryOptionLabel');
+      const summaryOptionValue     = document.getElementById('summaryOptionValue');
+      const summaryDeliveryEl      = document.getElementById('summaryDelivery');
+      const summaryDeliveryFeeRow  = document.getElementById('summaryDeliveryFeeRow');
+      const summaryDeliveryFee     = document.getElementById('summaryDeliveryFee');
+      const summaryTotalEl         = document.getElementById('summaryTotal');
+      const summaryRemaining       = document.getElementById('summaryRemaining');
+      const summaryRemainingAmount = document.getElementById('summaryRemainingAmount');
 
-        let isValid = true;
+      const form       = document.getElementById('checkoutForm');
+      const submitBtn  = document.getElementById('submitBtn');
+      const loadingOverlay = document.getElementById('loadingOverlay');
 
-        if (!fullName.value.trim()) {
-          showFieldError(fullName, 'يرجى إدخال الاسم الكامل');
-          isValid = false;
-        }
+      const uploadInput      = document.getElementById('receiptUpload');
+      const uploadZone       = document.getElementById('uploadZone');
+      const uploadPreview    = document.getElementById('uploadPreview');
+      const uploadPreviewImg = document.getElementById('uploadPreviewImg');
+      const uploadPreviewName = document.getElementById('uploadPreviewName');
+      const uploadPreviewRemove = document.getElementById('uploadPreviewRemove');
 
-        if (!phone.value.trim()) {
-          showFieldError(phone, 'يرجى إدخال رقم الهاتف');
-          isValid = false;
-        } else if (!/^\d{9,10}$/.test(phone.value.trim().replace(/\s/g, ''))) {
-          showFieldError(phone, 'رقم الهاتف غير صالح');
-          isValid = false;
-        }
 
-        if (!receiptFile || !receiptFile.files || !receiptFile.files.length) {
-          const uploadZone = document.querySelector('.upload-zone');
-          if (uploadZone) uploadZone.classList.add('upload-zone--error');
-          const receiptError = document.getElementById('receiptError');
-          if (receiptError) receiptError.classList.add('visible');
-          isValid = false;
-        }
-
-        if (!isValid) {
-          showToast('يرجى تعبئة جميع الحقول المطلوبة', 'error');
-          return;
-        }
-
-        showLoading();
-
-        const qty = parseInt(document.getElementById('qtyValue').textContent) || 1;
-        const deliveryOption = document.querySelector('input[name="deliveryOption"]:checked')?.value || 'deposit';
-
-        const formData = new FormData();
-        formData.append('fullName', fullName.value.trim());
-        formData.append('phone', phone.value.trim());
-        formData.append('quantity', qty);
-        formData.append('deliveryOption', deliveryOption);
-        formData.append('receipt', receiptFile.files[0]);
-
-        try {
-          const response = await fetch('/product/<%= product.slug %>/order', {
-            method: 'POST',
-            body: formData
-          });
-
-          const data = await response.json();
-
-          if (data.success) {
-            sessionStorage.setItem('orderRef', data.orderRef);
-            sessionStorage.setItem('customerName', fullName.value.trim());
-            window.location.href = '/thankyou';
-          } else {
-            hideLoading();
-            showToast(data.error || 'حدث خطأ، يرجى المحاولة مرة أخرى', 'error');
+      /* =========================================================
+         1. QUANTITY BUTTONS
+         ========================================================= */
+      if (qtyMinusBtn) {
+        qtyMinusBtn.addEventListener('click', () => {
+          let qty = parseInt(qtyValueEl.textContent) || 1;
+          if (qty > 1) {
+            qty--;
+            qtyValueEl.textContent = qty;
+            updateAllPrices();
           }
-        } catch (err) {
-          hideLoading();
-          console.error('Order submission error:', err);
-          showToast('حدث خطأ في الاتصال، يرجى المحاولة مرة أخرى', 'error');
+        });
+      }
+
+      if (qtyPlusBtn) {
+        qtyPlusBtn.addEventListener('click', () => {
+          let qty = parseInt(qtyValueEl.textContent) || 1;
+          if (qty < 10) {
+            qty++;
+            qtyValueEl.textContent = qty;
+            updateAllPrices();
+          }
+        });
+      }
+
+
+      /* =========================================================
+         2. PAYMENT/DELIVERY OPTION CHANGE
+         ========================================================= */
+      const deliveryRadios = document.querySelectorAll('input[name="deliveryOption"]');
+      deliveryRadios.forEach(radio => {
+        radio.addEventListener('change', () => {
+          updateAllPrices();
+        });
+      });
+
+
+      /* =========================================================
+         3. MASTER PRICE UPDATE FUNCTION
+         ========================================================= */
+      function updateAllPrices() {
+        const qty = parseInt(qtyValueEl.textContent) || 1;
+        const totalProductPrice = qty * UNIT_PRICE;
+        const selectedOption = document.querySelector('input[name="deliveryOption"]:checked');
+        const isDeposit = selectedOption && selectedOption.value === 'deposit';
+        const bankTransferAmount = isDeposit ? DEPOSIT_AMOUNT : totalProductPrice;
+        const remainingAmount = isDeposit ? (totalProductPrice - DEPOSIT_AMOUNT + DELIVERY_FEE) : 0;
+
+        /* -- Quantity section -- */
+        if (qtyPriceEl) qtyPriceEl.textContent = totalProductPrice + ' درهم';
+        if (qty > 1 && qtyDetailEl && qtyCalcEl) {
+          qtyDetailEl.style.display = 'block';
+          qtyCalcEl.textContent = qty + ' × ' + UNIT_PRICE + ' درهم = ' + totalProductPrice + ' درهم';
+        } else if (qtyDetailEl) {
+          qtyDetailEl.style.display = 'none';
         }
-      }, true);
-    });
+
+        /* -- Delivery option card prices -- */
+        if (depositPriceEl) depositPriceEl.textContent = DEPOSIT_AMOUNT + ' درهم';
+        if (fullPriceEl) fullPriceEl.textContent = totalProductPrice + ' درهم';
+
+        /* -- Deposit inline remaining text -- */
+        if (depositRemainingInlineEl) {
+          depositRemainingInlineEl.textContent = (totalProductPrice - DEPOSIT_AMOUNT) + ' درهم';
+        }
+
+        /* -- Bank transfer amount -- */
+        if (bankAmountEl) bankAmountEl.textContent = bankTransferAmount + ' درهم';
+
+        /* -- Order summary: quantity -- */
+        if (summaryQtyEl) summaryQtyEl.textContent = 'الكمية: ' + qty;
+        if (qty > 1 && summaryQtyRow) {
+          summaryQtyRow.style.display = '';
+          if (summaryQtyLabel) summaryQtyLabel.textContent = qty + ' × ' + UNIT_PRICE + ' درهم';
+          if (summarySubtotal) summarySubtotal.textContent = totalProductPrice + ' درهم';
+        } else if (summaryQtyRow) {
+          summaryQtyRow.style.display = 'none';
+        }
+
+        /* -- Order summary: payment option -- */
+        if (summaryOptionLabel && summaryOptionValue) {
+          if (isDeposit) {
+            summaryOptionLabel.textContent = 'خيار الدفع';
+            summaryOptionValue.textContent = 'عربون (' + DEPOSIT_AMOUNT + ' درهم)';
+          } else {
+            summaryOptionLabel.textContent = 'خيار الدفع';
+            summaryOptionValue.textContent = 'الدفع الكامل';
+          }
+        }
+
+        /* -- Order summary: delivery -- */
+        if (summaryDeliveryEl) {
+          if (isDeposit) {
+            summaryDeliveryEl.textContent = 'خلال 48 ساعة';
+            summaryDeliveryEl.style.color = 'var(--color-text-secondary)';
+          } else {
+            summaryDeliveryEl.textContent = 'مجاني — نفس اليوم';
+            summaryDeliveryEl.style.color = 'var(--color-success)';
+          }
+        }
+
+        /* -- Order summary: delivery fee row -- */
+        if (summaryDeliveryFeeRow) {
+          if (isDeposit) {
+            summaryDeliveryFeeRow.style.display = '';
+            if (summaryDeliveryFee) summaryDeliveryFee.textContent = DELIVERY_FEE + ' درهم';
+          } else {
+            summaryDeliveryFeeRow.style.display = 'none';
+          }
+        }
+
+        /* -- Order summary: total required -- */
+        if (summaryTotalEl) summaryTotalEl.textContent = bankTransferAmount + ' درهم';
+
+        /* -- Order summary: remaining amount -- */
+        if (summaryRemaining) {
+          if (isDeposit) {
+            summaryRemaining.style.display = 'block';
+            if (summaryRemainingAmount) summaryRemainingAmount.textContent = remainingAmount + ' درهم';
+          } else {
+            summaryRemaining.style.display = 'none';
+          }
+        }
+      }
+
+      // Initial price calculation on page load
+      updateAllPrices();
+
+
+      /* =========================================================
+         4. COPY BUTTONS (account holder name + RIB)
+         ========================================================= */
+      document.querySelectorAll('.bank-detail__copy').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const value = btn.dataset.value;
+          if (!value) return;
+
+          navigator.clipboard.writeText(value).then(() => {
+            var original = btn.textContent;
+            btn.textContent = '✓';
+            btn.style.background = 'var(--color-success)';
+            btn.style.color = 'white';
+            setTimeout(() => {
+              btn.textContent = original;
+              btn.style.background = '';
+              btn.style.color = '';
+            }, 1500);
+          }).catch(() => {
+            // Fallback for older browsers
+            var ta = document.createElement('textarea');
+            ta.value = value;
+            ta.style.position = 'fixed';
+            ta.style.opacity = '0';
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand('copy');
+            document.body.removeChild(ta);
+            var original = btn.textContent;
+            btn.textContent = '✓';
+            setTimeout(() => { btn.textContent = original; }, 1500);
+          });
+        });
+      });
+
+
+      /* =========================================================
+         5. RECEIPT UPLOAD PREVIEW
+         ========================================================= */
+      if (uploadInput) {
+        uploadInput.addEventListener('change', function(e) {
+          var file = e.target.files[0];
+          if (!file) return;
+
+          // Validate file type
+          var validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'application/pdf'];
+          if (validTypes.indexOf(file.type) === -1) {
+            showToast('يرجى اختيار صورة أو ملف PDF', 'error');
+            uploadInput.value = '';
+            return;
+          }
+
+          // Validate file size (max 10MB)
+          if (file.size > 10 * 1024 * 1024) {
+            showToast('حجم الملف كبير جداً (الحد الأقصى 10MB)', 'error');
+            uploadInput.value = '';
+            return;
+          }
+
+          // Clear error states
+          if (uploadZone) {
+            uploadZone.classList.remove('upload-zone--error');
+            uploadZone.classList.add('upload-zone--has-file');
+          }
+          var receiptError = document.getElementById('receiptError');
+          if (receiptError) receiptError.classList.remove('visible');
+
+          // Show image preview immediately
+          if (file.type.startsWith('image/')) {
+            var reader = new FileReader();
+            reader.onload = function(evt) {
+              if (uploadPreviewImg) {
+                uploadPreviewImg.src = evt.target.result;
+                uploadPreviewImg.style.display = 'block';
+              }
+            };
+            reader.readAsDataURL(file);
+          } else {
+            // PDF - no image preview
+            if (uploadPreviewImg) uploadPreviewImg.style.display = 'none';
+          }
+
+          if (uploadPreviewName) uploadPreviewName.textContent = '✅ ' + file.name;
+          if (uploadPreview) uploadPreview.classList.add('visible');
+
+          // Update upload zone text
+          if (uploadZone) {
+            var zoneText = uploadZone.querySelector('.upload-zone__text');
+            var zoneIcon = uploadZone.querySelector('.upload-zone__icon');
+            if (zoneText) zoneText.textContent = 'تم اختيار الملف بنجاح';
+            if (zoneIcon) zoneIcon.textContent = '✅';
+          }
+        });
+      }
+
+      // Remove uploaded file
+      if (uploadPreviewRemove) {
+        uploadPreviewRemove.addEventListener('click', function(e) {
+          e.preventDefault();
+          e.stopPropagation();
+          if (uploadInput) uploadInput.value = '';
+          if (uploadPreview) uploadPreview.classList.remove('visible');
+          if (uploadPreviewImg) {
+            uploadPreviewImg.src = '';
+            uploadPreviewImg.style.display = 'none';
+          }
+          if (uploadZone) {
+            uploadZone.classList.remove('upload-zone--has-file');
+            var zoneText = uploadZone.querySelector('.upload-zone__text');
+            var zoneIcon = uploadZone.querySelector('.upload-zone__icon');
+            if (zoneText) zoneText.textContent = 'اضغط لرفع صورة إيصال الدفع';
+            if (zoneIcon) zoneIcon.textContent = '📤';
+          }
+        });
+      }
+
+
+      /* =========================================================
+         6. FORM SUBMISSION WITH LOADING + DOUBLE-CLICK PREVENTION
+         ========================================================= */
+      var isSubmitting = false;
+
+      if (form) {
+        form.addEventListener('submit', async function(e) {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+
+          // Prevent double-click
+          if (isSubmitting) return;
+
+          // Clear previous errors
+          clearErrors();
+
+          var fullName = document.getElementById('fullName');
+          var phone = document.getElementById('phone');
+          var receiptFile = document.getElementById('receiptUpload');
+
+          var isValid = true;
+
+          if (!fullName.value.trim()) {
+            showFieldError(fullName, 'يرجى إدخال الاسم الكامل');
+            isValid = false;
+          }
+
+          if (!phone.value.trim()) {
+            showFieldError(phone, 'يرجى إدخال رقم الهاتف');
+            isValid = false;
+          } else {
+            var phoneClean = phone.value.trim().replace(/[\s\-\+]/g, '');
+            if (!/^\d{9,15}$/.test(phoneClean)) {
+              showFieldError(phone, 'رقم الهاتف غير صالح');
+              isValid = false;
+            }
+          }
+
+          if (!receiptFile || !receiptFile.files || !receiptFile.files.length) {
+            if (uploadZone) uploadZone.classList.add('upload-zone--error');
+            var receiptError = document.getElementById('receiptError');
+            if (receiptError) receiptError.classList.add('visible');
+            isValid = false;
+          }
+
+          if (!isValid) {
+            showToast('يرجى تعبئة جميع الحقول المطلوبة', 'error');
+            return;
+          }
+
+          // Lock submission
+          isSubmitting = true;
+
+          // Disable button and show spinner text
+          if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span style="display:inline-flex;align-items:center;gap:8px;"><svg style="animation:spin 1s linear infinite;width:20px;height:20px;" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-dasharray="31.4 31.4" stroke-dashoffset="10"/></svg> جاري إرسال الطلب...</span>';
+          }
+
+          // Show loading overlay
+          showLoading();
+
+          var qty = parseInt(qtyValueEl.textContent) || 1;
+          var deliveryOption = document.querySelector('input[name="deliveryOption"]:checked');
+          var deliveryOptionValue = deliveryOption ? deliveryOption.value : 'full';
+
+          var formData = new FormData();
+          formData.append('fullName', fullName.value.trim());
+          formData.append('phone', phone.value.trim());
+          formData.append('quantity', qty);
+          formData.append('deliveryOption', deliveryOptionValue);
+          formData.append('receipt', receiptFile.files[0]);
+
+          try {
+            var response = await fetch('/product/<%= product.slug %>/order', {
+              method: 'POST',
+              body: formData
+            });
+
+            var data = await response.json();
+
+            if (data.success) {
+              sessionStorage.setItem('orderRef', data.orderRef);
+              sessionStorage.setItem('customerName', fullName.value.trim());
+              window.location.href = '/thankyou';
+            } else {
+              hideLoading();
+              resetSubmitButton();
+              showToast(data.error || 'حدث خطأ، يرجى المحاولة مرة أخرى', 'error');
+            }
+          } catch (err) {
+            hideLoading();
+            resetSubmitButton();
+            console.error('Order submission error:', err);
+            showToast('حدث خطأ في الاتصال، يرجى المحاولة مرة أخرى', 'error');
+          }
+        }, true);
+      }
+
+      function resetSubmitButton() {
+        isSubmitting = false;
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = 'تأكيد الطلب';
+        }
+      }
+
+
+      /* =========================================================
+         UTILITY FUNCTIONS
+         ========================================================= */
+      function showFieldError(input, message) {
+        input.classList.add('form-input--error');
+        var group = input.closest('.form-group');
+        if (group) {
+          var errorEl = group.querySelector('.form-error');
+          if (errorEl) {
+            errorEl.textContent = '⚠️ ' + message;
+            errorEl.classList.add('visible');
+          }
+        }
+      }
+
+      function clearErrors() {
+        document.querySelectorAll('.form-input--error').forEach(function(el) {
+          el.classList.remove('form-input--error');
+        });
+        document.querySelectorAll('.form-error').forEach(function(el) {
+          el.classList.remove('visible');
+        });
+        if (uploadZone) uploadZone.classList.remove('upload-zone--error');
+      }
+
+      function showLoading() {
+        if (loadingOverlay) loadingOverlay.classList.add('visible');
+      }
+
+      function hideLoading() {
+        if (loadingOverlay) loadingOverlay.classList.remove('visible');
+      }
+
+    }); // end DOMContentLoaded
+
+  })(); // end IIFE
   </script>
+
+  <!-- Spinner keyframe for submit button -->
+  <style>
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+  </style>
+
   <script src="/js/main.js"></script>
 </body>
 </html>

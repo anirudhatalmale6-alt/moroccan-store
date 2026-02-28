@@ -120,6 +120,11 @@ async function initDatabase() {
       deposit_amount REAL DEFAULT 50,
       features TEXT DEFAULT '[]',
       is_active INTEGER DEFAULT 1,
+      main_image TEXT DEFAULT '',
+      show_gallery INTEGER DEFAULT 1,
+      description_images TEXT DEFAULT '[]',
+      whatsapp_number TEXT DEFAULT '',
+      delivery_fee REAL DEFAULT 50,
       created_at TEXT DEFAULT (datetime('now')),
       updated_at TEXT DEFAULT (datetime('now'))
     );
@@ -164,6 +169,22 @@ async function initDatabase() {
       FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
     );
   `);
+
+  // Migrate: Add new columns to products table if they don't exist
+  const tableInfo = sqlDb.exec('PRAGMA table_info(products)');
+  const existingCols = tableInfo.length > 0 ? tableInfo[0].values.map(row => row[1]) : [];
+  const newColumns = [
+    { name: 'main_image', sql: "ALTER TABLE products ADD COLUMN main_image TEXT DEFAULT ''" },
+    { name: 'show_gallery', sql: "ALTER TABLE products ADD COLUMN show_gallery INTEGER DEFAULT 1" },
+    { name: 'description_images', sql: "ALTER TABLE products ADD COLUMN description_images TEXT DEFAULT '[]'" },
+    { name: 'whatsapp_number', sql: "ALTER TABLE products ADD COLUMN whatsapp_number TEXT DEFAULT ''" },
+    { name: 'delivery_fee', sql: "ALTER TABLE products ADD COLUMN delivery_fee REAL DEFAULT 50" }
+  ];
+  newColumns.forEach(col => {
+    if (!existingCols.includes(col.name)) {
+      try { sqlDb.run(col.sql); saveToFile(); console.log('Added column:', col.name); } catch(e) { /* column may already exist */ }
+    }
+  });
 
   // Seed default admin if none exists
   const adminCount = db.prepare('SELECT COUNT(*) as count FROM admins').get();

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <%- include('partials/head') %>
+  <title>كيفية الاسترجاع — متجرنا</title>
+</head>
+<body>
+  <div class="pattern-overlay"></div>
+
+  <nav class="navbar scrolled">
+    <div class="container">
+      <div class="navbar__inner">
+        <div class="navbar__brand">
+          <a href="/" style="display: flex; align-items: center; gap: 10px;">
+            <div class="navbar__logo">م</div>
+            <span class="navbar__name">متجرنا</span>
+          </a>
+        </div>
+        <a href="/" class="navbar__cta">الرئيسية</a>
+      </div>
+    </div>
+  </nav>
+
+  <section style="padding: 120px 0 60px;">
+    <div class="container container--narrow">
+      <div class="section-header animate-on-scroll">
+        <span class="section-header__label">سياسة الاسترجاع</span>
+        <h1 class="section-header__title">كيفية الاسترجاع</h1>
+        <div class="section-header__divider"></div>
+      </div>
+
+      <div class="feedback-card animate-on-scroll" style="padding: 32px;">
+        <h3 style="font-size: 20px; margin-bottom: 16px; color: var(--color-primary);">حق الاسترجاع</h3>
+        <p style="font-size: 16px; line-height: 1.8; margin-bottom: 24px; color: var(--color-text-muted);">
+          يحق لك استرجاع المنتج خلال <strong>14 يوما</strong> من تاريخ الاستلام، بشرط أن يكون المنتج في حالته الأصلية وغير مستعمل.
+        </p>
+
+        <h3 style="font-size: 20px; margin-bottom: 16px; color: var(--color-primary);">شروط الاسترجاع</h3>
+        <ul style="font-size: 16px; line-height: 2; color: var(--color-text-muted); padding-right: 20px; margin-bottom: 24px;">
+          <li>يجب أن يكون المنتج في غلافه الأصلي وغير مفتوح أو مستعمل</li>
+          <li>يجب تقديم وصل الشراء أو رقم الطلب</li>
+          <li>يجب أن يكون الطلب خلال 14 يوما من تاريخ الاستلام</li>
+          <li>المنتجات التالفة أو المعيبة يتم استبدالها مجانا</li>
+          <li>تكاليف الشحن للإرجاع تكون على حساب المشتري إلا في حالة وجود عيب في المنتج</li>
+        </ul>
+
+        <h3 style="font-size: 20px; margin-bottom: 16px; color: var(--color-primary);">خطوات الاسترجاع</h3>
+        <ol style="font-size: 16px; line-height: 2; color: var(--color-text-muted); padding-right: 20px; margin-bottom: 24px;">
+          <li>تواصل معنا عبر الواتساب أو صفحة الاتصال</li>
+          <li>أخبرنا برقم الطلب وسبب الاسترجاع</li>
+          <li>سنرسل لك تعليمات الإرجاع</li>
+          <li>بعد استلام المنتج والتحقق من حالته، سيتم رد المبلغ خلال 3-5 أيام عمل</li>
+        </ol>
+
+        <h3 style="font-size: 20px; margin-bottom: 16px; color: var(--color-primary);">طريقة استرداد المبلغ</h3>
+        <p style="font-size: 16px; line-height: 1.8; color: var(--color-text-muted);">
+          يتم استرداد المبلغ بنفس طريقة الدفع الأصلية (تحويل بنكي أو غيرها). في حالة الدفع عند الاستلام، يتم التحويل إلى حسابك البنكي.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <%- include('partials/footer') %>
+
+  <script src="/js/main.js"></script>
+</body>
+</html>

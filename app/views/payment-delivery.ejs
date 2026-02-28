@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <%- include('partials/head') %>
+  <title>الدفع والتوصيل — متجرنا</title>
+</head>
+<body>
+  <div class="pattern-overlay"></div>
+
+  <nav class="navbar scrolled">
+    <div class="container">
+      <div class="navbar__inner">
+        <div class="navbar__brand">
+          <a href="/" style="display: flex; align-items: center; gap: 10px;">
+            <div class="navbar__logo">م</div>
+            <span class="navbar__name">متجرنا</span>
+          </a>
+        </div>
+        <a href="/" class="navbar__cta">الرئيسية</a>
+      </div>
+    </div>
+  </nav>
+
+  <section style="padding: 120px 0 60px;">
+    <div class="container container--narrow">
+      <div class="section-header animate-on-scroll">
+        <span class="section-header__label">معلومات مهمة</span>
+        <h1 class="section-header__title">الدفع والتوصيل</h1>
+        <div class="section-header__divider"></div>
+      </div>
+
+      <!-- Payment Methods -->
+      <div class="feedback-card animate-on-scroll" style="padding: 32px; margin-bottom: 24px;">
+        <h3 style="font-size: 20px; margin-bottom: 16px; color: var(--color-primary);">طرق الدفع</h3>
+
+        <div style="margin-bottom: 24px;">
+          <h4 style="font-size: 17px; margin-bottom: 10px; color: var(--color-text);">1. الدفع عند الاستلام</h4>
+          <p style="font-size: 16px; line-height: 1.8; color: var(--color-text-muted);">
+            يمكنك الدفع نقدا عند استلام طلبك. ادفع المبلغ الكامل مباشرة لمندوب التوصيل.
+          </p>
+        </div>
+
+        <div style="margin-bottom: 24px;">
+          <h4 style="font-size: 17px; margin-bottom: 10px; color: var(--color-text);">2. التحويل البنكي</h4>
+          <p style="font-size: 16px; line-height: 1.8; color: var(--color-text-muted);">
+            يمكنك تحويل المبلغ إلى حسابنا البنكي. بعد التحويل، أرسل لنا صورة الوصل لتأكيد الطلب. سيتم شحن طلبك فور تأكيد الدفع.
+          </p>
+        </div>
+
+        <div>
+          <h4 style="font-size: 17px; margin-bottom: 10px; color: var(--color-text);">3. دفع تسبيق (عربون)</h4>
+          <p style="font-size: 16px; line-height: 1.8; color: var(--color-text-muted);">
+            يمكنك دفع مبلغ تسبيق لتأكيد طلبك، ودفع المبلغ المتبقي عند الاستلام. هذا الخيار يضمن حجز المنتج لك.
+          </p>
+        </div>
+      </div>
+
+      <!-- Delivery Info -->
+      <div class="feedback-card animate-on-scroll" style="padding: 32px;">
+        <h3 style="font-size: 20px; margin-bottom: 16px; color: var(--color-primary);">معلومات التوصيل</h3>
+
+        <div style="margin-bottom: 24px;">
+          <h4 style="font-size: 17px; margin-bottom: 10px; color: var(--color-text);">مناطق التوصيل</h4>
+          <p style="font-size: 16px; line-height: 1.8; color: var(--color-text-muted);">
+            نوصل لجميع مدن المغرب دون استثناء.
+          </p>
+        </div>
+
+        <div style="margin-bottom: 24px;">
+          <h4 style="font-size: 17px; margin-bottom: 10px; color: var(--color-text);">مدة التوصيل</h4>
+          <ul style="font-size: 16px; line-height: 2; color: var(--color-text-muted); padding-right: 20px;">
+            <li><strong>الدار البيضاء والرباط:</strong> 24 - 48 ساعة</li>
+            <li><strong>المدن الكبرى:</strong> 2 - 3 أيام عمل</li>
+            <li><strong>المدن الأخرى:</strong> 3 - 5 أيام عمل</li>
+          </ul>
+        </div>
+
+        <div style="margin-bottom: 24px;">
+          <h4 style="font-size: 17px; margin-bottom: 10px; color: var(--color-text);">رسوم التوصيل</h4>
+          <p style="font-size: 16px; line-height: 1.8; color: var(--color-text-muted);">
+            رسوم التوصيل محددة حسب المنتج وتظهر في صفحة الطلب. قد تكون هناك عروض توصيل مجاني على بعض المنتجات.
+          </p>
+        </div>
+
+        <div>
+          <h4 style="font-size: 17px; margin-bottom: 10px; color: var(--color-text);">تتبع الطلب</h4>
+          <p style="font-size: 16px; line-height: 1.8; color: var(--color-text-muted);">
+            بعد شحن طلبك، ستتلقى رسالة عبر الواتساب تحتوي على معلومات التتبع. يمكنك التواصل معنا في أي وقت للاستفسار عن حالة طلبك.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <%- include('partials/footer') %>
+
+  <script src="/js/main.js"></script>
+</body>
+</html>

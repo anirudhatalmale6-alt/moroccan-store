@@ -36,13 +36,13 @@
           <span class="reviews-hero__score"><%= avgRating %></span>
           <span class="reviews-hero__count"><%= reviewCount %> تقييم</span>
         </div>
-        <a href="#writeReview" class="btn btn--primary">✍️ اكتب تقييمك</a>
+        <button type="button" class="btn btn--primary" id="heroWriteReviewBtn" onclick="toggleReviewForm(true)">اكتب تقييمك</button>
       </div>
     </div>
   </section>
 
   <!-- Reviews List -->
-  <section class="reviews-list">
+  <section class="reviews-list" id="reviewsList">
     <div class="container container--narrow">
       <% if (reviews.length === 0) { %>
         <div style="text-align: center; padding: 40px 20px; color: var(--color-text-muted);">
@@ -67,15 +67,14 @@
             <div class="review-card__text"><%= review.message %></div>
 
             <% if (review.image_filename) { %>
-              <div style="margin-top: 16px;">
+              <div style="margin-top: 16px; text-align: center;">
                 <img src="/uploads/reviews/<%= review.image_filename %>" alt="صورة التقييم" style="max-width: 100%; max-height: 300px; border-radius: var(--radius-md); object-fit: cover; border: 1px solid var(--color-border-light);">
               </div>
             <% } %>
 
             <% if (review.audio_filename) { %>
-              <div style="margin-top: 16px; display: flex; align-items: center; gap: 12px; padding: 12px; background: var(--color-bg); border-radius: var(--radius-md); border: 1px solid var(--color-border-light);">
-                <span>🎙️</span>
-                <audio controls style="flex: 1; height: 36px;">
+              <div style="margin-top: 16px; text-align: center; padding: 12px; background: var(--color-bg); border-radius: var(--radius-md); border: 1px solid var(--color-border-light);">
+                <audio controls style="width: 100%; max-width: 400px; height: 36px;">
                   <source src="/uploads/reviews/<%= review.audio_filename %>" type="audio/webm">
                   المتصفح لا يدعم تشغيل الصوت
                 </audio>
@@ -88,8 +87,11 @@
   </section>
 
   <!-- Write Review Section -->
-  <section class="write-review" id="writeReview">
+  <section class="write-review" id="writeReview" style="display: none;">
     <div class="container container--narrow">
+      <div style="text-align: center; margin-bottom: 24px;">
+        <button type="button" class="btn btn--outline" onclick="toggleReviewForm(false)">العودة للتقييمات</button>
+      </div>
       <div class="section-header">
         <span class="section-header__label">شاركنا رأيك</span>
         <h2 class="section-header__title">اكتب تقييمك</h2>
@@ -195,6 +197,24 @@
 
   <%- include('partials/footer') %>
 
+  <script>
+    function toggleReviewForm(showForm) {
+      var reviewsList = document.getElementById('reviewsList');
+      var writeReview = document.getElementById('writeReview');
+      var heroBtn = document.getElementById('heroWriteReviewBtn');
+      if (showForm) {
+        reviewsList.style.display = 'none';
+        if (heroBtn) heroBtn.style.display = 'none';
+        writeReview.style.display = 'block';
+        writeReview.scrollIntoView({ behavior: 'smooth' });
+      } else {
+        reviewsList.style.display = '';
+        if (heroBtn) heroBtn.style.display = '';
+        writeReview.style.display = 'none';
+        reviewsList.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+  </script>
   <script>
     // Override review form to submit via fetch with FormData
     document.addEventListener('DOMContentLoaded', () => {

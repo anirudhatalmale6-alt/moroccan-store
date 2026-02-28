@@ -94,6 +94,30 @@
             display: flex; gap: 12px; margin-top: 32px; padding-top: 24px;
             border-top: 1px solid #f0ebe5;
         }
+        .current-image {
+            margin-top: 10px; display: inline-block; position: relative;
+            border: 2px solid #e8e0d8; border-radius: 10px; overflow: hidden;
+        }
+        .current-image img {
+            display: block; max-width: 200px; max-height: 150px; object-fit: cover;
+        }
+        .gallery-grid {
+            display: flex; flex-wrap: wrap; gap: 12px; margin-top: 10px;
+        }
+        .gallery-item {
+            position: relative; border: 2px solid #e8e0d8; border-radius: 10px;
+            overflow: hidden; width: 120px; height: 120px;
+        }
+        .gallery-item img {
+            width: 100%; height: 100%; object-fit: cover; display: block;
+        }
+        .gallery-item .delete-btn {
+            position: absolute; top: 4px; left: 4px; background: rgba(220,53,69,0.9);
+            color: #fff; border: none; border-radius: 50%; width: 28px; height: 28px;
+            font-size: 16px; cursor: pointer; display: flex; align-items: center;
+            justify-content: center; line-height: 1; font-weight: 700;
+        }
+        .gallery-item .delete-btn:hover { background: #dc3545; }
         .mobile-toggle {
             display: none; position: fixed; top: 16px; right: 16px; z-index: 200;
             background: #6B5335; color: #fff; border: none; border-radius: 10px;
@@ -192,6 +216,77 @@
                             <label>مبلغ العربون (ر.س)</label>
                             <input type="number" name="deposit_amount" step="0.01" value="<%= product && product.deposit_amount ? product.deposit_amount : '' %>" placeholder="0.00">
                         </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>رقم واتساب</label>
+                            <input type="text" name="whatsapp_number" value="<%= product ? (product.whatsapp_number || '') : '' %>" placeholder="212600000000+" dir="ltr" style="text-align:left;">
+                            <div class="hint">رقم الواتساب للتواصل مع العملاء (مع رمز الدولة)</div>
+                        </div>
+                        <div class="form-group">
+                            <label>رسوم التوصيل (د.م)</label>
+                            <input type="number" name="delivery_fee" step="0.01" value="<%= product ? (product.delivery_fee != null ? product.delivery_fee : 50) : 50 %>" placeholder="50">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>الصورة الرئيسية</label>
+                        <input type="file" name="main_image" accept="image/*">
+                        <% if (product && product.main_image) { %>
+                            <div class="current-image">
+                                <img src="/uploads/products/<%= product.main_image %>" alt="الصورة الرئيسية">
+                            </div>
+                            <div class="hint" style="color: #2e7d32;">صورة حالية: <%= product.main_image %> - ارفع صورة جديدة لاستبدالها</div>
+                        <% } %>
+                    </div>
+
+                    <div class="form-group">
+                        <label>صور المعرض</label>
+                        <input type="file" name="gallery_images" accept="image/*" multiple>
+                        <div class="hint">يمكنك رفع عدة صور للمعرض (حتى 20 صورة)</div>
+                        <% if (product && product.gallery_images && product.gallery_images.length > 0) { %>
+                            <div class="gallery-grid">
+                                <% product.gallery_images.forEach(function(img) { %>
+                                    <div class="gallery-item">
+                                        <img src="/uploads/products/<%= img.filename %>" alt="صورة معرض">
+                                        <form method="POST" action="/admin/products/<%= product.id %>/delete-image" style="margin:0;">
+                                            <input type="hidden" name="image_id" value="<%= img.id %>">
+                                            <button type="submit" class="delete-btn" title="حذف" onclick="return confirm('هل تريد حذف هذه الصورة؟');">&times;</button>
+                                        </form>
+                                    </div>
+                                <% }); %>
+                            </div>
+                        <% } %>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="checkbox-group">
+                            <input type="checkbox" name="show_gallery" id="show_gallery" value="1" <%= product ? (product.show_gallery ? 'checked' : '') : 'checked' %>>
+                            <label for="show_gallery">اظهار قسم المعرض في صفحة المنتج</label>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>صور الوصف</label>
+                        <input type="file" name="description_images" accept="image/*" multiple>
+                        <div class="hint">صور اضافية تظهر في قسم الوصف (حتى 10 صور)</div>
+                        <% if (product) { %>
+                            <% var descImages = []; try { descImages = JSON.parse(product.description_images || '[]'); } catch(e) {} %>
+                            <% if (descImages.length > 0) { %>
+                                <div class="gallery-grid">
+                                    <% descImages.forEach(function(imgFile) { %>
+                                        <div class="gallery-item">
+                                            <img src="/uploads/products/<%= imgFile %>" alt="صورة وصف">
+                                            <form method="POST" action="/admin/products/<%= product.id %>/delete-desc-image" style="margin:0;">
+                                                <input type="hidden" name="filename" value="<%= imgFile %>">
+                                                <button type="submit" class="delete-btn" title="حذف" onclick="return confirm('هل تريد حذف هذه الصورة؟');">&times;</button>
+                                            </form>
+                                        </div>
+                                    <% }); %>
+                                </div>
+                            <% } %>
+                        <% } %>
                     </div>
 
                     <div class="form-group">
