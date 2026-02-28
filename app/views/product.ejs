@@ -122,6 +122,34 @@
   </section>
   <% } %>
 
+  <!-- FAQ Section -->
+  <% if (typeof faqs !== 'undefined' && faqs && faqs.length > 0) { %>
+  <section class="faq-section" id="faq">
+    <div class="container">
+      <div class="section-header animate-on-scroll">
+        <span class="section-header__label">أسئلة شائعة</span>
+        <h2 class="section-header__title">الأسئلة المتكررة</h2>
+        <div class="section-header__divider"></div>
+      </div>
+      <div class="faq-list" style="max-width: 800px; margin: 0 auto;">
+        <% faqs.forEach(function(faq, idx) { %>
+          <div class="faq-item animate-on-scroll" style="background: var(--color-bg-card, #fff); border-radius: var(--radius-md, 16px); margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); overflow: hidden;">
+            <button type="button" class="faq-question" onclick="toggleFaq(this)" style="width: 100%; display: flex; align-items: center; justify-content: space-between; padding: 20px 24px; border: none; background: none; cursor: pointer; font-family: inherit; font-size: 16px; font-weight: 700; color: var(--color-primary, #6B5335); text-align: right; gap: 16px; direction: rtl;">
+              <span><%= faq.question %></span>
+              <span class="faq-arrow" style="font-size: 20px; transition: transform 0.3s; flex-shrink: 0;">▼</span>
+            </button>
+            <div class="faq-answer" style="max-height: 0; overflow: hidden; transition: max-height 0.3s ease, padding 0.3s ease;">
+              <div style="padding: 0 24px 20px; color: var(--color-text, #555); font-size: 15px; line-height: 1.8;">
+                <%= faq.answer %>
+              </div>
+            </div>
+          </div>
+        <% }); %>
+      </div>
+    </div>
+  </section>
+  <% } %>
+
   <!-- Reviews Section -->
   <section class="trust">
     <div class="container">
@@ -279,6 +307,20 @@
   <%- include('partials/footer') %>
 
   <script>
+    function toggleFaq(btn) {
+      var item = btn.parentElement;
+      var answer = item.querySelector('.faq-answer');
+      var arrow = btn.querySelector('.faq-arrow');
+      var isOpen = answer.style.maxHeight && answer.style.maxHeight !== '0px';
+      if (isOpen) {
+        answer.style.maxHeight = '0';
+        arrow.style.transform = 'rotate(0deg)';
+      } else {
+        answer.style.maxHeight = answer.scrollHeight + 'px';
+        arrow.style.transform = 'rotate(180deg)';
+      }
+    }
+
     function toggleFeedbackView(showForm) {
       var reviewsDisplay = document.getElementById('reviewsDisplay');
       var feedbackSection = document.getElementById('feedback');

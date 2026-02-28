@@ -127,6 +127,8 @@ router.get('/products/:id/edit', requireAdmin, (req, res) => {
   if (!product) return res.redirect('/admin/products');
   const galleryImages = db.prepare('SELECT * FROM product_images WHERE product_id = ? ORDER BY sort_order').all(product.id);
   product.gallery_images = galleryImages;
+  const faqs = db.prepare('SELECT * FROM product_faqs WHERE product_id = ? ORDER BY sort_order').all(product.id);
+  product.faqs = faqs;
   res.render('admin/product-form', { product });
 });
 
@@ -191,6 +193,56 @@ router.post('/products/:id/delete-desc-image', requireAdmin, (req, res) => {
     // Delete file from disk
     const filePath = path.join(__dirname, '..', 'public', 'uploads', 'products', filename);
     try { if (fs.existsSync(filePath)) fs.unlinkSync(filePath); } catch(e) {}
+  }
+  res.redirect('/admin/products/' + req.params.id + '/edit');
+});
+
+// Add FAQ to product
+router.post('/products/:id/faq', requireAdmin, (req, res) => {
+  const { question, answer } = req.body;
+  if (question && answer) {
+    const maxOrder = db.prepare('SELECT COALESCE(MAX(sort_order), -1) as max_order FROM product_faqs WHERE product_id = ?').get(req.params.id);
+    const sortOrder = (maxOrder ? maxOrder.max_order : -1) + 1;
+    db.prepare('INSERT INTO product_faqs (product_id, question, answer, sort_order) VALUES (?, ?, ?, ?)').run(req.params.id, question, answer, sortOrder);
+  }
+  res.redirect('/admin/products/' + req.params.id + '/edit');
+});
+
+// Update FAQ
+router.post('/products/:id/faq/:faqId', requireAdmin, (req, res) => {
+  const { question, answer } = req.body;
+  db.prepare('UPDATE product_faqs SET question = ?, answer = ? WHERE id = ? AND product_id = ?').run(question, answer, req.params.faqId, req.params.id);
+  res.redirect('/admin/products/' + req.params.id + '/edit');
+});
+
+// Delete FAQ
+router.post('/products/:id/faq/:faqId/delete', requireAdmin, (req, res) => {
+  db.prepare('DELETE FROM product_faqs WHERE id = ? AND product_id = ?').run(req.params.faqId, req.params.id);
+  res.redirect('/admin/products/' + req.params.id + '/edit');
+});
+
+// Add feature to product
+router.post('/products/:id/feature', requireAdmin, (req, res) => {
+  const { icon, featureTitle, desc } = req.body;
+  if (featureTitle) {
+    const product = db.prepare('SELECT features FROM products WHERE id = ?').get(req.params.id);
+    let features = [];
+    try { features = JSON.parse(product.features || '[]'); } catch(e) {}
+    features.push({ icon: icon || '✨', title: featureTitle, desc: desc || '' });
+    db.prepare('UPDATE products SET features = ? WHERE id = ?').run(JSON.stringify(features), req.params.id);
+  }
+  res.redirect('/admin/products/' + req.params.id + '/edit');
+});
+
+// Delete feature from product
+router.post('/products/:id/feature/:index/delete', requireAdmin, (req, res) => {
+  const product = db.prepare('SELECT features FROM products WHERE id = ?').get(req.params.id);
+  let features = [];
+  try { features = JSON.parse(product.features || '[]'); } catch(e) {}
+  const idx = parseInt(req.params.index);
+  if (idx >= 0 && idx < features.length) {
+    features.splice(idx, 1);
+    db.prepare('UPDATE products SET features = ? WHERE id = ?').run(JSON.stringify(features), req.params.id);
   }
   res.redirect('/admin/products/' + req.params.id + '/edit');
 });

@@ -64,11 +64,13 @@ router.get('/product/:slug', (req, res) => {
   product.features = JSON.parse(product.features || '[]');
 
   const galleryImages = db.prepare('SELECT * FROM product_images WHERE product_id = ? ORDER BY sort_order').all(product.id);
+  const faqs = db.prepare('SELECT * FROM product_faqs WHERE product_id = ? ORDER BY sort_order').all(product.id);
 
   res.render('product', {
     product,
     reviews,
     galleryImages,
+    faqs,
     avgRating: avgRating.avg ? avgRating.avg.toFixed(1) : '5.0',
     reviewCount: avgRating.count || 0
   });
