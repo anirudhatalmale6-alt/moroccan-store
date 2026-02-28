@@ -1,0 +1,9 @@
+node_modules/
+data/
+*.db
+.env
+*.png
+*.jpg
+*.py
+landing-page/
+marketplace-auto-reply-master/

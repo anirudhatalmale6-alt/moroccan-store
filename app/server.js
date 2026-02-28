@@ -1,0 +1,44 @@
+const express = require('express');
+const session = require('express-session');
+const path = require('path');
+const db = require('./database');
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+// View engine
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
+
+// Middleware
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(express.static(path.join(__dirname, 'public')));
+
+// Session
+app.use(session({
+  secret: 'moroccan-store-secret-2024-xyz',
+  resave: false,
+  saveUninitialized: false,
+  cookie: { maxAge: 24 * 60 * 60 * 1000 } // 24 hours
+}));
+
+// Make session available in templates
+app.use((req, res, next) => {
+  res.locals.admin = req.session.admin || null;
+  next();
+});
+
+// Routes
+app.use('/', require('./routes/public'));
+app.use('/admin', require('./routes/admin'));
+app.use('/api', require('./routes/api'));
+
+// 404
+app.use((req, res) => {
+  res.status(404).render('404');
+});
+
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Server running on http://localhost:${PORT}`);
+});

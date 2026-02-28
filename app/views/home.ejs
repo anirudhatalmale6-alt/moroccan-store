@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <%- include('partials/head') %>
+  <title>متجرنا — منتجاتنا</title>
+</head>
+<body>
+  <div class="pattern-overlay"></div>
+
+  <!-- Navbar -->
+  <nav class="navbar scrolled">
+    <div class="container">
+      <div class="navbar__inner">
+        <div class="navbar__brand">
+          <a href="/" style="display: flex; align-items: center; gap: 10px;">
+            <div class="navbar__logo">م</div>
+            <span class="navbar__name">متجرنا</span>
+          </a>
+        </div>
+        <a href="/" class="navbar__cta">🏠 الرئيسية</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Products Section -->
+  <section class="hero" style="padding-bottom: 80px;">
+    <div class="container">
+      <div class="section-header" style="margin-top: 20px;">
+        <span class="section-header__label">تسوق الآن</span>
+        <h1 class="section-header__title">منتجاتنا</h1>
+        <div class="section-header__divider"></div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 24px;">
+        <% products.forEach(function(p) { %>
+          <a href="/product/<%= p.slug %>" class="feature-card" style="text-decoration: none; cursor: pointer;">
+            <div class="feature-card__icon">
+              <span>🛍️</span>
+            </div>
+            <h3 class="feature-card__title"><%= p.title %></h3>
+            <div style="display: flex; align-items: baseline; justify-content: center; gap: 8px; margin-top: 12px;">
+              <span style="font-size: 24px; font-weight: 800; color: var(--color-primary);"><%= p.price %> درهم</span>
+              <% if (p.old_price && p.old_price > p.price) { %>
+                <span style="font-size: 14px; color: var(--color-text-muted); text-decoration: line-through;"><%= p.old_price %> درهم</span>
+                <span style="padding: 2px 10px; background: var(--color-error-light); color: var(--color-error); border-radius: 50px; font-size: 11px; font-weight: 700;">
+                  -<%= Math.round(((p.old_price - p.price) / p.old_price) * 100) %>%
+                </span>
+              <% } %>
+            </div>
+            <div style="margin-top: 16px;">
+              <span class="btn btn--primary" style="font-size: 14px; padding: 10px 28px;">اطلب الآن</span>
+            </div>
+          </a>
+        <% }); %>
+      </div>
+
+      <% if (products.length === 0) { %>
+        <div style="text-align: center; padding: 60px 20px; color: var(--color-text-muted);">
+          <p style="font-size: 48px; margin-bottom: 16px;">🏪</p>
+          <p style="font-size: 18px; font-weight: 600;">لا توجد منتجات متاحة حالياً</p>
+        </div>
+      <% } %>
+    </div>
+  </section>
+
+  <%- include('partials/footer') %>
+
+  <script src="/js/main.js"></script>
+  <script>
+    // If only one product, redirect to its page
+    <% if (products.length === 1) { %>
+      window.location.href = '/product/<%= products[0].slug %>';
+    <% } %>
+  </script>
+</body>
+</html>

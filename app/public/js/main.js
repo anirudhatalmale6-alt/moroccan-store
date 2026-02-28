@@ -1,0 +1,896 @@
+/* ============================================
+   Moroccan Luxury E-Commerce — Main JS
+   ============================================ */
+
+document.addEventListener('DOMContentLoaded', () => {
+  initScrollAnimations();
+  initNavbarScroll();
+  initCheckoutForm();
+  initFileUpload();
+  initCopyButtons();
+  initGalleryModal();
+  initFeedbackForm();
+  initStarRating();
+  initReviewForm();
+  initReviewStarRating();
+  initHeroVideo();
+  initFeedbackUploads();
+  initVoiceRecorders();
+  initQuantityControl();
+  initDeliveryOptions();
+});
+
+/* --- Scroll Animations --- */
+function initScrollAnimations() {
+  const elements = document.querySelectorAll('.animate-on-scroll');
+  if (!elements.length) return;
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry, index) => {
+      if (entry.isIntersecting) {
+        setTimeout(() => {
+          entry.target.classList.add('visible');
+        }, index * 100);
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+
+  elements.forEach(el => observer.observe(el));
+}
+
+/* --- Navbar Scroll Effect --- */
+function initNavbarScroll() {
+  const navbar = document.querySelector('.navbar');
+  if (!navbar) return;
+
+  window.addEventListener('scroll', () => {
+    if (window.scrollY > 20) {
+      navbar.classList.add('scrolled');
+    } else {
+      navbar.classList.remove('scrolled');
+    }
+  });
+}
+
+/* --- Checkout Form Validation & Submission --- */
+function initCheckoutForm() {
+  const form = document.getElementById('checkoutForm');
+  if (!form) return;
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    // Clear previous errors
+    clearErrors();
+
+    const fullName = document.getElementById('fullName');
+    const phone = document.getElementById('phone');
+    const receiptFile = document.getElementById('receiptUpload');
+
+    let isValid = true;
+
+    // Validate full name
+    if (!fullName.value.trim()) {
+      showFieldError(fullName, 'يرجى إدخال الاسم الكامل');
+      isValid = false;
+    }
+
+    // Validate phone
+    if (!phone.value.trim()) {
+      showFieldError(phone, 'يرجى إدخال رقم الهاتف');
+      isValid = false;
+    } else if (!/^\d{9,10}$/.test(phone.value.trim().replace(/\s/g, ''))) {
+      showFieldError(phone, 'رقم الهاتف غير صالح');
+      isValid = false;
+    }
+
+    // Validate receipt upload
+    if (!receiptFile || !receiptFile.files || !receiptFile.files.length) {
+      const uploadZone = document.querySelector('.upload-zone');
+      uploadZone.classList.add('upload-zone--error');
+      document.getElementById('receiptError').classList.add('visible');
+      isValid = false;
+    }
+
+    if (!isValid) {
+      showToast('يرجى تعبئة جميع الحقول المطلوبة', 'error');
+      return;
+    }
+
+    // Show loading
+    showLoading();
+
+    // Collect form data for server submission
+    const qty = parseInt(document.getElementById('qtyValue')?.textContent) || 1;
+    const deliveryOption = document.querySelector('input[name="deliveryOption"]:checked')?.value || 'deposit';
+
+    const submitData = new FormData();
+    submitData.append('fullName', fullName.value.trim());
+    submitData.append('phone', phone.value.trim());
+    submitData.append('quantity', qty);
+    submitData.append('deliveryOption', deliveryOption);
+    if (receiptFile.files[0]) {
+      submitData.append('receipt', receiptFile.files[0]);
+    }
+
+    // Determine the API endpoint from form action or page URL
+    const slug = form.dataset.slug || window.location.pathname.split('/')[2];
+    const endpoint = '/product/' + slug + '/order';
+
+    try {
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        body: submitData
+      });
+      const result = await response.json();
+
+      if (result.success) {
+        sessionStorage.setItem('orderRef', result.orderRef);
+        sessionStorage.setItem('customerName', fullName.value.trim());
+        window.location.href = '/thankyou';
+      } else {
+        hideLoading();
+        showToast(result.error || 'حدث خطأ، يرجى المحاولة مرة أخرى', 'error');
+      }
+    } catch (err) {
+      hideLoading();
+      console.error('Order submission error:', err);
+      showToast('حدث خطأ في الاتصال، يرجى المحاولة مرة أخرى', 'error');
+    }
+  });
+}
+
+/* --- File Upload --- */
+function initFileUpload() {
+  const uploadInput = document.getElementById('receiptUpload');
+  const uploadZone = document.querySelector('.upload-zone');
+  const preview = document.querySelector('.upload-preview');
+  const previewImg = document.querySelector('.upload-preview__img');
+  const previewName = document.querySelector('.upload-preview__name');
+  const removeBtn = document.querySelector('.upload-preview__remove');
+
+  if (!uploadInput) return;
+
+  uploadInput.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Validate file type
+    const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'application/pdf'];
+    if (!validTypes.includes(file.type)) {
+      showToast('يرجى اختيار صورة أو ملف PDF', 'error');
+      uploadInput.value = '';
+      return;
+    }
+
+    // Validate file size (max 10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      showToast('حجم الملف كبير جداً (الحد الأقصى 10MB)', 'error');
+      uploadInput.value = '';
+      return;
+    }
+
+    // Show preview
+    uploadZone.classList.remove('upload-zone--error');
+    uploadZone.classList.add('upload-zone--has-file');
+    document.getElementById('receiptError')?.classList.remove('visible');
+
+    if (file.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onload = (evt) => {
+        previewImg.src = evt.target.result;
+        previewImg.style.display = 'block';
+      };
+      reader.readAsDataURL(file);
+    } else {
+      previewImg.style.display = 'none';
+    }
+
+    previewName.textContent = '✅ ' + file.name;
+    preview.classList.add('visible');
+
+    // Update upload zone text
+    uploadZone.querySelector('.upload-zone__text').textContent = 'تم اختيار الملف بنجاح';
+    uploadZone.querySelector('.upload-zone__icon').textContent = '✅';
+  });
+
+  if (removeBtn) {
+    removeBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      uploadInput.value = '';
+      preview.classList.remove('visible');
+      uploadZone.classList.remove('upload-zone--has-file');
+      uploadZone.querySelector('.upload-zone__text').textContent = 'اضغط لرفع صورة إيصال الدفع';
+      uploadZone.querySelector('.upload-zone__icon').textContent = '📤';
+    });
+  }
+}
+
+/* --- Copy Buttons --- */
+function initCopyButtons() {
+  document.querySelectorAll('.bank-detail__copy').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const value = btn.dataset.value;
+      if (!value) return;
+
+      navigator.clipboard.writeText(value).then(() => {
+        const original = btn.textContent;
+        btn.textContent = '✓';
+        btn.style.background = 'var(--color-success)';
+        btn.style.color = 'white';
+        setTimeout(() => {
+          btn.textContent = original;
+          btn.style.background = '';
+          btn.style.color = '';
+        }, 1500);
+      }).catch(() => {
+        // Fallback for older browsers
+        const ta = document.createElement('textarea');
+        ta.value = value;
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+
+        const original = btn.textContent;
+        btn.textContent = '✓';
+        setTimeout(() => { btn.textContent = original; }, 1500);
+      });
+    });
+  });
+}
+
+/* --- Gallery Modal (simple lightbox) --- */
+function initGalleryModal() {
+  const items = document.querySelectorAll('.gallery__item');
+  if (!items.length) return;
+
+  items.forEach(item => {
+    item.addEventListener('click', () => {
+      // Simple zoom effect
+      item.style.transform = 'scale(1.05)';
+      setTimeout(() => {
+        item.style.transform = '';
+      }, 300);
+    });
+  });
+}
+
+/* --- Utility Functions --- */
+
+function showFieldError(input, message) {
+  input.classList.add('form-input--error');
+  const errorEl = input.closest('.form-group')?.querySelector('.form-error');
+  if (errorEl) {
+    errorEl.textContent = '⚠️ ' + message;
+    errorEl.classList.add('visible');
+  }
+}
+
+function clearErrors() {
+  document.querySelectorAll('.form-input--error').forEach(el => {
+    el.classList.remove('form-input--error');
+  });
+  document.querySelectorAll('.form-error').forEach(el => {
+    el.classList.remove('visible');
+  });
+  document.querySelector('.upload-zone')?.classList.remove('upload-zone--error');
+}
+
+function showToast(message, type = 'error') {
+  // Remove existing toast
+  document.querySelectorAll('.toast').forEach(t => t.remove());
+
+  const toast = document.createElement('div');
+  toast.className = `toast toast--${type}`;
+  toast.textContent = (type === 'error' ? '⚠️ ' : '✅ ') + message;
+  document.body.appendChild(toast);
+
+  requestAnimationFrame(() => {
+    toast.classList.add('visible');
+  });
+
+  setTimeout(() => {
+    toast.classList.remove('visible');
+    setTimeout(() => toast.remove(), 500);
+  }, 3500);
+}
+
+function showLoading() {
+  const overlay = document.querySelector('.loading-overlay');
+  if (overlay) overlay.classList.add('visible');
+}
+
+function hideLoading() {
+  const overlay = document.querySelector('.loading-overlay');
+  if (overlay) overlay.classList.remove('visible');
+}
+
+function generateOrderRef() {
+  const prefix = 'ORD';
+  const timestamp = Date.now().toString(36).toUpperCase();
+  const random = Math.random().toString(36).substring(2, 6).toUpperCase();
+  return `${prefix}-${timestamp}-${random}`;
+}
+
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+/* --- Hero Video --- */
+function initHeroVideo() {
+  const video = document.querySelector('.hero__video');
+  const fallback = document.querySelector('.hero__video-fallback');
+  if (!video || !fallback) return;
+
+  // If video can play, hide fallback
+  video.addEventListener('canplay', () => {
+    fallback.style.display = 'none';
+  });
+
+  // If video fails to load, show fallback
+  video.addEventListener('error', () => {
+    video.style.display = 'none';
+    fallback.style.display = 'flex';
+  });
+
+  // If no source or source fails, show fallback
+  const source = video.querySelector('source');
+  if (source) {
+    source.addEventListener('error', () => {
+      video.style.display = 'none';
+      fallback.style.display = 'flex';
+    });
+  }
+
+  // Fallback: if video hasn't loaded after 3s, show placeholder
+  setTimeout(() => {
+    if (video.readyState < 2) {
+      fallback.style.display = 'flex';
+    }
+  }, 3000);
+}
+
+/* --- Quantity Control --- */
+// UNIT_PRICE and DEPOSIT_AMOUNT may be set by the page template before this script loads
+if (typeof UNIT_PRICE === 'undefined') var UNIT_PRICE = 200;
+if (typeof DEPOSIT_AMOUNT === 'undefined') var DEPOSIT_AMOUNT = 50;
+
+function initQuantityControl() {
+  const minusBtn = document.getElementById('qtyMinus');
+  const plusBtn = document.getElementById('qtyPlus');
+  const qtyValueEl = document.getElementById('qtyValue');
+  if (!minusBtn || !plusBtn || !qtyValueEl) return;
+
+  minusBtn.addEventListener('click', () => {
+    let qty = parseInt(qtyValueEl.textContent);
+    if (qty > 1) {
+      qty--;
+      qtyValueEl.textContent = qty;
+      updateCheckoutPrices();
+    }
+  });
+
+  plusBtn.addEventListener('click', () => {
+    let qty = parseInt(qtyValueEl.textContent);
+    if (qty < 10) {
+      qty++;
+      qtyValueEl.textContent = qty;
+      updateCheckoutPrices();
+    }
+  });
+}
+
+/* --- Delivery Options --- */
+function initDeliveryOptions() {
+  const radios = document.querySelectorAll('input[name="deliveryOption"]');
+  if (!radios.length) return;
+
+  radios.forEach(radio => {
+    radio.addEventListener('change', () => {
+      updateCheckoutPrices();
+    });
+  });
+
+  // Initial calculation
+  updateCheckoutPrices();
+}
+
+/* --- Update all checkout prices --- */
+function updateCheckoutPrices() {
+  const qtyValueEl = document.getElementById('qtyValue');
+  if (!qtyValueEl) return;
+
+  const qty = parseInt(qtyValueEl.textContent) || 1;
+  const totalProductPrice = qty * UNIT_PRICE;
+  const selectedOption = document.querySelector('input[name="deliveryOption"]:checked')?.value || 'deposit';
+  const isDeposit = selectedOption === 'deposit';
+  const paymentAmount = isDeposit ? DEPOSIT_AMOUNT : totalProductPrice;
+  const remainingAmount = isDeposit ? totalProductPrice - DEPOSIT_AMOUNT : 0;
+
+  // Quantity section
+  const qtyPriceEl = document.getElementById('qtyPrice');
+  const qtyDetailEl = document.getElementById('qtyDetail');
+  const qtyCalcEl = document.getElementById('qtyCalc');
+  if (qtyPriceEl) qtyPriceEl.textContent = totalProductPrice + ' درهم';
+  if (qty > 1 && qtyDetailEl && qtyCalcEl) {
+    qtyDetailEl.style.display = 'block';
+    qtyCalcEl.textContent = qty + ' × ' + UNIT_PRICE + ' درهم = ' + totalProductPrice + ' درهم';
+  } else if (qtyDetailEl) {
+    qtyDetailEl.style.display = 'none';
+  }
+
+  // Delivery option prices
+  const depositPriceEl = document.getElementById('depositPrice');
+  const fullPriceEl = document.getElementById('fullPrice');
+  if (depositPriceEl) depositPriceEl.textContent = DEPOSIT_AMOUNT + ' درهم';
+  if (fullPriceEl) fullPriceEl.textContent = totalProductPrice + ' درهم';
+
+  // Bank transfer amount
+  const bankAmountEl = document.getElementById('bankAmount');
+  if (bankAmountEl) bankAmountEl.textContent = paymentAmount + ' درهم';
+
+  // Order summary
+  const summaryQtyEl = document.getElementById('summaryQty');
+  if (summaryQtyEl) summaryQtyEl.textContent = 'الكمية: ' + qty;
+
+  const summaryQtyRow = document.getElementById('summaryQtyRow');
+  const summaryQtyLabel = document.getElementById('summaryQtyLabel');
+  const summarySubtotal = document.getElementById('summarySubtotal');
+  if (qty > 1 && summaryQtyRow) {
+    summaryQtyRow.style.display = '';
+    if (summaryQtyLabel) summaryQtyLabel.textContent = qty + ' × ' + UNIT_PRICE + ' درهم';
+    if (summarySubtotal) summarySubtotal.textContent = totalProductPrice + ' درهم';
+  } else if (summaryQtyRow) {
+    summaryQtyRow.style.display = 'none';
+  }
+
+  const summaryDeliveryEl = document.getElementById('summaryDelivery');
+  if (summaryDeliveryEl) {
+    if (isDeposit) {
+      summaryDeliveryEl.textContent = 'خلال 48 ساعة';
+      summaryDeliveryEl.style.color = 'var(--color-text-secondary)';
+    } else {
+      summaryDeliveryEl.textContent = 'مجاني — نفس اليوم';
+      summaryDeliveryEl.style.color = 'var(--color-success)';
+    }
+  }
+
+  const summaryOptionLabel = document.getElementById('summaryOptionLabel');
+  const summaryOptionValue = document.getElementById('summaryOptionValue');
+  if (summaryOptionLabel && summaryOptionValue) {
+    if (isDeposit) {
+      summaryOptionLabel.textContent = 'خيار الدفع';
+      summaryOptionValue.textContent = 'عربون (' + DEPOSIT_AMOUNT + ' درهم)';
+    } else {
+      summaryOptionLabel.textContent = 'خيار الدفع';
+      summaryOptionValue.textContent = 'الدفع الكامل';
+    }
+  }
+
+  const summaryTotalEl = document.getElementById('summaryTotal');
+  if (summaryTotalEl) summaryTotalEl.textContent = paymentAmount + ' درهم';
+
+  const summaryRemaining = document.getElementById('summaryRemaining');
+  const summaryRemainingAmount = document.getElementById('summaryRemainingAmount');
+  if (summaryRemaining) {
+    if (isDeposit) {
+      summaryRemaining.style.display = 'block';
+      if (summaryRemainingAmount) summaryRemainingAmount.textContent = remainingAmount + ' درهم';
+    } else {
+      summaryRemaining.style.display = 'none';
+    }
+  }
+}
+
+/* --- Star Rating --- */
+function initStarRating() {
+  const starsContainer = document.getElementById('feedbackStars');
+  const ratingInput = document.getElementById('feedbackRating');
+  if (!starsContainer || !ratingInput) return;
+
+  const stars = starsContainer.querySelectorAll('.feedback-star');
+
+  // Set default 5 stars
+  updateStars(stars, 5);
+
+  stars.forEach(star => {
+    star.addEventListener('click', () => {
+      const rating = parseInt(star.dataset.rating);
+      ratingInput.value = rating;
+      updateStars(stars, rating);
+    });
+
+    star.addEventListener('mouseenter', () => {
+      const rating = parseInt(star.dataset.rating);
+      highlightStars(stars, rating);
+    });
+  });
+
+  starsContainer.addEventListener('mouseleave', () => {
+    const currentRating = parseInt(ratingInput.value);
+    updateStars(stars, currentRating);
+  });
+}
+
+function updateStars(stars, rating) {
+  stars.forEach(star => {
+    const starRating = parseInt(star.dataset.rating);
+    if (starRating <= rating) {
+      star.textContent = '★';
+      star.classList.add('active');
+    } else {
+      star.textContent = '☆';
+      star.classList.remove('active');
+    }
+  });
+}
+
+function highlightStars(stars, rating) {
+  stars.forEach(star => {
+    const starRating = parseInt(star.dataset.rating);
+    if (starRating <= rating) {
+      star.textContent = '★';
+      star.classList.add('active');
+    } else {
+      star.textContent = '☆';
+      star.classList.remove('active');
+    }
+  });
+}
+
+/* --- Feedback Form --- */
+function initFeedbackForm() {
+  const form = document.getElementById('feedbackForm');
+  if (!form) return;
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    clearErrors();
+
+    const name = document.getElementById('feedbackName');
+    const message = document.getElementById('feedbackMessage');
+    const city = document.getElementById('feedbackCity');
+    const rating = document.getElementById('feedbackRating');
+
+    let isValid = true;
+
+    if (!name.value.trim()) {
+      showFieldError(name, 'يرجى إدخال الاسم');
+      isValid = false;
+    }
+
+    if (!message.value.trim()) {
+      showFieldError(message, 'يرجى كتابة تعليقك');
+      isValid = false;
+    }
+
+    if (!isValid) {
+      showToast('يرجى تعبئة الحقول المطلوبة', 'error');
+      return;
+    }
+
+    // Submit feedback via fetch
+    const slug = form.dataset.slug || window.location.pathname.split('/')[2];
+    const endpoint = '/product/' + slug + '/review';
+
+    const submitData = new FormData();
+    submitData.append('name', name.value.trim());
+    submitData.append('rating', rating.value);
+    submitData.append('message', message.value.trim());
+
+    // Add image if uploaded
+    const feedbackImage = document.getElementById('feedbackImage');
+    if (feedbackImage && feedbackImage.files[0]) {
+      submitData.append('image', feedbackImage.files[0]);
+    }
+
+    try {
+      const response = await fetch(endpoint, { method: 'POST', body: submitData });
+      const result = await response.json();
+
+      if (result.success) {
+        form.style.display = 'none';
+        const success = document.getElementById('feedbackSuccess');
+        success.classList.add('visible');
+        showToast('شكراً! تم إرسال تعليقك بنجاح', 'success');
+      } else {
+        showToast(result.error || 'حدث خطأ', 'error');
+      }
+    } catch (err) {
+      console.error('Feedback error:', err);
+      showToast('حدث خطأ في الإرسال', 'error');
+    }
+  });
+}
+
+// Reset feedback form (called from HTML onclick)
+function resetFeedbackForm() {
+  const form = document.getElementById('feedbackForm');
+  const success = document.getElementById('feedbackSuccess');
+  if (form && success) {
+    form.reset();
+    form.style.display = '';
+    success.classList.remove('visible');
+    // Reset stars to 5
+    const stars = document.querySelectorAll('.feedback-star');
+    const ratingInput = document.getElementById('feedbackRating');
+    if (ratingInput) ratingInput.value = 5;
+    if (stars.length) updateStars(stars, 5);
+  }
+}
+
+/* --- Review Page: Star Rating --- */
+function initReviewStarRating() {
+  const starsContainer = document.getElementById('reviewStars');
+  const ratingInput = document.getElementById('reviewRating');
+  if (!starsContainer || !ratingInput) return;
+
+  const stars = starsContainer.querySelectorAll('.feedback-star');
+
+  // Set default 5 stars
+  updateStars(stars, 5);
+
+  stars.forEach(star => {
+    star.addEventListener('click', () => {
+      const rating = parseInt(star.dataset.rating);
+      ratingInput.value = rating;
+      updateStars(stars, rating);
+    });
+
+    star.addEventListener('mouseenter', () => {
+      const rating = parseInt(star.dataset.rating);
+      highlightStars(stars, rating);
+    });
+  });
+
+  starsContainer.addEventListener('mouseleave', () => {
+    const currentRating = parseInt(ratingInput.value);
+    updateStars(stars, currentRating);
+  });
+}
+
+/* --- Review Form --- */
+function initReviewForm() {
+  const form = document.getElementById('reviewForm');
+  if (!form) return;
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    clearErrors();
+
+    const name = document.getElementById('reviewName');
+    const phone = document.getElementById('reviewPhone');
+    const message = document.getElementById('reviewMessage');
+    const rating = document.getElementById('reviewRating');
+
+    let isValid = true;
+
+    if (!name.value.trim()) {
+      showFieldError(name, 'يرجى إدخال الاسم');
+      isValid = false;
+    }
+
+    if (!phone.value.trim()) {
+      showFieldError(phone, 'يرجى إدخال رقم الهاتف');
+      isValid = false;
+    } else if (!/^\d{9,10}$/.test(phone.value.trim().replace(/\s/g, ''))) {
+      showFieldError(phone, 'رقم الهاتف غير صالح');
+      isValid = false;
+    }
+
+    if (!message.value.trim()) {
+      showFieldError(message, 'يرجى كتابة تقييمك');
+      isValid = false;
+    }
+
+    if (!isValid) {
+      showToast('يرجى تعبئة الحقول المطلوبة', 'error');
+      return;
+    }
+
+    // Submit review via fetch
+    const slug = form.dataset.slug || window.location.pathname.split('/')[2];
+    const endpoint = '/product/' + slug + '/review';
+
+    const submitData = new FormData();
+    submitData.append('name', name.value.trim());
+    submitData.append('phone', phone.value.trim());
+    submitData.append('rating', rating.value);
+    submitData.append('message', message.value.trim());
+
+    // Add image if uploaded
+    const reviewImage = document.getElementById('reviewImage');
+    if (reviewImage && reviewImage.files[0]) {
+      submitData.append('image', reviewImage.files[0]);
+    }
+
+    try {
+      const response = await fetch(endpoint, { method: 'POST', body: submitData });
+      const result = await response.json();
+
+      if (result.success) {
+        form.style.display = 'none';
+        const success = document.getElementById('reviewSuccess');
+        success.classList.add('visible');
+        showToast('شكراً! تم إرسال تقييمك بنجاح', 'success');
+      } else {
+        showToast(result.error || 'حدث خطأ', 'error');
+      }
+    } catch (err) {
+      console.error('Review error:', err);
+      showToast('حدث خطأ في الإرسال', 'error');
+    }
+  });
+}
+
+/* --- Feedback/Review Image Upload --- */
+function initFeedbackUploads() {
+  // Handle all feedback image upload zones
+  document.querySelectorAll('.feedback-upload-zone').forEach(zone => {
+    const input = zone.querySelector('input[type="file"]');
+    if (!input) return;
+
+    const previewContainer = zone.parentElement.querySelector('.feedback-upload-preview');
+    if (!previewContainer) return;
+
+    const previewImg = previewContainer.querySelector('.feedback-upload-preview__img');
+    const previewName = previewContainer.querySelector('.feedback-upload-preview__name');
+    const removeBtn = previewContainer.querySelector('.feedback-upload-preview__remove');
+
+    input.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      if (!file.type.startsWith('image/')) {
+        showToast('يرجى اختيار صورة فقط', 'error');
+        input.value = '';
+        return;
+      }
+
+      if (file.size > 5 * 1024 * 1024) {
+        showToast('حجم الصورة كبير جداً (الحد الأقصى 5MB)', 'error');
+        input.value = '';
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (evt) => {
+        previewImg.src = evt.target.result;
+        previewName.textContent = '✅ ' + file.name;
+        previewContainer.classList.add('visible');
+        zone.style.display = 'none';
+      };
+      reader.readAsDataURL(file);
+    });
+
+    if (removeBtn) {
+      removeBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        input.value = '';
+        previewContainer.classList.remove('visible');
+        zone.style.display = '';
+      });
+    }
+  });
+}
+
+/* --- Voice Recorders --- */
+function initVoiceRecorders() {
+  // Initialize each voice recorder on the page
+  const recorderConfigs = [
+    { btn: 'voiceRecordBtn', status: 'voiceStatus', player: 'voicePlayer', audio: 'voiceAudio', remove: 'voiceRemoveBtn' },
+    { btn: 'reviewVoiceRecordBtn', status: 'reviewVoiceStatus', player: 'reviewVoicePlayer', audio: 'reviewVoiceAudio', remove: 'reviewVoiceRemoveBtn' }
+  ];
+
+  recorderConfigs.forEach(config => {
+    const btn = document.getElementById(config.btn);
+    if (!btn) return;
+
+    const statusEl = document.getElementById(config.status);
+    const playerEl = document.getElementById(config.player);
+    const audioEl = document.getElementById(config.audio);
+    const removeBtn = document.getElementById(config.remove);
+
+    let mediaRecorder = null;
+    let audioChunks = [];
+    let isRecording = false;
+    let recordingTimer = null;
+    let seconds = 0;
+
+    btn.addEventListener('click', async () => {
+      if (isRecording) {
+        // Stop recording
+        mediaRecorder.stop();
+        isRecording = false;
+        btn.classList.remove('recording');
+        btn.querySelector('.voice-recorder__label').textContent = 'اضغط للتسجيل';
+        btn.querySelector('.voice-recorder__icon').textContent = '🎙️';
+        statusEl.classList.remove('recording');
+        statusEl.textContent = '';
+        clearInterval(recordingTimer);
+        return;
+      }
+
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaRecorder = new MediaRecorder(stream);
+        audioChunks = [];
+
+        mediaRecorder.ondataavailable = (e) => {
+          audioChunks.push(e.data);
+        };
+
+        mediaRecorder.onstop = () => {
+          const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+          const audioUrl = URL.createObjectURL(audioBlob);
+          audioEl.src = audioUrl;
+          playerEl.classList.add('visible');
+          btn.style.display = 'none';
+          statusEl.textContent = '';
+
+          // Stop all tracks
+          stream.getTracks().forEach(track => track.stop());
+
+          // Store blob for form submission
+          btn.closest('.voice-recorder').dataset.hasAudio = 'true';
+        };
+
+        mediaRecorder.start();
+        isRecording = true;
+        seconds = 0;
+        btn.classList.add('recording');
+        btn.querySelector('.voice-recorder__label').textContent = 'إيقاف التسجيل';
+        btn.querySelector('.voice-recorder__icon').textContent = '⏹️';
+        statusEl.classList.add('recording');
+        statusEl.textContent = '🔴 جاري التسجيل... 0:00';
+
+        recordingTimer = setInterval(() => {
+          seconds++;
+          const min = Math.floor(seconds / 60);
+          const sec = String(seconds % 60).padStart(2, '0');
+          statusEl.textContent = `🔴 جاري التسجيل... ${min}:${sec}`;
+
+          // Auto-stop after 60 seconds
+          if (seconds >= 60) {
+            mediaRecorder.stop();
+            isRecording = false;
+            btn.classList.remove('recording');
+            clearInterval(recordingTimer);
+          }
+        }, 1000);
+
+      } catch (err) {
+        console.warn('Microphone access denied:', err);
+        showToast('يرجى السماح بالوصول إلى الميكروفون', 'error');
+      }
+    });
+
+    if (removeBtn) {
+      removeBtn.addEventListener('click', () => {
+        audioEl.src = '';
+        playerEl.classList.remove('visible');
+        btn.style.display = '';
+        btn.closest('.voice-recorder').dataset.hasAudio = 'false';
+      });
+    }
+  });
+}
+
+/* --- Thank You Page: Load Order Reference --- */
+function loadOrderRef() {
+  const refEl = document.getElementById('orderRef');
+  const ref = sessionStorage.getItem('orderRef');
+  if (refEl && ref) {
+    refEl.textContent = ref;
+  }
+}
+
+// Auto-init for thank you page
+if (document.querySelector('.thankyou-page')) {
+  loadOrderRef();
+}

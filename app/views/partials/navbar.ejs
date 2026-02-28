@@ -1,0 +1,17 @@
+<nav class="navbar<%= typeof scrolled !== 'undefined' && scrolled ? ' scrolled' : '' %>">
+  <div class="container">
+    <div class="navbar__inner">
+      <div class="navbar__brand">
+        <a href="/" style="display: flex; align-items: center; gap: 10px;">
+          <div class="navbar__logo">م</div>
+          <span class="navbar__name">متجرنا</span>
+        </a>
+      </div>
+      <% if (typeof product !== 'undefined' && product) { %>
+        <a href="/product/<%= product.slug %>/checkout" class="navbar__cta">🛒 اطلب الآن</a>
+      <% } else { %>
+        <a href="/" class="navbar__cta">🏠 الرئيسية</a>
+      <% } %>
+    </div>
+  </div>
+</nav>

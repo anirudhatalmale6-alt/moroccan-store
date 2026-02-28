@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <%- include('partials/head') %>
+  <title>تقييمات عملائنا — <%= product.title %></title>
+</head>
+<body>
+  <div class="pattern-overlay"></div>
+
+  <!-- Navbar -->
+  <nav class="navbar scrolled">
+    <div class="container">
+      <div class="navbar__inner">
+        <div class="navbar__brand">
+          <a href="/" style="display: flex; align-items: center; gap: 10px;">
+            <div class="navbar__logo">م</div>
+            <span class="navbar__name">متجرنا</span>
+          </a>
+        </div>
+        <a href="/product/<%= product.slug %>/checkout" class="navbar__cta">🛒 اطلب الآن</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Reviews Hero -->
+  <section class="reviews-hero">
+    <div class="container">
+      <div class="reviews-hero__inner">
+        <h1 class="reviews-hero__title">تقييمات عملائنا</h1>
+        <div class="reviews-hero__rating">
+          <span class="reviews-hero__stars">
+            <% for (let i = 1; i <= 5; i++) { %>
+              <% if (i <= Math.round(parseFloat(avgRating))) { %>★<% } else { %>☆<% } %>
+            <% } %>
+          </span>
+          <span class="reviews-hero__score"><%= avgRating %></span>
+          <span class="reviews-hero__count"><%= reviewCount %> تقييم</span>
+        </div>
+        <a href="#writeReview" class="btn btn--primary">✍️ اكتب تقييمك</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Reviews List -->
+  <section class="reviews-list">
+    <div class="container container--narrow">
+      <% if (reviews.length === 0) { %>
+        <div style="text-align: center; padding: 40px 20px; color: var(--color-text-muted);">
+          <p style="font-size: 48px; margin-bottom: 16px;">💬</p>
+          <p style="font-size: 18px; font-weight: 600; margin-bottom: 8px;">لا توجد تقييمات بعد</p>
+          <p style="font-size: 14px;">كن أول من يشارك تجربته!</p>
+        </div>
+      <% } else { %>
+        <% reviews.forEach(function(review) { %>
+          <div class="review-card animate-on-scroll">
+            <div class="review-card__header">
+              <div class="review-card__avatar"><%= review.name.charAt(0) %></div>
+              <div>
+                <div class="review-card__name"><%= review.name %></div>
+                <div class="review-card__stars">
+                  <% for (let i = 1; i <= 5; i++) { %>
+                    <% if (i <= review.rating) { %>★<% } else { %>☆<% } %>
+                  <% } %>
+                </div>
+              </div>
+            </div>
+            <div class="review-card__text"><%= review.message %></div>
+
+            <% if (review.image_filename) { %>
+              <div style="margin-top: 16px;">
+                <img src="/uploads/reviews/<%= review.image_filename %>" alt="صورة التقييم" style="max-width: 100%; max-height: 300px; border-radius: var(--radius-md); object-fit: cover; border: 1px solid var(--color-border-light);">
+              </div>
+            <% } %>
+
+            <% if (review.audio_filename) { %>
+              <div style="margin-top: 16px; display: flex; align-items: center; gap: 12px; padding: 12px; background: var(--color-bg); border-radius: var(--radius-md); border: 1px solid var(--color-border-light);">
+                <span>🎙️</span>
+                <audio controls style="flex: 1; height: 36px;">
+                  <source src="/uploads/reviews/<%= review.audio_filename %>" type="audio/webm">
+                  المتصفح لا يدعم تشغيل الصوت
+                </audio>
+              </div>
+            <% } %>
+          </div>
+        <% }); %>
+      <% } %>
+    </div>
+  </section>
+
+  <!-- Write Review Section -->
+  <section class="write-review" id="writeReview">
+    <div class="container container--narrow">
+      <div class="section-header">
+        <span class="section-header__label">شاركنا رأيك</span>
+        <h2 class="section-header__title">اكتب تقييمك</h2>
+        <div class="section-header__divider"></div>
+      </div>
+
+      <div class="feedback-card">
+        <form id="reviewForm" novalidate>
+
+          <div class="feedback-form__row">
+            <div class="form-group">
+              <label class="form-label" for="reviewName">
+                <span class="required">*</span>
+                الاسم
+              </label>
+              <input type="text" id="reviewName" name="name" class="form-input" placeholder="أدخل اسمك" required>
+              <div class="form-error"></div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="reviewPhone">
+                <span class="required">*</span>
+                رقم الهاتف
+              </label>
+              <div class="form-input-phone-wrapper">
+                <div class="form-input-phone-prefix">+212</div>
+                <input type="tel" id="reviewPhone" name="phone" class="form-input" placeholder="6XXXXXXXX" required dir="ltr">
+              </div>
+              <div class="form-error"></div>
+            </div>
+          </div>
+
+          <!-- Star Rating -->
+          <div class="form-group">
+            <label class="form-label">التقييم</label>
+            <div class="feedback-stars" id="reviewStars">
+              <span class="feedback-star" data-rating="1">☆</span>
+              <span class="feedback-star" data-rating="2">☆</span>
+              <span class="feedback-star" data-rating="3">☆</span>
+              <span class="feedback-star" data-rating="4">☆</span>
+              <span class="feedback-star" data-rating="5">☆</span>
+            </div>
+            <input type="hidden" id="reviewRating" name="rating" value="5">
+          </div>
+
+          <!-- Message -->
+          <div class="form-group">
+            <label class="form-label" for="reviewMessage">
+              <span class="required">*</span>
+              تقييمك
+            </label>
+            <textarea id="reviewMessage" name="message" class="form-input form-textarea" placeholder="شاركنا تجربتك مع المنتج..." rows="4" required></textarea>
+            <div class="form-error"></div>
+          </div>
+
+          <!-- Image Upload -->
+          <div class="form-group">
+            <label class="form-label">صورة (اختياري)</label>
+            <div class="feedback-upload-zone">
+              <div class="feedback-upload-zone__icon">📷</div>
+              <div class="feedback-upload-zone__text">اضغط لإضافة صورة</div>
+              <div class="feedback-upload-zone__hint">JPG, PNG — الحد الأقصى 5MB</div>
+              <input type="file" id="reviewImage" name="image" accept="image/*">
+            </div>
+            <div class="feedback-upload-preview">
+              <img class="feedback-upload-preview__img" src="" alt="معاينة">
+              <div class="feedback-upload-preview__name"></div>
+              <button type="button" class="feedback-upload-preview__remove">✕</button>
+            </div>
+          </div>
+
+          <!-- Voice Recorder -->
+          <div class="form-group">
+            <label class="form-label">تسجيل صوتي (اختياري)</label>
+            <div class="voice-recorder" id="reviewVoiceRecorder">
+              <button type="button" class="voice-recorder__btn" id="reviewVoiceRecordBtn">
+                <span class="voice-recorder__icon">🎙️</span>
+                <span class="voice-recorder__label">اضغط للتسجيل</span>
+              </button>
+              <div class="voice-recorder__status" id="reviewVoiceStatus"></div>
+              <div class="voice-recorder__player" id="reviewVoicePlayer">
+                <audio id="reviewVoiceAudio" controls></audio>
+                <button type="button" class="voice-recorder__remove" id="reviewVoiceRemoveBtn">حذف</button>
+              </div>
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn--primary btn--lg btn--full">إرسال التقييم</button>
+
+          <p class="feedback-form__note">سيتم مراجعة تقييمك قبل النشر</p>
+        </form>
+
+        <!-- Success State -->
+        <div class="feedback-success" id="reviewSuccess">
+          <div class="feedback-success__icon">🎉</div>
+          <h3 class="feedback-success__title">شكراً لك!</h3>
+          <p class="feedback-success__text">تم إرسال تقييمك بنجاح. سيتم نشره بعد المراجعة.</p>
+          <a href="/product/<%= product.slug %>" class="btn btn--primary">العودة للمنتج</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <%- include('partials/footer') %>
+
+  <script>
+    // Override review form to submit via fetch with FormData
+    document.addEventListener('DOMContentLoaded', () => {
+      const form = document.getElementById('reviewForm');
+      if (!form) return;
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+
+        // Clear previous errors
+        clearErrors();
+
+        const name = document.getElementById('reviewName');
+        const phone = document.getElementById('reviewPhone');
+        const message = document.getElementById('reviewMessage');
+        const rating = document.getElementById('reviewRating');
+
+        let isValid = true;
+
+        if (!name.value.trim()) {
+          showFieldError(name, 'يرجى إدخال الاسم');
+          isValid = false;
+        }
+
+        if (!phone.value.trim()) {
+          showFieldError(phone, 'يرجى إدخال رقم الهاتف');
+          isValid = false;
+        } else if (!/^\d{9,10}$/.test(phone.value.trim().replace(/\s/g, ''))) {
+          showFieldError(phone, 'رقم الهاتف غير صالح');
+          isValid = false;
+        }
+
+        if (!message.value.trim()) {
+          showFieldError(message, 'يرجى كتابة تقييمك');
+          isValid = false;
+        }
+
+        if (!isValid) {
+          showToast('يرجى تعبئة الحقول المطلوبة', 'error');
+          return;
+        }
+
+        const formData = new FormData();
+        formData.append('name', name.value.trim());
+        formData.append('phone', phone.value.trim());
+        formData.append('rating', rating.value);
+        formData.append('message', message.value.trim());
+
+        // Append image if selected
+        const imageInput = document.getElementById('reviewImage');
+        if (imageInput && imageInput.files && imageInput.files.length > 0) {
+          formData.append('image', imageInput.files[0]);
+        }
+
+        // Append audio if recorded
+        const audioEl = document.getElementById('reviewVoiceAudio');
+        if (audioEl && audioEl.src && audioEl.src.startsWith('blob:')) {
+          try {
+            const audioResp = await fetch(audioEl.src);
+            const audioBlob = await audioResp.blob();
+            formData.append('audio', audioBlob, 'voice-review.webm');
+          } catch (err) {
+            console.warn('Could not attach audio:', err);
+          }
+        }
+
+        try {
+          const response = await fetch('/product/<%= product.slug %>/review', {
+            method: 'POST',
+            body: formData
+          });
+
+          const data = await response.json();
+
+          if (data.success) {
+            form.style.display = 'none';
+            const success = document.getElementById('reviewSuccess');
+            success.classList.add('visible');
+            showToast('شكراً! تم إرسال تقييمك بنجاح', 'success');
+          } else {
+            showToast(data.error || 'حدث خطأ، يرجى المحاولة مرة أخرى', 'error');
+          }
+        } catch (err) {
+          console.error('Review submission error:', err);
+          showToast('حدث خطأ في الاتصال، يرجى المحاولة مرة أخرى', 'error');
+        }
+      }, true);
+    });
+  </script>
+  <script src="/js/main.js"></script>
+</body>
+</html>

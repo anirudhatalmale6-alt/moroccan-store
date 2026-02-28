@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <%- include('partials/head') %>
+  <title>تم تأكيد الطلب — شكراً لك</title>
+</head>
+<body>
+  <div class="pattern-overlay"></div>
+
+  <!-- Thank You Page -->
+  <div class="thankyou-page">
+    <div class="thankyou-card">
+      <!-- Animated Checkmark SVG -->
+      <div class="thankyou-card__check">
+        <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+          <circle class="circle" cx="50" cy="50" r="45" />
+          <polyline class="check" points="30,52 45,67 72,35" />
+        </svg>
+      </div>
+
+      <h1 class="thankyou-card__title">شكراً لك!</h1>
+      <p class="thankyou-card__message">
+        تم استلام طلبك بنجاح. سنتواصل معك قريباً لتأكيد التوصيل.
+      </p>
+
+      <div class="thankyou-card__ref">
+        <span class="thankyou-card__ref-label">رقم الطلب:</span>
+        <span id="orderRef">---</span>
+      </div>
+
+      <div class="thankyou-card__actions">
+        <a href="https://wa.me/212600000000" target="_blank" class="btn btn--whatsapp btn--full">
+          💬 تواصل معنا عبر واتساب
+        </a>
+        <div class="thankyou-card__divider">أو</div>
+        <a href="/" class="btn btn--outline btn--full">
+          🏠 العودة للصفحة الرئيسية
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/main.js"></script>
+  <script>
+    // Load order ref from sessionStorage
+    (function() {
+      const refEl = document.getElementById('orderRef');
+      const ref = sessionStorage.getItem('orderRef');
+      if (refEl && ref) {
+        refEl.textContent = ref;
+      }
+    })();
+  </script>
+</body>
+</html>

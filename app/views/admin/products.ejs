@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>المنتجات — لوحة التحكم</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: #f5f1ed;
+            direction: rtl;
+            text-align: right;
+            min-height: 100vh;
+        }
+        .admin-wrapper { display: flex; min-height: 100vh; }
+        .sidebar {
+            width: 260px;
+            background: #6B5335;
+            color: #fff;
+            position: fixed;
+            top: 0; right: 0; bottom: 0;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.3s;
+        }
+        .sidebar-header { padding: 28px 24px 20px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .sidebar-header h2 { font-size: 20px; font-weight: 700; }
+        .sidebar-header p { font-size: 12px; opacity: 0.6; margin-top: 2px; }
+        .sidebar-nav { list-style: none; padding: 16px 0; flex: 1; }
+        .sidebar-nav li a {
+            display: flex; align-items: center; gap: 12px;
+            padding: 12px 24px; color: rgba(255,255,255,0.75);
+            text-decoration: none; font-size: 15px; font-weight: 600; transition: all 0.2s;
+        }
+        .sidebar-nav li a:hover, .sidebar-nav li a.active { background: rgba(255,255,255,0.1); color: #fff; }
+        .sidebar-nav li a.active { border-left: 3px solid #fff; }
+        .sidebar-nav li a svg { width: 20px; height: 20px; fill: currentColor; flex-shrink: 0; }
+        .sidebar-footer { padding: 16px 24px; border-top: 1px solid rgba(255,255,255,0.1); }
+        .sidebar-footer a { display: flex; align-items: center; gap: 12px; color: rgba(255,255,255,0.6); text-decoration: none; font-size: 14px; font-weight: 600; transition: color 0.2s; }
+        .sidebar-footer a:hover { color: #fff; }
+        .sidebar-footer a svg { width: 20px; height: 20px; fill: currentColor; }
+        .main-content { flex: 1; margin-right: 260px; padding: 32px; }
+        .page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 28px; flex-wrap: wrap; gap: 12px; }
+        .page-title { font-size: 26px; font-weight: 700; color: #6B5335; }
+        .btn {
+            display: inline-block; padding: 10px 24px; border: none; border-radius: 10px;
+            font-family: 'Cairo', sans-serif; font-size: 14px; font-weight: 700;
+            cursor: pointer; text-decoration: none; transition: opacity 0.2s;
+        }
+        .btn:hover { opacity: 0.85; }
+        .btn-primary { background: #8B6F47; color: #fff; }
+        .btn-edit { background: #e3f2fd; color: #1565c0; }
+        .btn-delete { background: #ffebee; color: #c62828; }
+        .btn-sm { padding: 6px 14px; font-size: 12px; }
+        .section {
+            background: #fff; border-radius: 14px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.04); overflow: hidden;
+        }
+        .admin-table { width: 100%; border-collapse: collapse; }
+        .admin-table th {
+            background: #faf8f5; padding: 12px 20px;
+            font-size: 13px; font-weight: 700; color: #888; text-align: right; white-space: nowrap;
+        }
+        .admin-table td {
+            padding: 14px 20px; font-size: 14px; color: #444;
+            border-bottom: 1px solid #f5f0eb; vertical-align: middle;
+        }
+        .admin-table tr:last-child td { border-bottom: none; }
+        .admin-table tr:hover td { background: #fdfcfa; }
+        .badge {
+            display: inline-block; padding: 4px 12px; border-radius: 20px;
+            font-size: 12px; font-weight: 700;
+        }
+        .badge-active { background: #e8f5e9; color: #2e7d32; }
+        .badge-inactive { background: #ffebee; color: #c62828; }
+        .actions-cell { display: flex; gap: 8px; align-items: center; }
+        .empty-state { padding: 40px; text-align: center; color: #bbb; font-size: 14px; }
+        .mobile-toggle {
+            display: none; position: fixed; top: 16px; right: 16px; z-index: 200;
+            background: #6B5335; color: #fff; border: none; border-radius: 10px;
+            width: 44px; height: 44px; font-size: 20px; cursor: pointer;
+        }
+        .sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 90; }
+        @media (max-width: 768px) {
+            .mobile-toggle { display: block; }
+            .sidebar { transform: translateX(100%); }
+            .sidebar.open { transform: translateX(0); }
+            .sidebar-overlay.open { display: block; }
+            .main-content { margin-right: 0; padding: 24px 16px; padding-top: 72px; }
+            .admin-table th, .admin-table td { padding: 10px 12px; font-size: 13px; }
+            .page-header { flex-direction: column; align-items: flex-start; }
+        }
+    </style>
+</head>
+<body>
+    <button class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('open'); document.querySelector('.sidebar-overlay').classList.toggle('open');">&#9776;</button>
+    <div class="sidebar-overlay" onclick="document.querySelector('.sidebar').classList.remove('open'); this.classList.remove('open');"></div>
+
+    <div class="admin-wrapper">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>لوحة التحكم</h2>
+                <p>ادارة المتجر</p>
+            </div>
+            <ul class="sidebar-nav">
+                <li><a href="/admin">
+                    <svg viewBox="0 0 24 24"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
+                    الرئيسية
+                </a></li>
+                <li><a href="/admin/products" class="active">
+                    <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H4V6h16v12zM6 10h2v2H6zm0 4h8v2H6zm10 0h2v2h-2zm-6-4h8v2h-8z"/></svg>
+                    المنتجات
+                </a></li>
+                <li><a href="/admin/orders">
+                    <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 10H7v-2h10v2z"/></svg>
+                    الطلبات
+                </a></li>
+                <li><a href="/admin/reviews">
+                    <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/></svg>
+                    التعليقات
+                </a></li>
+            </ul>
+            <div class="sidebar-footer">
+                <a href="/admin/logout">
+                    <svg viewBox="0 0 24 24"><path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/></svg>
+                    تسجيل الخروج
+                </a>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <div class="page-header">
+                <h1 class="page-title">المنتجات</h1>
+                <a href="/admin/products/new" class="btn btn-primary">+ اضافة منتج</a>
+            </div>
+
+            <div class="section">
+                <% if (typeof products !== 'undefined' && products && products.length > 0) { %>
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>اسم المنتج</th>
+                                <th>السعر</th>
+                                <th>الرابط</th>
+                                <th>الحالة</th>
+                                <th>الاجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% products.forEach(function(product, index) { %>
+                                <tr>
+                                    <td><%= index + 1 %></td>
+                                    <td><strong><%= product.title %></strong></td>
+                                    <td><%= product.price %> ر.س</td>
+                                    <td style="font-size:12px; color:#888;"><%= product.slug %></td>
+                                    <td>
+                                        <span class="badge <%= product.is_active ? 'badge-active' : 'badge-inactive' %>">
+                                            <%= product.is_active ? 'نشط' : 'غير نشط' %>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="actions-cell">
+                                            <a href="/admin/products/<%= product.id %>/edit" class="btn btn-edit btn-sm">تعديل</a>
+                                            <form method="POST" action="/admin/products/<%= product.id %>/delete" style="display:inline;" onclick="return confirm('هل أنت متأكد من حذف هذا المنتج؟')">
+                                                <button type="submit" class="btn btn-delete btn-sm">حذف</button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            <% }); %>
+                        </tbody>
+                    </table>
+                <% } else { %>
+                    <div class="empty-state">
+                        لا توجد منتجات حتى الان
+                        <br><br>
+                        <a href="/admin/products/new" class="btn btn-primary">اضافة اول منتج</a>
+                    </div>
+                <% } %>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

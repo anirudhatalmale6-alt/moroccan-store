@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة التحكم</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: #f5f1ed;
+            direction: rtl;
+            text-align: right;
+            min-height: 100vh;
+        }
+        /* ---- Sidebar ---- */
+        .admin-wrapper {
+            display: flex;
+            min-height: 100vh;
+        }
+        .sidebar {
+            width: 260px;
+            background: #6B5335;
+            color: #fff;
+            position: fixed;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.3s;
+        }
+        .sidebar-header {
+            padding: 28px 24px 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .sidebar-header h2 {
+            font-size: 20px;
+            font-weight: 700;
+        }
+        .sidebar-header p {
+            font-size: 12px;
+            opacity: 0.6;
+            margin-top: 2px;
+        }
+        .sidebar-nav {
+            list-style: none;
+            padding: 16px 0;
+            flex: 1;
+        }
+        .sidebar-nav li a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 24px;
+            color: rgba(255,255,255,0.75);
+            text-decoration: none;
+            font-size: 15px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        .sidebar-nav li a:hover,
+        .sidebar-nav li a.active {
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+        }
+        .sidebar-nav li a.active {
+            border-left: 3px solid #fff;
+        }
+        .sidebar-nav li a svg {
+            width: 20px;
+            height: 20px;
+            fill: currentColor;
+            flex-shrink: 0;
+        }
+        .sidebar-footer {
+            padding: 16px 24px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+        .sidebar-footer a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: rgba(255,255,255,0.6);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 600;
+            transition: color 0.2s;
+        }
+        .sidebar-footer a:hover { color: #fff; }
+        .sidebar-footer a svg {
+            width: 20px;
+            height: 20px;
+            fill: currentColor;
+        }
+        /* ---- Main Content ---- */
+        .main-content {
+            flex: 1;
+            margin-right: 260px;
+            padding: 32px;
+        }
+        .page-title {
+            font-size: 26px;
+            font-weight: 700;
+            color: #6B5335;
+            margin-bottom: 28px;
+        }
+        /* ---- Stats Cards ---- */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 36px;
+        }
+        .stat-card {
+            background: #fff;
+            border-radius: 14px;
+            padding: 24px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+        }
+        .stat-card .stat-label {
+            font-size: 13px;
+            color: #999;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        .stat-card .stat-value {
+            font-size: 30px;
+            font-weight: 700;
+            color: #6B5335;
+        }
+        .stat-card .stat-value.revenue {
+            font-size: 24px;
+        }
+        .stat-card.highlight {
+            background: #8B6F47;
+        }
+        .stat-card.highlight .stat-label { color: rgba(255,255,255,0.7); }
+        .stat-card.highlight .stat-value { color: #fff; }
+        /* ---- Sections ---- */
+        .section {
+            background: #fff;
+            border-radius: 14px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+            margin-bottom: 28px;
+            overflow: hidden;
+        }
+        .section-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid #f0ebe5;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .section-header h3 {
+            font-size: 17px;
+            font-weight: 700;
+            color: #333;
+        }
+        .section-header a {
+            font-size: 13px;
+            color: #8B6F47;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .section-header a:hover { text-decoration: underline; }
+        /* ---- Table ---- */
+        .admin-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .admin-table th {
+            background: #faf8f5;
+            padding: 12px 20px;
+            font-size: 13px;
+            font-weight: 700;
+            color: #888;
+            text-align: right;
+            white-space: nowrap;
+        }
+        .admin-table td {
+            padding: 14px 20px;
+            font-size: 14px;
+            color: #444;
+            border-bottom: 1px solid #f5f0eb;
+        }
+        .admin-table tr:last-child td { border-bottom: none; }
+        .admin-table tr:hover td { background: #fdfcfa; }
+        /* ---- Badges ---- */
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+        .badge-pending { background: #fff3e0; color: #e65100; }
+        .badge-paid, .badge-approved { background: #e8f5e9; color: #2e7d32; }
+        .badge-delivered { background: #e3f2fd; color: #1565c0; }
+        .badge-cancelled, .badge-rejected { background: #ffebee; color: #c62828; }
+        /* ---- Review Cards ---- */
+        .review-item {
+            padding: 20px 24px;
+            border-bottom: 1px solid #f5f0eb;
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 16px;
+        }
+        .review-item:last-child { border-bottom: none; }
+        .review-info { flex: 1; }
+        .review-info .review-meta {
+            font-size: 13px;
+            color: #999;
+            margin-bottom: 4px;
+        }
+        .review-info .review-meta strong {
+            color: #555;
+        }
+        .review-info .review-msg {
+            font-size: 14px;
+            color: #555;
+            margin-top: 6px;
+            line-height: 1.6;
+        }
+        .review-actions {
+            display: flex;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+        .btn {
+            display: inline-block;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 8px;
+            font-family: 'Cairo', sans-serif;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: none;
+            transition: opacity 0.2s;
+        }
+        .btn:hover { opacity: 0.85; }
+        .btn-approve { background: #e8f5e9; color: #2e7d32; }
+        .btn-reject { background: #ffebee; color: #c62828; }
+        .btn-sm { padding: 6px 12px; font-size: 12px; }
+        .empty-state {
+            padding: 40px;
+            text-align: center;
+            color: #bbb;
+            font-size: 14px;
+        }
+        /* ---- Mobile ---- */
+        .mobile-toggle {
+            display: none;
+            position: fixed;
+            top: 16px;
+            right: 16px;
+            z-index: 200;
+            background: #6B5335;
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            width: 44px;
+            height: 44px;
+            font-size: 20px;
+            cursor: pointer;
+        }
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.4);
+            z-index: 90;
+        }
+        @media (max-width: 768px) {
+            .mobile-toggle { display: block; }
+            .sidebar { transform: translateX(100%); }
+            .sidebar.open { transform: translateX(0); }
+            .sidebar-overlay.open { display: block; }
+            .main-content { margin-right: 0; padding: 24px 16px; padding-top: 72px; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+            .admin-table { font-size: 13px; }
+            .admin-table th, .admin-table td { padding: 10px 12px; }
+            .review-item { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+    <button class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('open'); document.querySelector('.sidebar-overlay').classList.toggle('open');">&#9776;</button>
+    <div class="sidebar-overlay" onclick="document.querySelector('.sidebar').classList.remove('open'); this.classList.remove('open');"></div>
+
+    <div class="admin-wrapper">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>لوحة التحكم</h2>
+                <p>ادارة المتجر</p>
+            </div>
+            <ul class="sidebar-nav">
+                <li><a href="/admin" class="active">
+                    <svg viewBox="0 0 24 24"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
+                    الرئيسية
+                </a></li>
+                <li><a href="/admin/products">
+                    <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H4V6h16v12zM6 10h2v2H6zm0 4h8v2H6zm10 0h2v2h-2zm-6-4h8v2h-8z"/></svg>
+                    المنتجات
+                </a></li>
+                <li><a href="/admin/orders">
+                    <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 10H7v-2h10v2z"/></svg>
+                    الطلبات
+                </a></li>
+                <li><a href="/admin/reviews">
+                    <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/></svg>
+                    التعليقات
+                </a></li>
+            </ul>
+            <div class="sidebar-footer">
+                <a href="/admin/logout">
+                    <svg viewBox="0 0 24 24"><path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/></svg>
+                    تسجيل الخروج
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <h1 class="page-title">الرئيسية</h1>
+
+            <!-- Stats Cards -->
+            <div class="stats-grid">
+                <div class="stat-card highlight">
+                    <div class="stat-label">اجمالي الايرادات</div>
+                    <div class="stat-value revenue"><%= stats.totalRevenue ? Number(stats.totalRevenue).toLocaleString() : '0' %> ر.س</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">اجمالي المنتجات</div>
+                    <div class="stat-value"><%= stats.totalProducts %></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">اجمالي الطلبات</div>
+                    <div class="stat-value"><%= stats.totalOrders %></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">طلبات معلقة</div>
+                    <div class="stat-value"><%= stats.pendingOrders %></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">تعليقات معلقة</div>
+                    <div class="stat-value"><%= stats.pendingReviews %></div>
+                </div>
+            </div>
+
+            <!-- Recent Orders -->
+            <div class="section">
+                <div class="section-header">
+                    <h3>اخر الطلبات</h3>
+                    <a href="/admin/orders">عرض الكل &larr;</a>
+                </div>
+                <% if (recentOrders && recentOrders.length > 0) { %>
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>رقم الطلب</th>
+                                <th>المنتج</th>
+                                <th>العميل</th>
+                                <th>المبلغ</th>
+                                <th>الحالة</th>
+                                <th>التاريخ</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% recentOrders.slice(0, 5).forEach(function(order) { %>
+                                <tr>
+                                    <td><strong><%= order.order_ref %></strong></td>
+                                    <td><%= order.product_title %></td>
+                                    <td><%= order.full_name %></td>
+                                    <td><%= order.payment_amount %> ر.س</td>
+                                    <td>
+                                        <span class="badge badge-<%= order.status %>"><%= order.status === 'pending' ? 'معلق' : order.status === 'paid' ? 'مدفوع' : order.status === 'delivered' ? 'تم التسليم' : 'ملغي' %></span>
+                                    </td>
+                                    <td><%= new Date(order.created_at).toLocaleDateString('ar-SA') %></td>
+                                </tr>
+                            <% }); %>
+                        </tbody>
+                    </table>
+                <% } else { %>
+                    <div class="empty-state">لا توجد طلبات حتى الان</div>
+                <% } %>
+            </div>
+
+            <!-- Pending Reviews -->
+            <div class="section">
+                <div class="section-header">
+                    <h3>تعليقات تنتظر المراجعة</h3>
+                    <a href="/admin/reviews">عرض الكل &larr;</a>
+                </div>
+                <% if (pendingReviews && pendingReviews.length > 0) { %>
+                    <% pendingReviews.forEach(function(review) { %>
+                        <div class="review-item">
+                            <div class="review-info">
+                                <div class="review-meta">
+                                    <strong><%= review.name %></strong> على <strong><%= review.product_title %></strong>
+                                </div>
+                                <div class="review-msg"><%= review.message ? review.message.substring(0, 120) : '' %><%= review.message && review.message.length > 120 ? '...' : '' %></div>
+                            </div>
+                            <div class="review-actions">
+                                <form method="POST" action="/admin/reviews/<%= review.id %>/approve" style="display:inline;">
+                                    <button type="submit" class="btn btn-approve btn-sm">قبول</button>
+                                </form>
+                                <form method="POST" action="/admin/reviews/<%= review.id %>/reject" style="display:inline;">
+                                    <button type="submit" class="btn btn-reject btn-sm">رفض</button>
+                                </form>
+                            </div>
+                        </div>
+                    <% }); %>
+                <% } else { %>
+                    <div class="empty-state">لا توجد تعليقات معلقة</div>
+                <% } %>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

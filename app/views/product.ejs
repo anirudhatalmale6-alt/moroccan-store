@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <title><%= product.title %> — متجرنا</title>
+  <%- include('partials/head') %>
+</head>
+<body>
+
+  <div class="pattern-overlay"></div>
+
+  <!-- Navbar -->
+  <%- include('partials/navbar', { product }) %>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="container">
+      <div class="hero__grid">
+        <div class="hero__content">
+          <div class="hero__badge">
+            <span class="hero__badge-dot"></span>
+            متوفر الآن — توصيل لجميع المدن
+          </div>
+          <h1 class="hero__title">
+            <%= product.title %>
+          </h1>
+          <a href="/product/<%= product.slug %>/reviews" class="hero__rating">
+            <span class="hero__rating-stars"><% for (let i = 1; i <= 5; i++) { %><%= i <= Math.round(avgRating) ? '★' : '☆' %><% } %></span>
+            <span class="hero__rating-count"><%= avgRating %> — <%= reviewCount %> تقييم</span>
+            <span class="hero__rating-link">شاهد التقييمات ←</span>
+          </a>
+          <p class="hero__desc">
+            <%= product.description %>
+          </p>
+          <div class="hero__price">
+            <span class="hero__price-current"><%= product.price %> درهم</span>
+            <% if (product.old_price) { %>
+              <span class="hero__price-old"><%= product.old_price %> درهم</span>
+            <% } %>
+            <% if (product.discount) { %>
+              <span class="hero__price-badge"><%= product.discount %></span>
+            <% } %>
+          </div>
+          <div class="hero__actions">
+            <a href="/product/<%= product.slug %>/checkout" class="btn btn--primary btn--lg">
+              اشتري الآن 🛍️
+            </a>
+            <a href="#features" class="btn btn--outline">
+              معرفة المزيد
+            </a>
+          </div>
+        </div>
+        <div class="hero__image">
+          <div class="hero__image-decorator"></div>
+          <div class="hero__image-wrapper">
+            <% if (product.video_filename) { %>
+              <video class="hero__video" autoplay muted loop playsinline poster="">
+                <source src="/uploads/products/<%= product.video_filename %>" type="video/mp4">
+              </video>
+              <div class="hero__video-fallback">🧴</div>
+              <div class="hero__video-overlay"></div>
+            <% } else { %>
+              <div class="hero__image-placeholder">🧴</div>
+            <% } %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Section -->
+  <% if (product.features && product.features.length) { %>
+  <section class="features" id="features">
+    <div class="container">
+      <div class="section-header animate-on-scroll">
+        <span class="section-header__label">لماذا منتجنا؟</span>
+        <h2 class="section-header__title">مميزات تجعله الخيار الأفضل</h2>
+        <div class="section-header__divider"></div>
+      </div>
+      <div class="features__grid">
+        <% product.features.forEach(function(feature) { %>
+          <div class="feature-card animate-on-scroll">
+            <div class="feature-card__icon"><span><%= feature.icon %></span></div>
+            <h3 class="feature-card__title"><%= feature.title %></h3>
+            <p class="feature-card__desc"><%= feature.desc %></p>
+          </div>
+        <% }); %>
+      </div>
+    </div>
+  </section>
+  <% } %>
+
+  <!-- Gallery Section -->
+  <section class="gallery">
+    <div class="container">
+      <div class="section-header animate-on-scroll">
+        <span class="section-header__label">صور المنتج</span>
+        <h2 class="section-header__title">شاهد المنتج من كل الزوايا</h2>
+        <div class="section-header__divider"></div>
+      </div>
+      <div class="gallery__grid">
+        <div class="gallery__item animate-on-scroll">
+          <div class="gallery__placeholder gallery__placeholder--1">🧴</div>
+        </div>
+        <div class="gallery__item animate-on-scroll">
+          <div class="gallery__placeholder gallery__placeholder--2">📦</div>
+        </div>
+        <div class="gallery__item animate-on-scroll">
+          <div class="gallery__placeholder gallery__placeholder--3">✨</div>
+        </div>
+        <div class="gallery__item animate-on-scroll">
+          <div class="gallery__placeholder gallery__placeholder--4">🎁</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Reviews Section -->
+  <section class="trust">
+    <div class="container">
+      <div class="section-header animate-on-scroll">
+        <span class="section-header__label">آراء العملاء</span>
+        <h2 class="section-header__title">ماذا يقول عملاؤنا</h2>
+        <div class="section-header__divider"></div>
+      </div>
+      <% if (reviews && reviews.length) { %>
+        <div class="trust__grid">
+          <% reviews.forEach(function(review) { %>
+            <div class="trust-card animate-on-scroll">
+              <div class="trust-card__stars">
+                <% for (let i = 1; i <= 5; i++) { %><%= i <= review.rating ? '★' : '☆' %><% } %>
+              </div>
+              <p class="trust-card__text">"<%= review.message %>"</p>
+              <% if (review.image_filename) { %>
+                <div style="margin-bottom: 16px;">
+                  <img src="/uploads/reviews/<%= review.image_filename %>" alt="صورة من <%= review.name %>" style="max-width: 100%; border-radius: var(--radius-sm); max-height: 200px; object-fit: cover;">
+                </div>
+              <% } %>
+              <% if (review.audio_filename) { %>
+                <div style="margin-bottom: 16px;">
+                  <audio controls style="width: 100%;">
+                    <source src="/uploads/reviews/<%= review.audio_filename %>" type="audio/webm">
+                    المتصفح لا يدعم تشغيل الصوت
+                  </audio>
+                </div>
+              <% } %>
+              <div class="trust-card__author">
+                <div class="trust-card__avatar"><%= review.name.charAt(0) %></div>
+                <div>
+                  <div class="trust-card__name"><%= review.name %></div>
+                </div>
+              </div>
+            </div>
+          <% }); %>
+        </div>
+      <% } else { %>
+        <div style="text-align: center; padding: 40px 0; color: var(--color-text-muted);">
+          <p style="font-size: 18px; margin-bottom: 8px;">لا توجد تقييمات بعد</p>
+          <p style="font-size: 14px;">كن أول من يشارك تجربته!</p>
+        </div>
+      <% } %>
+    </div>
+  </section>
+
+  <!-- Feedback Submission Section -->
+  <section class="feedback-section" id="feedback">
+    <div class="container container--narrow">
+      <div class="section-header animate-on-scroll">
+        <span class="section-header__label">شاركنا رأيك</span>
+        <h2 class="section-header__title">نحب نسمعو منك! ✍️</h2>
+        <div class="section-header__divider"></div>
+      </div>
+      <div class="feedback-card animate-on-scroll">
+        <form id="feedbackForm" class="feedback-form" data-slug="<%= product.slug %>" action="/product/<%= product.slug %>/review" method="POST" enctype="multipart/form-data">
+          <div class="feedback-form__row">
+            <div class="form-group">
+              <label class="form-label" for="feedbackName">
+                <span class="required">*</span> الاسم
+              </label>
+              <input type="text" id="feedbackName" name="name" class="form-input" placeholder="أدخل اسمك" required>
+              <div class="form-error">⚠️ يرجى إدخال الاسم</div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">التقييم</label>
+            <div class="feedback-stars" id="feedbackStars">
+              <span class="feedback-star" data-rating="1">☆</span>
+              <span class="feedback-star" data-rating="2">☆</span>
+              <span class="feedback-star" data-rating="3">☆</span>
+              <span class="feedback-star" data-rating="4">☆</span>
+              <span class="feedback-star" data-rating="5">☆</span>
+            </div>
+            <input type="hidden" id="feedbackRating" name="rating" value="5">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="feedbackMessage">
+              <span class="required">*</span> تعليقك
+            </label>
+            <textarea id="feedbackMessage" name="message" class="form-input form-textarea" placeholder="اكتب تجربتك مع المنتج أو أي ملاحظة..." rows="4" required></textarea>
+            <div class="form-error">⚠️ يرجى كتابة تعليقك</div>
+          </div>
+          <!-- Image Upload -->
+          <div class="form-group">
+            <label class="form-label">📷 أضف صورة (اختياري)</label>
+            <div class="feedback-upload-zone" id="feedbackImageZone">
+              <div class="feedback-upload-zone__icon">📷</div>
+              <div class="feedback-upload-zone__text">اضغط لرفع صورة</div>
+              <div class="feedback-upload-zone__hint">JPG, PNG — الحد الأقصى 5MB</div>
+              <input type="file" id="feedbackImage" name="image" accept="image/*">
+            </div>
+            <div class="feedback-upload-preview" id="feedbackImagePreview">
+              <button type="button" class="feedback-upload-preview__remove" data-target="feedbackImage">✕</button>
+              <img class="feedback-upload-preview__img" src="" alt="معاينة">
+              <div class="feedback-upload-preview__name"></div>
+            </div>
+          </div>
+          <!-- Voice Recording -->
+          <div class="form-group">
+            <label class="form-label">🎙️ تعليق صوتي (اختياري)</label>
+            <div class="voice-recorder" id="voiceRecorder">
+              <button type="button" class="voice-recorder__btn" id="voiceRecordBtn">
+                <span class="voice-recorder__icon">🎙️</span>
+                <span class="voice-recorder__label">اضغط للتسجيل</span>
+              </button>
+              <div class="voice-recorder__status" id="voiceStatus"></div>
+              <div class="voice-recorder__player" id="voicePlayer">
+                <audio id="voiceAudio" controls></audio>
+                <button type="button" class="voice-recorder__remove" id="voiceRemoveBtn">🗑️ حذف</button>
+              </div>
+            </div>
+          </div>
+          <button type="submit" class="btn btn--primary">
+            إرسال التعليق ✉️
+          </button>
+          <p class="feedback-form__note">💡 سيتم مراجعة تعليقك قبل نشره</p>
+        </form>
+        <!-- Success state (hidden by default) -->
+        <div class="feedback-success" id="feedbackSuccess">
+          <div class="feedback-success__icon">✅</div>
+          <h3 class="feedback-success__title">شكراً على تعليقك!</h3>
+          <p class="feedback-success__text">تم إرسال تعليقك بنجاح. سيتم مراجعته ونشره قريباً.</p>
+          <button type="button" class="btn btn--outline" onclick="resetFeedbackForm()">إرسال تعليق آخر</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="cta-section">
+    <div class="container">
+      <div class="cta-section__inner animate-on-scroll">
+        <h2 class="cta-section__title">لا تفوّت العرض المحدود!</h2>
+        <p class="cta-section__desc">
+          احصل على منتجك اليوم بسعر مخفض مع توصيل سريع لجميع مدن المغرب
+        </p>
+        <a href="/product/<%= product.slug %>/checkout" class="btn btn--primary btn--lg">
+          اطلب الآن — <%= product.price %> درهم فقط 🔥
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <%- include('partials/footer') %>
+
+  <script src="/js/main.js"></script>
+</body>
+</html>

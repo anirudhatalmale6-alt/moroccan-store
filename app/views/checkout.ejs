@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <%- include('partials/head') %>
+  <title>إتمام الطلب — <%= product.title %></title>
+</head>
+<body>
+  <div class="pattern-overlay"></div>
+
+  <!-- Navbar -->
+  <nav class="navbar scrolled">
+    <div class="container">
+      <div class="navbar__inner">
+        <div class="navbar__brand">
+          <a href="/" style="display: flex; align-items: center; gap: 10px;">
+            <div class="navbar__logo">م</div>
+            <span class="navbar__name">متجرنا</span>
+          </a>
+        </div>
+        <div class="checkout-header__steps">
+          <div class="checkout-header__step checkout-header__step--active">
+            <span class="checkout-header__step-num">1</span>
+            <span>المعلومات</span>
+          </div>
+          <span class="checkout-header__step-arrow">←</span>
+          <div class="checkout-header__step">
+            <span class="checkout-header__step-num">2</span>
+            <span>الدفع</span>
+          </div>
+          <span class="checkout-header__step-arrow">←</span>
+          <div class="checkout-header__step">
+            <span class="checkout-header__step-num">3</span>
+            <span>التأكيد</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Checkout Page -->
+  <div class="checkout-page">
+    <div class="container">
+      <div class="checkout__grid">
+
+        <!-- Form Side -->
+        <div class="checkout-form">
+          <form id="checkoutForm" novalidate>
+
+            <!-- Section 1: Contact & Delivery Info -->
+            <div class="form-section">
+              <h2 class="form-section__title">
+                <span class="form-section__title-icon">📋</span>
+                معلومات الاتصال والتوصيل
+              </h2>
+
+              <div class="form-group">
+                <label class="form-label" for="fullName">
+                  <span class="required">*</span>
+                  الاسم الكامل
+                </label>
+                <input type="text" id="fullName" name="fullName" class="form-input" placeholder="أدخل اسمك الكامل" required>
+                <div class="form-error" id="nameError"></div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="phone">
+                  <span class="required">*</span>
+                  رقم الهاتف
+                </label>
+                <div class="form-input-phone-wrapper">
+                  <div class="form-input-phone-prefix">+212</div>
+                  <input type="tel" id="phone" name="phone" class="form-input" placeholder="6XXXXXXXX" required dir="ltr">
+                </div>
+                <div class="form-error" id="phoneError"></div>
+              </div>
+            </div>
+
+            <!-- Section 2: Quantity -->
+            <div class="form-section">
+              <h2 class="form-section__title">
+                <span class="form-section__title-icon">📦</span>
+                الكمية
+              </h2>
+
+              <div class="form-group">
+                <div style="display: flex; align-items: center; gap: 16px; flex-wrap: wrap;">
+                  <div class="qty-control">
+                    <button type="button" class="qty-control__btn" id="qtyMinus">−</button>
+                    <div class="qty-control__value" id="qtyValue">1</div>
+                    <button type="button" class="qty-control__btn" id="qtyPlus">+</button>
+                  </div>
+                  <div class="qty-control__price" id="qtyPrice"><%= product.price %> درهم</div>
+                </div>
+                <div class="qty-control__detail" id="qtyDetail" style="display: none;">
+                  <span id="qtyCalc"></span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Section 3: Delivery Options -->
+            <div class="form-section">
+              <h2 class="form-section__title">
+                <span class="form-section__title-icon">🚚</span>
+                خيار التوصيل
+              </h2>
+
+              <div class="delivery-options">
+                <!-- Deposit Option -->
+                <label class="delivery-option">
+                  <input type="radio" name="deliveryOption" value="deposit" checked>
+                  <div class="delivery-option__card">
+                    <div class="delivery-option__radio"></div>
+                    <div class="delivery-option__content">
+                      <div class="delivery-option__title">دفع العربون</div>
+                      <div class="delivery-option__desc">
+                        ادفع <strong><%= product.deposit_amount %> درهم</strong> الآن والباقي عند التوصيل
+                      </div>
+                      <div class="delivery-option__meta">⏰ التوصيل خلال 48 ساعة</div>
+                    </div>
+                    <div class="delivery-option__price" id="depositPrice"><%= product.deposit_amount %> درهم</div>
+                  </div>
+                </label>
+
+                <!-- Full Payment Option -->
+                <label class="delivery-option">
+                  <input type="radio" name="deliveryOption" value="full">
+                  <div class="delivery-option__card">
+                    <div class="delivery-option__radio"></div>
+                    <div class="delivery-option__content">
+                      <div class="delivery-option__title">الدفع الكامل</div>
+                      <div class="delivery-option__desc">
+                        ادفع المبلغ الكامل واحصل على توصيل مجاني في نفس اليوم
+                      </div>
+                      <div class="delivery-option__meta">🎁 توصيل مجاني — نفس اليوم</div>
+                    </div>
+                    <div class="delivery-option__price" id="fullPrice"><%= product.price %> درهم</div>
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            <!-- Section 4: Bank Transfer Details -->
+            <div class="form-section">
+              <h2 class="form-section__title">
+                <span class="form-section__title-icon">🏦</span>
+                التحويل البنكي
+              </h2>
+
+              <div class="bank-transfer-amount">
+                <span class="bank-transfer-amount__label">المبلغ المطلوب تحويله</span>
+                <span class="bank-transfer-amount__value" id="bankAmount"><%= product.deposit_amount %> درهم</span>
+              </div>
+
+              <div class="bank-details">
+                <div class="bank-detail">
+                  <span class="bank-detail__label">البنك</span>
+                  <span class="bank-detail__value">CIH Bank</span>
+                </div>
+                <div class="bank-detail">
+                  <span class="bank-detail__label">صاحب الحساب</span>
+                  <span class="bank-detail__value">متجرنا SARL</span>
+                </div>
+                <div class="bank-detail">
+                  <span class="bank-detail__label">رقم الحساب (RIB)</span>
+                  <span class="bank-detail__value">
+                    230 780 0118274000 68 30
+                    <button type="button" class="bank-detail__copy" data-value="230780011827400006830" title="نسخ">📋</button>
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Section 5: Receipt Upload -->
+            <div class="form-section">
+              <h2 class="form-section__title">
+                <span class="form-section__title-icon">📤</span>
+                إيصال الدفع
+              </h2>
+
+              <div class="form-group">
+                <label class="form-label">
+                  <span class="required">*</span>
+                  ارفع صورة إيصال التحويل
+                </label>
+                <div class="upload-zone" id="uploadZone">
+                  <div class="upload-zone__icon">📤</div>
+                  <div class="upload-zone__text">اضغط لرفع صورة إيصال الدفع</div>
+                  <div class="upload-zone__hint">JPG, PNG, PDF — الحد الأقصى 10MB</div>
+                  <input type="file" id="receiptUpload" name="receipt" accept="image/*,.pdf">
+                </div>
+                <div class="upload-preview">
+                  <img class="upload-preview__img" src="" alt="معاينة الإيصال">
+                  <div class="upload-preview__name"></div>
+                  <button type="button" class="upload-preview__remove">✕</button>
+                </div>
+                <div class="form-error" id="receiptError">يرجى رفع إيصال الدفع</div>
+              </div>
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit" class="btn btn--primary btn--lg btn--full" id="submitBtn">
+              تأكيد الطلب
+            </button>
+
+          </form>
+        </div>
+
+        <!-- Order Summary Sidebar -->
+        <div class="order-summary">
+          <h3 class="order-summary__title">ملخص الطلب</h3>
+
+          <div class="order-summary__product">
+            <div class="order-summary__product-img">🛍️</div>
+            <div class="order-summary__product-info">
+              <div class="order-summary__product-name"><%= product.title %></div>
+              <div class="order-summary__product-variant">المنتج الأصلي</div>
+              <div class="order-summary__product-qty" id="summaryQty">الكمية: 1</div>
+            </div>
+          </div>
+
+          <div class="order-summary__row" id="summaryQtyRow" style="display: none;">
+            <span class="order-summary__row-label" id="summaryQtyLabel"></span>
+            <span class="order-summary__row-value" id="summarySubtotal"></span>
+          </div>
+
+          <div class="order-summary__row">
+            <span class="order-summary__row-label" id="summaryOptionLabel">خيار الدفع</span>
+            <span class="order-summary__row-value" id="summaryOptionValue">عربون (<%= product.deposit_amount %> درهم)</span>
+          </div>
+
+          <div class="order-summary__row">
+            <span class="order-summary__row-label">التوصيل</span>
+            <span class="order-summary__row-value" id="summaryDelivery">خلال 48 ساعة</span>
+          </div>
+
+          <div class="order-summary__row order-summary__row--total">
+            <span class="order-summary__row-label">المبلغ المطلوب</span>
+            <span class="order-summary__row-value" id="summaryTotal"><%= product.deposit_amount %> درهم</span>
+          </div>
+
+          <div class="order-summary__remaining" id="summaryRemaining">
+            المتبقي عند التوصيل: <strong id="summaryRemainingAmount"><%= product.price - product.deposit_amount %> درهم</strong>
+          </div>
+
+          <div class="order-summary__secure">🔒 معاملة آمنة ومشفرة</div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading Overlay -->
+  <div class="loading-overlay">
+    <div class="loading-spinner"></div>
+    <div class="loading-text">جاري معالجة طلبك...</div>
+  </div>
+
+  <%- include('partials/footer') %>
+
+  <script>
+    const UNIT_PRICE = <%= product.price %>;
+    const DEPOSIT_AMOUNT = <%= product.deposit_amount %>;
+  </script>
+  <script>
+    // Override checkout form submission to use fetch with FormData
+    document.addEventListener('DOMContentLoaded', () => {
+      const form = document.getElementById('checkoutForm');
+      if (!form) return;
+
+      // Remove the default handler by replacing with our own
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+
+        // Clear previous errors
+        clearErrors();
+
+        const fullName = document.getElementById('fullName');
+        const phone = document.getElementById('phone');
+        const receiptFile = document.getElementById('receiptUpload');
+
+        let isValid = true;
+
+        if (!fullName.value.trim()) {
+          showFieldError(fullName, 'يرجى إدخال الاسم الكامل');
+          isValid = false;
+        }
+
+        if (!phone.value.trim()) {
+          showFieldError(phone, 'يرجى إدخال رقم الهاتف');
+          isValid = false;
+        } else if (!/^\d{9,10}$/.test(phone.value.trim().replace(/\s/g, ''))) {
+          showFieldError(phone, 'رقم الهاتف غير صالح');
+          isValid = false;
+        }
+
+        if (!receiptFile || !receiptFile.files || !receiptFile.files.length) {
+          const uploadZone = document.querySelector('.upload-zone');
+          if (uploadZone) uploadZone.classList.add('upload-zone--error');
+          const receiptError = document.getElementById('receiptError');
+          if (receiptError) receiptError.classList.add('visible');
+          isValid = false;
+        }
+
+        if (!isValid) {
+          showToast('يرجى تعبئة جميع الحقول المطلوبة', 'error');
+          return;
+        }
+
+        showLoading();
+
+        const qty = parseInt(document.getElementById('qtyValue').textContent) || 1;
+        const deliveryOption = document.querySelector('input[name="deliveryOption"]:checked')?.value || 'deposit';
+
+        const formData = new FormData();
+        formData.append('fullName', fullName.value.trim());
+        formData.append('phone', phone.value.trim());
+        formData.append('quantity', qty);
+        formData.append('deliveryOption', deliveryOption);
+        formData.append('receipt', receiptFile.files[0]);
+
+        try {
+          const response = await fetch('/product/<%= product.slug %>/order', {
+            method: 'POST',
+            body: formData
+          });
+
+          const data = await response.json();
+
+          if (data.success) {
+            sessionStorage.setItem('orderRef', data.orderRef);
+            sessionStorage.setItem('customerName', fullName.value.trim());
+            window.location.href = '/thankyou';
+          } else {
+            hideLoading();
+            showToast(data.error || 'حدث خطأ، يرجى المحاولة مرة أخرى', 'error');
+          }
+        } catch (err) {
+          hideLoading();
+          console.error('Order submission error:', err);
+          showToast('حدث خطأ في الاتصال، يرجى المحاولة مرة أخرى', 'error');
+        }
+      }, true);
+    });
+  </script>
+  <script src="/js/main.js"></script>
+</body>
+</html>
