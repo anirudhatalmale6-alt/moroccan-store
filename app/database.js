@@ -321,6 +321,16 @@ async function initDatabase() {
       setting_value TEXT DEFAULT '',
       updated_at TEXT DEFAULT (datetime('now'))
     );
+
+    CREATE TABLE IF NOT EXISTS categories (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL,
+      image_filename TEXT DEFAULT '',
+      slug TEXT NOT NULL,
+      sort_order INTEGER DEFAULT 0,
+      is_active INTEGER DEFAULT 1,
+      created_at DATETIME DEFAULT (datetime('now'))
+    );
   `);
 
   // ====== MIGRATIONS: Add columns to existing tables ======
@@ -335,6 +345,7 @@ async function initDatabase() {
   addColumnIfNotExists('products', 'audio_filename', "ALTER TABLE products ADD COLUMN audio_filename TEXT DEFAULT ''");
   addColumnIfNotExists('products', 'audio_autoplay', "ALTER TABLE products ADD COLUMN audio_autoplay INTEGER DEFAULT 0");
   addColumnIfNotExists('products', 'cod_enabled', "ALTER TABLE products ADD COLUMN cod_enabled INTEGER DEFAULT 0");
+  addColumnIfNotExists('products', 'category_id', "ALTER TABLE products ADD COLUMN category_id INTEGER DEFAULT NULL");
   addColumnIfNotExists('products', 'bank_full_enabled', "ALTER TABLE products ADD COLUMN bank_full_enabled INTEGER DEFAULT 1");
   addColumnIfNotExists('products', 'bank_deposit_enabled', "ALTER TABLE products ADD COLUMN bank_deposit_enabled INTEGER DEFAULT 1");
 
@@ -387,6 +398,11 @@ async function initDatabase() {
   }
   if (!db.prepare("SELECT 1 FROM admin_settings WHERE setting_key = 'custom_font_url'").get()) {
     db.prepare("INSERT INTO admin_settings (setting_key, setting_value) VALUES (?, ?)").run('custom_font_url', '');
+  }
+
+  // Primary color setting
+  if (!db.prepare("SELECT 1 FROM admin_settings WHERE setting_key = 'primary_color'").get()) {
+    db.prepare("INSERT INTO admin_settings (setting_key, setting_value) VALUES (?, ?)").run('primary_color', '#8B6F47');
   }
 
   // Seed a default product if none exists

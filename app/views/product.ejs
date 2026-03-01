@@ -47,8 +47,8 @@
 
           <!-- Variations -->
           <% if (typeof sizeVariations !== 'undefined' && sizeVariations && sizeVariations.length > 0) { %>
-          <div class="product-variations" style="margin-top: 20px; margin-bottom: 16px;">
-            <label style="display: block; font-weight: 700; font-size: 15px; margin-bottom: 10px; color: var(--color-primary-dark);">اختر الحجم:</label>
+          <div class="product-variations" style="margin-top: 12px; margin-bottom: 8px;">
+            <label style="display: block; font-weight: 700; font-size: 14px; margin-bottom: 8px; color: var(--color-primary-dark);">اختر الحجم:</label>
             <div style="display: flex; flex-wrap: wrap; gap: 8px;">
               <% sizeVariations.forEach(function(v, idx) { %>
                 <button type="button" class="variation-btn size-variation-btn<%= idx === 0 ? ' active' : '' %>"
@@ -56,10 +56,10 @@
                   data-price-adjustment="<%= v.price_adjustment %>"
                   onclick="selectSizeVariation(this)"
                   style="
-                    padding: 10px 20px; border-radius: var(--radius-md); border: 2px solid var(--color-border);
+                    padding: 8px 16px; border-radius: 50px; border: 2px solid var(--color-border);
                     background: var(--color-card); cursor: pointer; font-family: var(--font-body);
-                    font-size: 14px; font-weight: 600; color: var(--color-text);
-                    transition: var(--transition-fast);
+                    font-size: 13px; font-weight: 700; color: var(--color-text);
+                    transition: var(--transition-fast); min-width: 42px; text-align: center;
                   "><%= v.label %>
                   <% if (v.price_adjustment > 0) { %><span style="font-size: 11px; color: var(--color-text-muted);"> (+<%= v.price_adjustment %> د.م)</span><% } %>
                   <% if (v.price_adjustment < 0) { %><span style="font-size: 11px; color: var(--color-success);"> (<%= v.price_adjustment %> د.م)</span><% } %>
@@ -70,8 +70,8 @@
           <% } %>
 
           <% if (typeof colorVariations !== 'undefined' && colorVariations && colorVariations.length > 0) { %>
-          <div class="product-variations" style="margin-top: 16px; margin-bottom: 16px;">
-            <label style="display: block; font-weight: 700; font-size: 15px; margin-bottom: 10px; color: var(--color-primary-dark);">اختر اللون:</label>
+          <div class="product-variations" style="margin-top: 8px; margin-bottom: 8px;">
+            <label style="display: block; font-weight: 700; font-size: 14px; margin-bottom: 8px; color: var(--color-primary-dark);">اختر اللون:</label>
             <div style="display: flex; flex-wrap: wrap; gap: 10px;">
               <% colorVariations.forEach(function(v, idx) { %>
                 <button type="button" class="variation-btn color-variation-btn<%= idx === 0 ? ' active' : '' %>"
@@ -80,7 +80,7 @@
                   onclick="selectColorVariation(this)"
                   title="<%= v.label %>"
                   style="
-                    width: 52px; height: 52px; border-radius: 50%; border: 3px solid var(--color-border);
+                    width: 40px; height: 40px; border-radius: 50%; border: 2px solid var(--color-border);
                     cursor: pointer; padding: 0; overflow: hidden; position: relative;
                     transition: var(--transition-fast);
                     <% if (v.image_filename) { %>
@@ -145,7 +145,7 @@
     try { descImages = JSON.parse(product.description_images || '[]'); } catch(e) {}
   %>
   <% if (descImages && descImages.length > 0) { %>
-  <section class="description-images-section" style="padding: 0; margin: 40px 0;">
+  <section class="description-images-section" style="padding: 0; margin: 16px 0 0 0;">
     <div style="max-width: 900px; margin: 0 auto; padding: 0 16px;">
       <% descImages.forEach(function(imgFile) { %>
         <div style="margin-bottom: 0; text-align: center;">
@@ -247,6 +247,9 @@
                 <div class="trust-card__avatar"><%= review.name.charAt(0) %></div>
                 <div>
                   <div class="trust-card__name"><%= review.name %></div>
+                  <% if (review.phone) { %>
+                    <div style="font-size: 12px; color: var(--color-text-muted); direction: ltr; text-align: right;"><%= review.phone %></div>
+                  <% } %>
                 </div>
               </div>
               <div class="trust-card__stars">
@@ -258,7 +261,7 @@
                   <img src="/uploads/reviews/<%= review.image_filename %>" alt="صورة من <%= review.name %>" style="max-width: 100%; border-radius: var(--radius-sm); max-height: 200px; object-fit: cover;">
                 </div>
               <% } %>
-              <% if (review.audio_filename) { %>
+              <% if (review.audio_filename && review.audio_filename.length > 0) { %>
                 <div style="margin-bottom: 16px; background: linear-gradient(135deg, #f5f0eb 0%, #ede6dd 100%); border-radius: 12px; padding: 12px 16px; display: flex; align-items: center; gap: 12px;">
                   <span style="font-size: 24px;">🎤</span>
                   <audio controls src="/uploads/reviews/<%= review.audio_filename %>" style="flex: 1; height: 36px; border-radius: 18px;">
@@ -299,6 +302,13 @@
               </label>
               <input type="text" id="feedbackName" name="name" class="form-input" placeholder="أدخل اسمك" required>
               <div class="form-error">يرجى إدخال الاسم</div>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="feedbackPhone">
+                <span class="required">*</span> رقم الهاتف
+              </label>
+              <input type="tel" id="feedbackPhone" name="phone" class="form-input" placeholder="0612345678" required dir="ltr" style="text-align: left;">
+              <div class="form-error">يرجى إدخال رقم الهاتف</div>
             </div>
           </div>
           <div class="form-group">

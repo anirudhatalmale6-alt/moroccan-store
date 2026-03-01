@@ -553,6 +553,7 @@ function initFeedbackForm() {
     clearErrors();
 
     const name = document.getElementById('feedbackName');
+    const phone = document.getElementById('feedbackPhone');
     const message = document.getElementById('feedbackMessage');
     const city = document.getElementById('feedbackCity');
     const rating = document.getElementById('feedbackRating');
@@ -561,6 +562,11 @@ function initFeedbackForm() {
 
     if (!name.value.trim()) {
       showFieldError(name, 'يرجى إدخال الاسم');
+      isValid = false;
+    }
+
+    if (phone && !phone.value.trim()) {
+      showFieldError(phone, 'يرجى إدخال رقم الهاتف');
       isValid = false;
     }
 
@@ -580,6 +586,7 @@ function initFeedbackForm() {
 
     const submitData = new FormData();
     submitData.append('name', name.value.trim());
+    if (phone) submitData.append('phone', phone.value.trim());
     submitData.append('rating', rating.value);
     submitData.append('message', message.value.trim());
 

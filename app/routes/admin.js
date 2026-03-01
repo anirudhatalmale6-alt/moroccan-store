@@ -58,6 +58,16 @@ const giftStorage = multer.diskStorage({
 });
 const giftUpload = multer({ storage: giftStorage, limits: { fileSize: 10 * 1024 * 1024 } });
 
+// Category image upload
+const categoryStorage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, path.join(__dirname, '..', 'public', 'uploads', 'categories')),
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname);
+    cb(null, 'category-' + Date.now() + '-' + Math.random().toString(36).substring(7) + ext);
+  }
+});
+const categoryUpload = multer({ storage: categoryStorage, limits: { fileSize: 10 * 1024 * 1024 } });
+
 // Landing page media upload
 const landingStorage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, path.join(__dirname, '..', 'public', 'uploads', 'landing-pages')),
@@ -760,7 +770,8 @@ router.get('/settings', requireAdmin, (req, res) => {
   const settings = {};
   const rows = db.prepare('SELECT * FROM admin_settings').all();
   rows.forEach(r => { settings[r.setting_key] = r.setting_value; });
-  res.render('admin/settings', { admin, settings, success: req.query.success, error: req.query.error });
+  const primaryColor = settings.primary_color || '#8B6F47';
+  res.render('admin/settings', { admin, settings, primaryColor, success: req.query.success, error: req.query.error });
 });
 
 router.post('/settings/profile', requireAdmin, (req, res) => {
@@ -803,6 +814,17 @@ router.post('/settings/typography', requireAdmin, (req, res) => {
   res.redirect('/admin/settings?success=تم تحديث اعدادات الخط');
 });
 
+router.post('/settings/theme', requireAdmin, (req, res) => {
+  const color = req.body.primary_color || req.body.primary_color_text || '#8B6F47';
+  const existing = db.prepare("SELECT 1 FROM admin_settings WHERE setting_key = 'primary_color'").get();
+  if (existing) {
+    db.prepare("UPDATE admin_settings SET setting_value = ? WHERE setting_key = 'primary_color'").run(color);
+  } else {
+    db.prepare("INSERT INTO admin_settings (setting_key, setting_value) VALUES ('primary_color', ?)").run(color);
+  }
+  res.redirect('/admin/settings?success=تم تحديث لون المتجر');
+});
+
 router.post('/settings/site', requireAdmin, (req, res) => {
   const { site_name } = req.body;
   if (site_name) {
@@ -814,6 +836,30 @@ router.post('/settings/site', requireAdmin, (req, res) => {
     }
   }
   res.redirect('/admin/settings?success=تم تحديث اعدادات الموقع');
+});
+
+// ============================================================
+// CATEGORIES
+// ============================================================
+
+router.get('/categories', requireAdmin, (req, res) => {
+  const categories = db.prepare('SELECT * FROM categories ORDER BY sort_order, id').all();
+  res.render('admin/categories', { categories });
+});
+
+router.post('/categories', requireAdmin, categoryUpload.single('image'), (req, res) => {
+  const { name, slug } = req.body;
+  if (name && slug) {
+    const image = req.file ? req.file.filename : '';
+    const maxOrder = db.prepare('SELECT COALESCE(MAX(sort_order), -1) as max_order FROM categories').get();
+    db.prepare('INSERT INTO categories (name, slug, image_filename, sort_order) VALUES (?, ?, ?, ?)').run(name, slug, image, (maxOrder.max_order + 1));
+  }
+  res.redirect('/admin/categories');
+});
+
+router.post('/categories/:id/delete', requireAdmin, (req, res) => {
+  db.prepare('DELETE FROM categories WHERE id = ?').run(req.params.id);
+  res.redirect('/admin/categories');
 });
 
 module.exports = router;

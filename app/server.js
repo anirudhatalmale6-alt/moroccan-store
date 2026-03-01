@@ -39,10 +39,14 @@ app.use((req, res, next) => {
     res.locals.fontFamily = fontRow ? fontRow.setting_value : 'Cairo';
     const fontUrlRow = db.prepare("SELECT setting_value FROM admin_settings WHERE setting_key = 'custom_font_url'").get();
     res.locals.customFontUrl = fontUrlRow ? fontUrlRow.setting_value : '';
+
+    const colorRow = db.prepare("SELECT setting_value FROM admin_settings WHERE setting_key = 'primary_color'").get();
+    res.locals.primaryColor = colorRow ? colorRow.setting_value : '#8B6F47';
   } catch(e) {
     res.locals.siteName = 'متجرنا';
     res.locals.fontFamily = 'Cairo';
     res.locals.customFontUrl = '';
+    res.locals.primaryColor = '#8B6F47';
   }
 
   // Cart count for badge

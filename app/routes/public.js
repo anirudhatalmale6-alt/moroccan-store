@@ -91,6 +91,21 @@ function getSetting(key, defaultValue) {
 
 
 // ============================================================
+// API: Get paginated products
+// ============================================================
+router.get('/api/products', (req, res) => {
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 6;
+  const offset = (page - 1) * limit;
+
+  const products = db.prepare('SELECT * FROM products WHERE is_active = 1 ORDER BY created_at DESC LIMIT ? OFFSET ?').all(limit, offset);
+  const total = db.prepare('SELECT COUNT(*) as count FROM products WHERE is_active = 1').get();
+
+  res.json({ products, total: total.count, page, hasMore: offset + products.length < total.count });
+});
+
+
+// ============================================================
 // HOME PAGE
 // ============================================================
 router.get('/', (req, res) => {
@@ -104,7 +119,12 @@ router.get('/', (req, res) => {
     sliders = db.prepare('SELECT * FROM home_sliders WHERE is_active = 1 ORDER BY sort_order').all();
   } catch (e) {}
 
-  res.render('home', { products, sliders });
+  let categories = [];
+  try {
+    categories = db.prepare('SELECT * FROM categories WHERE is_active = 1 ORDER BY sort_order').all();
+  } catch (e) {}
+
+  res.render('home', { products, sliders, categories });
 });
 
 
@@ -116,7 +136,7 @@ router.get('/product/:slug', (req, res) => {
   if (!product) return res.status(404).render('404');
 
   const reviews = db.prepare(
-    'SELECT name, rating, message, image_filename, audio_filename, created_at FROM reviews WHERE product_id = ? AND status = ? ORDER BY created_at DESC'
+    'SELECT name, phone, rating, message, image_filename, audio_filename, created_at FROM reviews WHERE product_id = ? AND status = ? ORDER BY created_at DESC'
   ).all(product.id, 'approved');
 
   const avgRating = db.prepare(
@@ -172,7 +192,7 @@ router.get('/product/:slug/reviews', (req, res) => {
   if (!product) return res.status(404).render('404');
 
   const reviews = db.prepare(
-    'SELECT name, rating, message, image_filename, audio_filename, created_at FROM reviews WHERE product_id = ? AND status = ? ORDER BY created_at DESC'
+    'SELECT name, phone, rating, message, image_filename, audio_filename, created_at FROM reviews WHERE product_id = ? AND status = ? ORDER BY created_at DESC'
   ).all(product.id, 'approved');
 
   const avgRating = db.prepare(
