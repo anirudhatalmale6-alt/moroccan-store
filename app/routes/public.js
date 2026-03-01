@@ -141,7 +141,18 @@ router.get('/', (req, res) => {
     if (intervalRow) bannerInterval = parseInt(intervalRow.setting_value) || 4;
   } catch (e) {}
 
-  res.render('home', { products, sliders, categories, banners, bannerInterval });
+  // Load latest reviews for feedback section
+  let latestReviews = [];
+  let homeReviewCount = 0;
+  try {
+    latestReviews = db.prepare(
+      'SELECT r.name, r.rating, r.message, p.title as product_title FROM reviews r LEFT JOIN products p ON r.product_id = p.id WHERE r.status = ? ORDER BY r.created_at DESC LIMIT 6'
+    ).all('approved');
+    const rc = db.prepare('SELECT COUNT(*) as count FROM reviews WHERE status = ?').get('approved');
+    homeReviewCount = rc ? rc.count : 0;
+  } catch (e) {}
+
+  res.render('home', { products, sliders, categories, banners, bannerInterval, latestReviews, homeReviewCount });
 });
 
 
@@ -938,6 +949,26 @@ router.post('/account/orders/:id/status', requireUser, (req, res) => {
 
 
 // ============================================================
+// PUBLIC FEEDBACK PAGE (all reviews from all products)
+// ============================================================
+router.get('/feedback', (req, res) => {
+  const reviews = db.prepare(
+    'SELECT r.name, r.phone, r.rating, r.message, r.image_filename, r.audio_filename, r.created_at, p.title as product_title FROM reviews r LEFT JOIN products p ON r.product_id = p.id WHERE r.status = ? ORDER BY r.created_at DESC'
+  ).all('approved');
+
+  const avgRow = db.prepare(
+    'SELECT AVG(rating) as avg, COUNT(*) as count FROM reviews WHERE status = ?'
+  ).get('approved');
+
+  res.render('feedback', {
+    reviews,
+    avgRating: avgRow && avgRow.avg ? avgRow.avg.toFixed(1) : '5.0',
+    reviewCount: avgRow ? avgRow.count : 0
+  });
+});
+
+
+// ============================================================
 // THANK YOU + STATIC PAGES
 // ============================================================
 router.get('/thankyou', (req, res) => {
@@ -964,7 +995,7 @@ router.get('/contact', (req, res) => {
 router.get('/:username', (req, res) => {
   try {
     // Skip known routes (avoid matching static assets, admin, etc.)
-    const reserved = ['admin', 'api', 'login', 'logout', 'account', 'cart', 'thankyou', 'returns', 'payment-delivery', 'contact', 'product', 'p', 'category', 'favicon.ico'];
+    const reserved = ['admin', 'api', 'login', 'logout', 'account', 'cart', 'thankyou', 'returns', 'payment-delivery', 'contact', 'product', 'p', 'category', 'feedback', 'favicon.ico'];
     if (reserved.includes(req.params.username)) {
       return res.status(404).render('404');
     }

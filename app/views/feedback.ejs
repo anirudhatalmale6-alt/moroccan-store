@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <%- include('partials/head') %>
+  <title>آراء العملاء — <%= typeof siteName !== 'undefined' ? siteName : 'متجرنا' %></title>
+</head>
+<body>
+  <div class="pattern-overlay"></div>
+
+  <!-- Navbar -->
+  <nav class="navbar scrolled">
+    <div class="container">
+      <div class="navbar__inner">
+        <div class="navbar__brand">
+          <a href="/" style="display: flex; align-items: center; gap: 10px;">
+            <div class="navbar__logo"><%= typeof siteName !== 'undefined' ? siteName.charAt(0) : 'م' %></div>
+            <span class="navbar__name"><%= typeof siteName !== 'undefined' ? siteName : 'متجرنا' %></span>
+          </a>
+        </div>
+        <a href="/" style="font-size: 14px; font-weight: 700; color: var(--color-primary); text-decoration: none;">🏠 الرئيسية</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Reviews Hero -->
+  <section class="reviews-hero">
+    <div class="container">
+      <div class="reviews-hero__inner">
+        <h1 class="reviews-hero__title">آراء عملائنا</h1>
+        <div class="reviews-hero__rating">
+          <span class="reviews-hero__stars">
+            <% for (var i = 1; i <= 5; i++) { %>
+              <% if (i <= Math.round(parseFloat(avgRating))) { %>★<% } else { %>☆<% } %>
+            <% } %>
+          </span>
+          <span class="reviews-hero__score"><%= avgRating %></span>
+          <span class="reviews-hero__count"><%= reviewCount %> تقييم</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Reviews List -->
+  <section class="reviews-list">
+    <div class="container container--narrow">
+      <% if (reviews.length === 0) { %>
+        <div style="text-align: center; padding: 40px 20px; color: var(--color-text-muted);">
+          <p style="font-size: 48px; margin-bottom: 16px;">💬</p>
+          <p style="font-size: 18px; font-weight: 600; margin-bottom: 8px;">لا توجد تقييمات بعد</p>
+          <p style="font-size: 14px;">كن أول من يشارك تجربته!</p>
+        </div>
+      <% } else { %>
+        <% reviews.forEach(function(review) { %>
+          <div class="review-card animate-on-scroll">
+            <div class="review-card__header">
+              <% if (review.name) { %>
+                <div class="review-card__avatar" style="font-size: 24px; display: flex; align-items: center; justify-content: center;"><%= (function(n){ var e=['😊','😎','🤩','😇','🥰','😄','🤗','😺','🦊','🐻','🐶','🐱','🐸','🦁','🐼','🐯','🐨','🦋','🌸','⭐']; if(!n) return e[0]; var h=0; for(var i=0;i<n.length;i++) h=((h<<5)-h)+n.charCodeAt(i); return e[Math.abs(h)%e.length]; })(review.name) %></div>
+              <% } else { %>
+                <div class="review-card__avatar" style="font-size: 24px; display: flex; align-items: center; justify-content: center;">⭐</div>
+              <% } %>
+              <div>
+                <% if (review.name) { %>
+                  <div class="review-card__name" style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;"><%= review.name %> <span style="background: var(--color-success, #2D8F5E); color: #fff; font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px; white-space: nowrap;">✓ موثّق</span></div>
+                <% } else { %>
+                  <div class="review-card__name" style="display: flex; align-items: center; gap: 6px;">عميل <span style="background: var(--color-success, #2D8F5E); color: #fff; font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px; white-space: nowrap;">✓ موثّق</span></div>
+                <% } %>
+                <div class="review-card__stars">
+                  <% for (var j = 1; j <= 5; j++) { %>
+                    <% if (j <= review.rating) { %>★<% } else { %>☆<% } %>
+                  <% } %>
+                </div>
+                <% if (review.product_title) { %>
+                  <div style="font-size: 12px; color: var(--color-text-muted); margin-top: 2px;">على: <%= review.product_title %></div>
+                <% } %>
+              </div>
+            </div>
+
+            <% if (review.message) { %>
+              <div class="review-card__text"><%= review.message %></div>
+            <% } %>
+
+            <% if (review.image_filename) { %>
+              <div style="margin-top: 16px; text-align: center;">
+                <img src="/uploads/reviews/<%= review.image_filename %>" alt="صورة التقييم" style="max-width: 100%; max-height: 300px; border-radius: var(--radius-md); object-fit: cover; border: 1px solid var(--color-border-light);" loading="lazy">
+              </div>
+            <% } %>
+
+            <% if (review.audio_filename) { %>
+              <div class="wa-audio-player" data-src="/uploads/reviews/<%= review.audio_filename %>" style="margin-top: 16px;">
+                <button type="button" class="wa-play-btn" onclick="toggleWaAudio(this)">▶</button>
+                <div class="wa-progress-wrap" onclick="seekWaAudio(event, this)">
+                  <div class="wa-waveform"></div>
+                </div>
+                <span class="wa-time">0:00</span>
+              </div>
+            <% } %>
+          </div>
+        <% }); %>
+      <% } %>
+    </div>
+  </section>
+
+  <%- include('partials/footer') %>
+  <script src="/js/main.js"></script>
+</body>
+</html>

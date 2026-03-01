@@ -252,6 +252,7 @@
   <% } %>
 
   <!-- Reviews Section -->
+  <% if (typeof product.show_reviews === 'undefined' || product.show_reviews) { %>
   <section class="trust">
     <div class="container">
       <div class="section-header animate-on-scroll">
@@ -396,6 +397,7 @@
       </div>
     </div>
   </section>
+  <% } /* end show_reviews */ %>
 
   <!-- CTA Section -->
   <section class="cta-section">

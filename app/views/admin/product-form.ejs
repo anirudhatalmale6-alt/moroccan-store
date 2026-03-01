@@ -431,6 +431,13 @@
                     </div>
 
                     <div class="form-group">
+                        <div class="checkbox-group">
+                            <input type="checkbox" name="show_reviews" id="show_reviews" value="1" <%= product ? (product.show_reviews ? 'checked' : '') : 'checked' %>>
+                            <label for="show_reviews">عرض تعليقات وتقييمات العملاء في صفحة المنتج</label>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
                         <label>صور الوصف</label>
                         <input type="file" name="description_images" accept="image/*" multiple>
                         <div class="hint">صور اضافية تظهر في قسم الوصف (حتى 10 صور)</div>

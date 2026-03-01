@@ -382,6 +382,7 @@ async function initDatabase() {
   addColumnIfNotExists('landing_pages', 'bg_audio_enabled', "ALTER TABLE landing_pages ADD COLUMN bg_audio_enabled INTEGER DEFAULT 0");
   addColumnIfNotExists('landing_pages', 'hide_header', "ALTER TABLE landing_pages ADD COLUMN hide_header INTEGER DEFAULT 0");
   addColumnIfNotExists('landing_pages', 'show_reviews', "ALTER TABLE landing_pages ADD COLUMN show_reviews INTEGER DEFAULT 0");
+  addColumnIfNotExists('products', 'show_reviews', "ALTER TABLE products ADD COLUMN show_reviews INTEGER DEFAULT 1");
 
   // Landing page sections — extended fields
   addColumnIfNotExists('landing_page_sections', 'button_type', "ALTER TABLE landing_page_sections ADD COLUMN button_type TEXT DEFAULT ''");

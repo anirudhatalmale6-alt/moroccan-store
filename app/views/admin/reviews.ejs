@@ -109,6 +109,55 @@
         .btn-reject { background: #fff3e0; color: #e65100; }
         .btn-delete { background: #ffebee; color: #c62828; }
         .empty-state { padding: 60px 40px; text-align: center; color: #bbb; font-size: 14px; background: #fff; border-radius: 14px; box-shadow: 0 2px 12px rgba(0,0,0,0.04); }
+        /* Add Feedback Form */
+        .add-feedback-toggle {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 10px 24px; border-radius: 10px; border: 2px dashed #8B6F47;
+            background: transparent; color: #8B6F47; font-family: 'Cairo', sans-serif;
+            font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.2s;
+            margin-bottom: 20px;
+        }
+        .add-feedback-toggle:hover { background: #8B6F47; color: #fff; }
+        .add-feedback-form {
+            background: #fff; border-radius: 14px; padding: 24px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.04); margin-bottom: 24px;
+            display: none; border: 2px solid #e8e0d8;
+        }
+        .add-feedback-form.open { display: block; }
+        .add-feedback-form h3 {
+            font-size: 18px; font-weight: 700; color: #6B5335; margin-bottom: 20px;
+        }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+        .form-group { margin-bottom: 16px; }
+        .form-group label {
+            display: block; font-size: 13px; font-weight: 700; color: #555; margin-bottom: 6px;
+        }
+        .form-group .hint { font-size: 11px; color: #aaa; margin-top: 4px; }
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%; padding: 10px 14px; border: 2px solid #e8e0d8; border-radius: 10px;
+            font-family: 'Cairo', sans-serif; font-size: 14px; color: #333;
+            transition: border-color 0.2s; background: #faf8f5;
+        }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            outline: none; border-color: #8B6F47;
+        }
+        .form-group textarea { resize: vertical; min-height: 80px; }
+        .star-rating-input { display: flex; gap: 4px; direction: ltr; }
+        .star-rating-input .star-btn {
+            font-size: 28px; background: none; border: none; cursor: pointer;
+            color: #ddd; transition: color 0.15s; padding: 0;
+        }
+        .star-rating-input .star-btn.active { color: #f0a500; }
+        .btn-submit-feedback {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 12px 32px; border-radius: 10px; border: none;
+            background: #8B6F47; color: #fff; font-family: 'Cairo', sans-serif;
+            font-size: 15px; font-weight: 700; cursor: pointer; transition: opacity 0.2s;
+        }
+        .btn-submit-feedback:hover { opacity: 0.85; }
+        @media (max-width: 768px) {
+            .form-row { grid-template-columns: 1fr; }
+        }
         .mobile-toggle {
             display: none; position: fixed; top: 16px; right: 16px; z-index: 200;
             background: #6B5335; color: #fff; border: none; border-radius: 10px;
@@ -173,6 +222,74 @@
                 <a href="/admin/reviews?status=pending" class="filter-tab <%= currentStatus === 'pending' ? 'active' : '' %>">معلقة</a>
                 <a href="/admin/reviews?status=approved" class="filter-tab <%= currentStatus === 'approved' ? 'active' : '' %>">مقبولة</a>
                 <a href="/admin/reviews?status=rejected" class="filter-tab <%= currentStatus === 'rejected' ? 'active' : '' %>">مرفوضة</a>
+            </div>
+
+            <!-- Add Feedback Button & Form -->
+            <button type="button" class="add-feedback-toggle" onclick="document.getElementById('addFeedbackForm').classList.toggle('open'); this.style.display='none';">
+                &#43; إضافة تعليق يدوياً
+            </button>
+
+            <div class="add-feedback-form" id="addFeedbackForm">
+                <h3>إضافة تعليق جديد</h3>
+                <form method="POST" action="/admin/reviews" enctype="multipart/form-data">
+                    <div class="form-group">
+                        <label>المنتج *</label>
+                        <select name="product_id" required>
+                            <option value="">— اختر المنتج —</option>
+                            <% if (typeof products !== 'undefined' && products) { %>
+                                <% products.forEach(function(p) { %>
+                                    <option value="<%= p.id %>"><%= p.title %></option>
+                                <% }); %>
+                            <% } %>
+                        </select>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label>الاسم</label>
+                            <input type="text" name="name" placeholder="اسم العميل (اختياري)">
+                            <div class="hint">اتركه فارغاً إذا لم تريد عرض اسم</div>
+                        </div>
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label>الهاتف</label>
+                            <input type="text" name="phone" placeholder="رقم الهاتف (اختياري)">
+                            <div class="hint">اتركه فارغاً إذا لم تريد عرض رقم</div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>التقييم</label>
+                        <div class="star-rating-input" id="starRatingInput">
+                            <button type="button" class="star-btn active" data-val="1">&#9733;</button>
+                            <button type="button" class="star-btn active" data-val="2">&#9733;</button>
+                            <button type="button" class="star-btn active" data-val="3">&#9733;</button>
+                            <button type="button" class="star-btn active" data-val="4">&#9733;</button>
+                            <button type="button" class="star-btn active" data-val="5">&#9733;</button>
+                        </div>
+                        <input type="hidden" name="rating" id="ratingValue" value="5">
+                    </div>
+
+                    <div class="form-group">
+                        <label>التعليق</label>
+                        <textarea name="message" placeholder="نص التعليق (اختياري)" rows="3"></textarea>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label>صورة (اختياري)</label>
+                            <input type="file" name="image" accept="image/*">
+                        </div>
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label>مقطع صوتي (اختياري)</label>
+                            <input type="file" name="audio" accept="audio/*,video/webm">
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 20px; display: flex; gap: 12px; align-items: center;">
+                        <button type="submit" class="btn-submit-feedback">حفظ التعليق</button>
+                        <button type="button" class="btn btn-reject" onclick="document.getElementById('addFeedbackForm').classList.remove('open'); document.querySelector('.add-feedback-toggle').style.display='';">إلغاء</button>
+                    </div>
+                </form>
             </div>
 
             <% if (reviews && reviews.length > 0) { %>
@@ -241,5 +358,17 @@
             <% } %>
         </main>
     </div>
+<script>
+// Star rating click handler
+document.querySelectorAll('#starRatingInput .star-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+        var val = parseInt(this.getAttribute('data-val'));
+        document.getElementById('ratingValue').value = val;
+        document.querySelectorAll('#starRatingInput .star-btn').forEach(function(b) {
+            b.classList.toggle('active', parseInt(b.getAttribute('data-val')) <= val);
+        });
+    });
+});
+</script>
 </body>
 </html>

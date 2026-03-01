@@ -88,6 +88,16 @@ const landingStorage = multer.diskStorage({
 });
 const landingUpload = multer({ storage: landingStorage, limits: { fileSize: 50 * 1024 * 1024 } });
 
+// Admin review upload (image + audio)
+const adminReviewStorage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, path.join(__dirname, '..', 'public', 'uploads', 'reviews')),
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname);
+    cb(null, 'review-' + Date.now() + '-' + Math.random().toString(36).substring(7) + ext);
+  }
+});
+const adminReviewUpload = multer({ storage: adminReviewStorage, limits: { fileSize: 10 * 1024 * 1024 } });
+
 // Banner image upload
 const bannerStorage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -178,7 +188,7 @@ router.get('/products/new', requireAdmin, (req, res) => {
 
 // Create product
 router.post('/products', requireAdmin, productFields, (req, res) => {
-  const { title, description, price, old_price, discount, slug, deposit_amount, features, show_gallery, whatsapp_number, delivery_fee, weight, cod_enabled, bank_full_enabled, bank_deposit_enabled, audio_autoplay, category_id, stock_quantity, availability_status, meta_title, meta_description } = req.body;
+  const { title, description, price, old_price, discount, slug, deposit_amount, features, show_gallery, show_reviews, whatsapp_number, delivery_fee, weight, cod_enabled, bank_full_enabled, bank_deposit_enabled, audio_autoplay, category_id, stock_quantity, availability_status, meta_title, meta_description } = req.body;
   const videoFilename = req.files && req.files.video ? req.files.video[0].filename : '';
   const mainImageFilename = req.files && req.files.main_image ? req.files.main_image[0].filename : '';
   const audioFilename = req.files && req.files.audio ? req.files.audio[0].filename : '';
@@ -194,9 +204,9 @@ router.post('/products', requireAdmin, productFields, (req, res) => {
 
   try {
     const result = db.prepare(`
-      INSERT INTO products (title, description, price, old_price, discount, slug, deposit_amount, video_filename, features, main_image, show_gallery, description_images, whatsapp_number, delivery_fee, weight, audio_filename, audio_autoplay, cod_enabled, bank_full_enabled, bank_deposit_enabled, category_id, stock_quantity, availability_status, meta_title, meta_description)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `).run(title, description || '', parseFloat(price) || 200, parseFloat(old_price) || 0, discount || '', finalSlug, parseFloat(deposit_amount) || 50, videoFilename, features || '[]', mainImageFilename, show_gallery === 'on' || show_gallery === '1' ? 1 : 0, descriptionImagesJson, whatsapp_number || '', parseFloat(delivery_fee) || 50, parseFloat(weight) || 0, audioFilename, audio_autoplay === '1' ? 1 : 0, cod_enabled === '1' ? 1 : 0, bank_full_enabled === '1' ? 1 : 0, bank_deposit_enabled === '1' ? 1 : 0, category_id ? parseInt(category_id) : null, stock_quantity !== undefined && stock_quantity !== '' ? parseInt(stock_quantity) : -1, availability_status || 'in_stock', meta_title || '', meta_description || '');
+      INSERT INTO products (title, description, price, old_price, discount, slug, deposit_amount, video_filename, features, main_image, show_gallery, show_reviews, description_images, whatsapp_number, delivery_fee, weight, audio_filename, audio_autoplay, cod_enabled, bank_full_enabled, bank_deposit_enabled, category_id, stock_quantity, availability_status, meta_title, meta_description)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(title, description || '', parseFloat(price) || 200, parseFloat(old_price) || 0, discount || '', finalSlug, parseFloat(deposit_amount) || 50, videoFilename, features || '[]', mainImageFilename, show_gallery === 'on' || show_gallery === '1' ? 1 : 0, show_reviews === 'on' || show_reviews === '1' ? 1 : 0, descriptionImagesJson, whatsapp_number || '', parseFloat(delivery_fee) || 50, parseFloat(weight) || 0, audioFilename, audio_autoplay === '1' ? 1 : 0, cod_enabled === '1' ? 1 : 0, bank_full_enabled === '1' ? 1 : 0, bank_deposit_enabled === '1' ? 1 : 0, category_id ? parseInt(category_id) : null, stock_quantity !== undefined && stock_quantity !== '' ? parseInt(stock_quantity) : -1, availability_status || 'in_stock', meta_title || '', meta_description || '');
 
     // Insert gallery images into product_images table
     if (req.files && req.files.gallery_images) {
@@ -230,7 +240,7 @@ router.get('/products/:id/edit', requireAdmin, (req, res) => {
 // Update product
 router.post('/products/:id', requireAdmin, productFields, (req, res) => {
   try {
-    const { title, description, price, old_price, discount, slug, deposit_amount, features, is_active, show_gallery, whatsapp_number, delivery_fee, weight, cod_enabled, bank_full_enabled, bank_deposit_enabled, audio_autoplay, category_id, stock_quantity, availability_status, meta_title, meta_description } = req.body;
+    const { title, description, price, old_price, discount, slug, deposit_amount, features, is_active, show_gallery, show_reviews, whatsapp_number, delivery_fee, weight, cod_enabled, bank_full_enabled, bank_deposit_enabled, audio_autoplay, category_id, stock_quantity, availability_status, meta_title, meta_description } = req.body;
     const product = db.prepare('SELECT * FROM products WHERE id = ?').get(req.params.id);
     if (!product) return res.redirect('/admin/products');
 
@@ -251,9 +261,9 @@ router.post('/products/:id', requireAdmin, productFields, (req, res) => {
     const activeVal = (is_active === '1' || is_active === 'on' || is_active === 1) ? 1 : 0;
 
     db.prepare(`
-      UPDATE products SET title=?, description=?, price=?, old_price=?, discount=?, slug=?, deposit_amount=?, video_filename=?, features=?, is_active=?, main_image=?, show_gallery=?, description_images=?, whatsapp_number=?, delivery_fee=?, weight=?, audio_filename=?, audio_autoplay=?, cod_enabled=?, bank_full_enabled=?, bank_deposit_enabled=?, category_id=?, stock_quantity=?, availability_status=?, meta_title=?, meta_description=?, updated_at=datetime('now')
+      UPDATE products SET title=?, description=?, price=?, old_price=?, discount=?, slug=?, deposit_amount=?, video_filename=?, features=?, is_active=?, main_image=?, show_gallery=?, show_reviews=?, description_images=?, whatsapp_number=?, delivery_fee=?, weight=?, audio_filename=?, audio_autoplay=?, cod_enabled=?, bank_full_enabled=?, bank_deposit_enabled=?, category_id=?, stock_quantity=?, availability_status=?, meta_title=?, meta_description=?, updated_at=datetime('now')
       WHERE id=?
-    `).run(title, description || '', parseFloat(price) || 200, parseFloat(old_price) || 0, discount || '', slug, parseFloat(deposit_amount) || 50, videoFilename, features || '[]', activeVal, mainImageFilename, show_gallery === 'on' || show_gallery === '1' ? 1 : 0, descriptionImagesJson, whatsapp_number || '', parseFloat(delivery_fee) || 50, parseFloat(weight) || 0, audioFilename, audio_autoplay === '1' ? 1 : 0, cod_enabled === '1' ? 1 : 0, bank_full_enabled === '1' ? 1 : 0, bank_deposit_enabled === '1' ? 1 : 0, category_id ? parseInt(category_id) : null, stock_quantity !== undefined && stock_quantity !== '' ? parseInt(stock_quantity) : -1, availability_status || 'in_stock', meta_title || '', meta_description || '', req.params.id);
+    `).run(title, description || '', parseFloat(price) || 200, parseFloat(old_price) || 0, discount || '', slug, parseFloat(deposit_amount) || 50, videoFilename, features || '[]', activeVal, mainImageFilename, show_gallery === 'on' || show_gallery === '1' ? 1 : 0, show_reviews === 'on' || show_reviews === '1' ? 1 : 0, descriptionImagesJson, whatsapp_number || '', parseFloat(delivery_fee) || 50, parseFloat(weight) || 0, audioFilename, audio_autoplay === '1' ? 1 : 0, cod_enabled === '1' ? 1 : 0, bank_full_enabled === '1' ? 1 : 0, bank_deposit_enabled === '1' ? 1 : 0, category_id ? parseInt(category_id) : null, stock_quantity !== undefined && stock_quantity !== '' ? parseInt(stock_quantity) : -1, availability_status || 'in_stock', meta_title || '', meta_description || '', req.params.id);
 
     // Insert new gallery images into product_images table
     if (req.files && req.files.gallery_images) {
@@ -502,7 +512,23 @@ router.get('/reviews', requireAdmin, (req, res) => {
   query += ' ORDER BY r.created_at DESC';
 
   const reviews = db.prepare(query).all(...params);
-  res.render('admin/reviews', { reviews, currentStatus: status });
+  const products = db.prepare('SELECT id, title FROM products ORDER BY title').all();
+  res.render('admin/reviews', { reviews, currentStatus: status, products });
+});
+
+// Admin: Create review manually (all fields optional)
+router.post('/reviews', requireAdmin, adminReviewUpload.fields([
+  { name: 'image', maxCount: 1 },
+  { name: 'audio', maxCount: 1 }
+]), (req, res) => {
+  const { product_id, name, phone, rating, message } = req.body;
+  if (!product_id) return res.redirect('/admin/reviews');
+  const imageFile = req.files && req.files.image ? req.files.image[0].filename : '';
+  const audioFile = req.files && req.files.audio ? req.files.audio[0].filename : '';
+  db.prepare('INSERT INTO reviews (product_id, name, phone, rating, message, image_filename, audio_filename, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)').run(
+    parseInt(product_id), name || '', phone || '', parseInt(rating) || 5, message || '', imageFile, audioFile, 'approved'
+  );
+  res.redirect('/admin/reviews');
 });
 
 // Approve review
