@@ -358,6 +358,9 @@ async function initDatabase() {
   addColumnIfNotExists('orders', 'address', "ALTER TABLE orders ADD COLUMN address TEXT DEFAULT ''");
   addColumnIfNotExists('orders', 'city', "ALTER TABLE orders ADD COLUMN city TEXT DEFAULT ''");
 
+  // Landing pages table
+  addColumnIfNotExists('landing_pages', 'views', "ALTER TABLE landing_pages ADD COLUMN views INTEGER DEFAULT 0");
+
   // Admins table
   addColumnIfNotExists('admins', 'email', "ALTER TABLE admins ADD COLUMN email TEXT DEFAULT ''");
 

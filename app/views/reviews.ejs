@@ -54,9 +54,9 @@
         <% reviews.forEach(function(review) { %>
           <div class="review-card animate-on-scroll">
             <div class="review-card__header">
-              <div class="review-card__avatar"><%= review.name.charAt(0) %></div>
+              <div class="review-card__avatar" style="font-size: 24px; display: flex; align-items: center; justify-content: center;"><%= (function(n){ var e=['😊','😎','🤩','😇','🥰','😄','🤗','😺','🦊','🐻','🐶','🐱','🐸','🦁','🐼','🐯','🐨','🦋','🌸','⭐']; var h=0; for(var i=0;i<n.length;i++) h=((h<<5)-h)+n.charCodeAt(i); return e[Math.abs(h)%e.length]; })(review.name) %></div>
               <div>
-                <div class="review-card__name"><%= review.name %></div>
+                <div class="review-card__name" style="display: flex; align-items: center; gap: 6px;"><%= review.name %> <span style="background: var(--color-success, #2D8F5E); color: #fff; font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px; white-space: nowrap;">✓ موثّق</span></div>
                 <div class="review-card__stars">
                   <% for (let i = 1; i <= 5; i++) { %>
                     <% if (i <= review.rating) { %>★<% } else { %>☆<% } %>
@@ -68,16 +68,21 @@
 
             <% if (review.image_filename) { %>
               <div style="margin-top: 16px; text-align: center;">
-                <img src="/uploads/reviews/<%= review.image_filename %>" alt="صورة التقييم" style="max-width: 100%; max-height: 300px; border-radius: var(--radius-md); object-fit: cover; border: 1px solid var(--color-border-light);">
+                <img src="/uploads/reviews/<%= review.image_filename %>" alt="صورة التقييم" style="max-width: 100%; max-height: 300px; border-radius: var(--radius-md); object-fit: cover; border: 1px solid var(--color-border-light);" loading="lazy">
               </div>
             <% } %>
 
             <% if (review.audio_filename) { %>
-              <div style="margin-top: 16px; text-align: center; padding: 12px; background: var(--color-bg); border-radius: var(--radius-md); border: 1px solid var(--color-border-light);">
-                <audio controls style="width: 100%; max-width: 400px; height: 36px;">
-                  <source src="/uploads/reviews/<%= review.audio_filename %>" type="audio/webm">
-                  المتصفح لا يدعم تشغيل الصوت
-                </audio>
+              <div class="custom-audio-player" data-src="/uploads/reviews/<%= review.audio_filename %>" style="margin-top: 16px;">
+                <button type="button" class="cap-play-btn" onclick="toggleCustomAudio(this)">
+                  <svg class="cap-icon-play" viewBox="0 0 24 24" width="20" height="20"><polygon points="5,3 19,12 5,21" fill="currentColor"/></svg>
+                  <svg class="cap-icon-pause" viewBox="0 0 24 24" width="20" height="20" style="display:none"><rect x="5" y="3" width="4" height="18" fill="currentColor"/><rect x="15" y="3" width="4" height="18" fill="currentColor"/></svg>
+                </button>
+                <div class="cap-progress-wrap" onclick="seekCustomAudio(event, this)">
+                  <div class="cap-progress-bar"><div class="cap-progress-fill"></div></div>
+                </div>
+                <span class="cap-time">0:00</span>
+                <span class="cap-label">🎤 تسجيل صوتي</span>
               </div>
             <% } %>
           </div>

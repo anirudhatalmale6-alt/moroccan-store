@@ -55,7 +55,7 @@
               <% } %>
               <% if (section.media_filename) { %>
                 <img src="/uploads/landing-pages/<%= section.media_filename %>" alt="<%= section.title || '' %>"
-                  style="width: 100%; height: auto; display: block; margin: 0 auto;">
+                  style="width: 100%; height: auto; display: block; margin: 0 auto;" loading="lazy">
               <% } %>
               <% if (section.content) { %>
                 <p style="font-size: 15px; color: var(--color-text-secondary); text-align: center; margin-top: 12px; padding-bottom: 16px;"><%= section.content %></p>
@@ -110,7 +110,7 @@
 
           <div class="form-group">
             <label class="form-label" for="lpFullName">
-              <span class="required">*</span> الاسم الكامل
+              <span class="required">*</span> 👤 الاسم الكامل
             </label>
             <input type="text" id="lpFullName" name="fullName" class="form-input" placeholder="أدخل اسمك الكامل" required>
             <div class="form-error"></div>
@@ -118,7 +118,7 @@
 
           <div class="form-group">
             <label class="form-label" for="lpPhone">
-              <span class="required">*</span> رقم الهاتف
+              <span class="required">*</span> 📱 رقم الهاتف
             </label>
             <input type="tel" id="lpPhone" name="phone" class="form-input" placeholder="0612345678" required dir="ltr" style="text-align: left;">
             <div class="form-error"></div>
@@ -126,7 +126,7 @@
 
           <!-- Quantity -->
           <div class="form-group">
-            <label class="form-label">الكمية</label>
+            <label class="form-label">📦 الكمية</label>
             <div style="display: flex; align-items: center; gap: 12px;">
               <div class="qty-control" style="display: flex; align-items: center;">
                 <button type="button" onclick="lpQtyChange(-1)" style="width: 36px; height: 36px; border: 1px solid var(--color-border); background: var(--color-card); border-radius: var(--radius-sm) 0 0 var(--radius-sm); cursor: pointer; font-size: 18px; font-weight: 700;">−</button>
@@ -139,14 +139,14 @@
 
           <div class="form-group">
             <label class="form-label" for="lpCity">
-              <span class="required">*</span> المدينة
+              <span class="required">*</span> 🏙️ المدينة
             </label>
             <input type="text" id="lpCity" name="city" class="form-input" placeholder="الدار البيضاء، الرباط..." required>
             <div class="form-error"></div>
           </div>
           <div class="form-group">
             <label class="form-label" for="lpAddress">
-              <span class="required">*</span> العنوان
+              <span class="required">*</span> 📍 العنوان
             </label>
             <textarea id="lpAddress" name="address" class="form-input form-textarea" placeholder="العنوان الكامل للتوصيل..." rows="2" required></textarea>
             <div class="form-error"></div>
@@ -290,6 +290,13 @@
     }
     /* Add bottom padding to body so content isn't hidden behind sticky button */
     body { padding-bottom: 70px; }
+    /* Image protection */
+    .landing-sections img {
+      -webkit-user-select: none;
+      user-select: none;
+      -webkit-touch-callout: none;
+      pointer-events: none;
+    }
   </style>
   <script src="/js/main.js"></script>
 </body>

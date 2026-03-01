@@ -638,6 +638,9 @@ router.get('/p/:slug', (req, res) => {
     const landingPage = db.prepare('SELECT * FROM landing_pages WHERE slug = ? AND is_published = 1').get(req.params.slug);
     if (!landingPage) return res.status(404).render('404');
 
+    // Track page view
+    try { db.prepare('UPDATE landing_pages SET views = COALESCE(views, 0) + 1 WHERE id = ?').run(landingPage.id); } catch(e) {}
+
     let product = null;
     if (landingPage.product_id) {
       product = db.prepare('SELECT * FROM products WHERE id = ?').get(landingPage.product_id);

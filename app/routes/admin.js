@@ -571,7 +571,8 @@ router.post('/sliders/:id/delete', requireAdmin, (req, res) => {
 // List landing pages
 router.get('/landing-pages', requireAdmin, (req, res) => {
   const pages = db.prepare(`
-    SELECT lp.*, p.title as product_title
+    SELECT lp.*, p.title as product_title,
+      (SELECT COUNT(*) FROM orders o WHERE o.product_id = lp.product_id) as order_count
     FROM landing_pages lp LEFT JOIN products p ON lp.product_id = p.id
     ORDER BY lp.created_at DESC
   `).all();
