@@ -349,6 +349,14 @@ async function initDatabase() {
   addColumnIfNotExists('products', 'bank_full_enabled', "ALTER TABLE products ADD COLUMN bank_full_enabled INTEGER DEFAULT 1");
   addColumnIfNotExists('products', 'bank_deposit_enabled', "ALTER TABLE products ADD COLUMN bank_deposit_enabled INTEGER DEFAULT 1");
 
+  // v8: Inventory fields
+  addColumnIfNotExists('products', 'stock_quantity', "ALTER TABLE products ADD COLUMN stock_quantity INTEGER DEFAULT -1");
+  addColumnIfNotExists('products', 'availability_status', "ALTER TABLE products ADD COLUMN availability_status TEXT DEFAULT 'in_stock'");
+
+  // v8: Per-product SEO
+  addColumnIfNotExists('products', 'meta_title', "ALTER TABLE products ADD COLUMN meta_title TEXT DEFAULT ''");
+  addColumnIfNotExists('products', 'meta_description', "ALTER TABLE products ADD COLUMN meta_description TEXT DEFAULT ''");
+
   // Orders table
   addColumnIfNotExists('orders', 'user_id', "ALTER TABLE orders ADD COLUMN user_id INTEGER DEFAULT NULL");
   addColumnIfNotExists('orders', 'referral_code', "ALTER TABLE orders ADD COLUMN referral_code TEXT DEFAULT ''");

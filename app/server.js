@@ -42,11 +42,31 @@ app.use((req, res, next) => {
 
     const colorRow = db.prepare("SELECT setting_value FROM admin_settings WHERE setting_key = 'primary_color'").get();
     res.locals.primaryColor = colorRow ? colorRow.setting_value : '#8B6F47';
+
+    // SEO & Social settings
+    const allSettings = {};
+    db.prepare('SELECT setting_key, setting_value FROM admin_settings').all().forEach(r => { allSettings[r.setting_key] = r.setting_value; });
+    res.locals.metaTitle = allSettings.meta_title || '';
+    res.locals.metaDescription = allSettings.meta_description || '';
+    res.locals.ogImage = allSettings.og_image || '';
+    res.locals.favicon = allSettings.favicon || '';
+    res.locals.gaId = allSettings.ga_id || '';
+    res.locals.fbPixelId = allSettings.fb_pixel_id || '';
+    res.locals.tiktokPixelId = allSettings.tiktok_pixel_id || '';
+    res.locals.customMetaTags = allSettings.custom_meta_tags || '';
   } catch(e) {
     res.locals.siteName = 'متجرنا';
     res.locals.fontFamily = 'Cairo';
     res.locals.customFontUrl = '';
     res.locals.primaryColor = '#8B6F47';
+    res.locals.metaTitle = '';
+    res.locals.metaDescription = '';
+    res.locals.ogImage = '';
+    res.locals.favicon = '';
+    res.locals.gaId = '';
+    res.locals.fbPixelId = '';
+    res.locals.tiktokPixelId = '';
+    res.locals.customMetaTags = '';
   }
 
   // Cart count for badge

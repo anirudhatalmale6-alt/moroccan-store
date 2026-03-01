@@ -68,6 +68,16 @@ const categoryStorage = multer.diskStorage({
 });
 const categoryUpload = multer({ storage: categoryStorage, limits: { fileSize: 10 * 1024 * 1024 } });
 
+// Settings uploads (OG image, favicon)
+const settingsStorage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, path.join(__dirname, '..', 'public', 'uploads', 'settings')),
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname);
+    cb(null, file.fieldname + '-' + Date.now() + ext);
+  }
+});
+const settingsUpload = multer({ storage: settingsStorage, limits: { fileSize: 10 * 1024 * 1024 } });
+
 // Landing page media upload
 const landingStorage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, path.join(__dirname, '..', 'public', 'uploads', 'landing-pages')),
@@ -154,7 +164,7 @@ router.get('/products/new', requireAdmin, (req, res) => {
 
 // Create product
 router.post('/products', requireAdmin, productFields, (req, res) => {
-  const { title, description, price, old_price, discount, slug, deposit_amount, features, show_gallery, whatsapp_number, delivery_fee, weight, cod_enabled, bank_full_enabled, bank_deposit_enabled, audio_autoplay, category_id } = req.body;
+  const { title, description, price, old_price, discount, slug, deposit_amount, features, show_gallery, whatsapp_number, delivery_fee, weight, cod_enabled, bank_full_enabled, bank_deposit_enabled, audio_autoplay, category_id, stock_quantity, availability_status, meta_title, meta_description } = req.body;
   const videoFilename = req.files && req.files.video ? req.files.video[0].filename : '';
   const mainImageFilename = req.files && req.files.main_image ? req.files.main_image[0].filename : '';
   const audioFilename = req.files && req.files.audio ? req.files.audio[0].filename : '';
@@ -170,9 +180,9 @@ router.post('/products', requireAdmin, productFields, (req, res) => {
 
   try {
     const result = db.prepare(`
-      INSERT INTO products (title, description, price, old_price, discount, slug, deposit_amount, video_filename, features, main_image, show_gallery, description_images, whatsapp_number, delivery_fee, weight, audio_filename, audio_autoplay, cod_enabled, bank_full_enabled, bank_deposit_enabled, category_id)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `).run(title, description || '', parseFloat(price) || 200, parseFloat(old_price) || 0, discount || '', finalSlug, parseFloat(deposit_amount) || 50, videoFilename, features || '[]', mainImageFilename, show_gallery === 'on' || show_gallery === '1' ? 1 : 0, descriptionImagesJson, whatsapp_number || '', parseFloat(delivery_fee) || 50, parseFloat(weight) || 0, audioFilename, audio_autoplay === '1' ? 1 : 0, cod_enabled === '1' ? 1 : 0, bank_full_enabled === '1' ? 1 : 0, bank_deposit_enabled === '1' ? 1 : 0, category_id ? parseInt(category_id) : null);
+      INSERT INTO products (title, description, price, old_price, discount, slug, deposit_amount, video_filename, features, main_image, show_gallery, description_images, whatsapp_number, delivery_fee, weight, audio_filename, audio_autoplay, cod_enabled, bank_full_enabled, bank_deposit_enabled, category_id, stock_quantity, availability_status, meta_title, meta_description)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(title, description || '', parseFloat(price) || 200, parseFloat(old_price) || 0, discount || '', finalSlug, parseFloat(deposit_amount) || 50, videoFilename, features || '[]', mainImageFilename, show_gallery === 'on' || show_gallery === '1' ? 1 : 0, descriptionImagesJson, whatsapp_number || '', parseFloat(delivery_fee) || 50, parseFloat(weight) || 0, audioFilename, audio_autoplay === '1' ? 1 : 0, cod_enabled === '1' ? 1 : 0, bank_full_enabled === '1' ? 1 : 0, bank_deposit_enabled === '1' ? 1 : 0, category_id ? parseInt(category_id) : null, stock_quantity !== undefined && stock_quantity !== '' ? parseInt(stock_quantity) : -1, availability_status || 'in_stock', meta_title || '', meta_description || '');
 
     // Insert gallery images into product_images table
     if (req.files && req.files.gallery_images) {
@@ -206,7 +216,7 @@ router.get('/products/:id/edit', requireAdmin, (req, res) => {
 // Update product
 router.post('/products/:id', requireAdmin, productFields, (req, res) => {
   try {
-    const { title, description, price, old_price, discount, slug, deposit_amount, features, is_active, show_gallery, whatsapp_number, delivery_fee, weight, cod_enabled, bank_full_enabled, bank_deposit_enabled, audio_autoplay, category_id } = req.body;
+    const { title, description, price, old_price, discount, slug, deposit_amount, features, is_active, show_gallery, whatsapp_number, delivery_fee, weight, cod_enabled, bank_full_enabled, bank_deposit_enabled, audio_autoplay, category_id, stock_quantity, availability_status, meta_title, meta_description } = req.body;
     const product = db.prepare('SELECT * FROM products WHERE id = ?').get(req.params.id);
     if (!product) return res.redirect('/admin/products');
 
@@ -227,9 +237,9 @@ router.post('/products/:id', requireAdmin, productFields, (req, res) => {
     const activeVal = (is_active === '1' || is_active === 'on' || is_active === 1) ? 1 : 0;
 
     db.prepare(`
-      UPDATE products SET title=?, description=?, price=?, old_price=?, discount=?, slug=?, deposit_amount=?, video_filename=?, features=?, is_active=?, main_image=?, show_gallery=?, description_images=?, whatsapp_number=?, delivery_fee=?, weight=?, audio_filename=?, audio_autoplay=?, cod_enabled=?, bank_full_enabled=?, bank_deposit_enabled=?, category_id=?, updated_at=datetime('now')
+      UPDATE products SET title=?, description=?, price=?, old_price=?, discount=?, slug=?, deposit_amount=?, video_filename=?, features=?, is_active=?, main_image=?, show_gallery=?, description_images=?, whatsapp_number=?, delivery_fee=?, weight=?, audio_filename=?, audio_autoplay=?, cod_enabled=?, bank_full_enabled=?, bank_deposit_enabled=?, category_id=?, stock_quantity=?, availability_status=?, meta_title=?, meta_description=?, updated_at=datetime('now')
       WHERE id=?
-    `).run(title, description || '', parseFloat(price) || 200, parseFloat(old_price) || 0, discount || '', slug, parseFloat(deposit_amount) || 50, videoFilename, features || '[]', activeVal, mainImageFilename, show_gallery === 'on' || show_gallery === '1' ? 1 : 0, descriptionImagesJson, whatsapp_number || '', parseFloat(delivery_fee) || 50, parseFloat(weight) || 0, audioFilename, audio_autoplay === '1' ? 1 : 0, cod_enabled === '1' ? 1 : 0, bank_full_enabled === '1' ? 1 : 0, bank_deposit_enabled === '1' ? 1 : 0, category_id ? parseInt(category_id) : null, req.params.id);
+    `).run(title, description || '', parseFloat(price) || 200, parseFloat(old_price) || 0, discount || '', slug, parseFloat(deposit_amount) || 50, videoFilename, features || '[]', activeVal, mainImageFilename, show_gallery === 'on' || show_gallery === '1' ? 1 : 0, descriptionImagesJson, whatsapp_number || '', parseFloat(delivery_fee) || 50, parseFloat(weight) || 0, audioFilename, audio_autoplay === '1' ? 1 : 0, cod_enabled === '1' ? 1 : 0, bank_full_enabled === '1' ? 1 : 0, bank_deposit_enabled === '1' ? 1 : 0, category_id ? parseInt(category_id) : null, stock_quantity !== undefined && stock_quantity !== '' ? parseInt(stock_quantity) : -1, availability_status || 'in_stock', meta_title || '', meta_description || '', req.params.id);
 
     // Insert new gallery images into product_images table
     if (req.files && req.files.gallery_images) {
@@ -353,6 +363,47 @@ router.post('/products/:id/variation/:varId/delete', requireAdmin, (req, res) =>
 });
 
 // Delete product
+// Duplicate product
+router.post('/products/:id/duplicate', requireAdmin, (req, res) => {
+  try {
+    const src = db.prepare('SELECT * FROM products WHERE id = ?').get(req.params.id);
+    if (!src) return res.redirect('/admin/products');
+
+    const newSlug = src.slug + '-copy-' + Date.now();
+    const newTitle = src.title + ' (نسخة)';
+
+    const result = db.prepare(`
+      INSERT INTO products (title, description, price, old_price, discount, slug, deposit_amount, video_filename, features, main_image, show_gallery, description_images, whatsapp_number, delivery_fee, weight, audio_filename, audio_autoplay, cod_enabled, bank_full_enabled, bank_deposit_enabled, category_id, stock_quantity, availability_status, meta_title, meta_description, is_active)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)
+    `).run(newTitle, src.description, src.price, src.old_price, src.discount, newSlug, src.deposit_amount, src.video_filename, src.features, src.main_image, src.show_gallery, src.description_images, src.whatsapp_number, src.delivery_fee, src.weight, src.audio_filename, src.audio_autoplay, src.cod_enabled, src.bank_full_enabled, src.bank_deposit_enabled, src.category_id, src.stock_quantity, src.availability_status, src.meta_title, src.meta_description);
+
+    const newId = result.lastInsertRowid;
+
+    // Duplicate gallery images
+    const images = db.prepare('SELECT * FROM product_images WHERE product_id = ? ORDER BY sort_order').all(req.params.id);
+    images.forEach(img => {
+      db.prepare('INSERT INTO product_images (product_id, filename, sort_order) VALUES (?, ?, ?)').run(newId, img.filename, img.sort_order);
+    });
+
+    // Duplicate FAQs
+    const faqs = db.prepare('SELECT * FROM product_faqs WHERE product_id = ? ORDER BY sort_order').all(req.params.id);
+    faqs.forEach(faq => {
+      db.prepare('INSERT INTO product_faqs (product_id, question, answer, sort_order) VALUES (?, ?, ?, ?)').run(newId, faq.question, faq.answer, faq.sort_order);
+    });
+
+    // Duplicate variations
+    const vars = db.prepare('SELECT * FROM product_variations WHERE product_id = ? ORDER BY sort_order').all(req.params.id);
+    vars.forEach(v => {
+      db.prepare('INSERT INTO product_variations (product_id, type, label, value, image_filename, price_adjustment, sort_order, is_active) VALUES (?, ?, ?, ?, ?, ?, ?, ?)').run(newId, v.type, v.label, v.value, v.image_filename, v.price_adjustment, v.sort_order, v.is_active);
+    });
+
+    res.redirect('/admin/products/' + newId + '/edit?success=1');
+  } catch (err) {
+    console.error('Duplicate product error:', err);
+    res.redirect('/admin/products');
+  }
+});
+
 router.post('/products/:id/delete', requireAdmin, (req, res) => {
   db.prepare('DELETE FROM products WHERE id = ?').run(req.params.id);
   res.redirect('/admin/products');
@@ -844,6 +895,50 @@ router.post('/settings/site', requireAdmin, (req, res) => {
     }
   }
   res.redirect('/admin/settings?success=تم تحديث اعدادات الموقع');
+});
+
+// Helper to upsert admin_settings
+function upsertSetting(key, value) {
+  const existing = db.prepare("SELECT 1 FROM admin_settings WHERE setting_key = ?").get(key);
+  if (existing) {
+    db.prepare("UPDATE admin_settings SET setting_value = ?, updated_at = datetime('now') WHERE setting_key = ?").run(value, key);
+  } else {
+    db.prepare("INSERT INTO admin_settings (setting_key, setting_value) VALUES (?, ?)").run(key, value);
+  }
+}
+
+// SEO Settings (meta title, meta description)
+router.post('/settings/seo', requireAdmin, (req, res) => {
+  const { meta_title, meta_description } = req.body;
+  upsertSetting('meta_title', meta_title || '');
+  upsertSetting('meta_description', meta_description || '');
+  res.redirect('/admin/settings?success=تم تحديث اعدادات SEO');
+});
+
+// OG Image upload
+router.post('/settings/og-image', requireAdmin, settingsUpload.single('og_image'), (req, res) => {
+  if (req.file) {
+    upsertSetting('og_image', req.file.filename);
+  }
+  res.redirect('/admin/settings?success=تم رفع صورة المشاركة');
+});
+
+// Favicon upload
+router.post('/settings/favicon', requireAdmin, settingsUpload.single('favicon'), (req, res) => {
+  if (req.file) {
+    upsertSetting('favicon', req.file.filename);
+  }
+  res.redirect('/admin/settings?success=تم رفع أيقونة المتجر');
+});
+
+// Tracking Pixels (GA, FB, TikTok) + custom meta tags
+router.post('/settings/tracking', requireAdmin, (req, res) => {
+  const { ga_id, fb_pixel_id, tiktok_pixel_id, custom_meta_tags } = req.body;
+  upsertSetting('ga_id', ga_id || '');
+  upsertSetting('fb_pixel_id', fb_pixel_id || '');
+  upsertSetting('tiktok_pixel_id', tiktok_pixel_id || '');
+  upsertSetting('custom_meta_tags', custom_meta_tags || '');
+  res.redirect('/admin/settings?success=تم تحديث اعدادات التتبع');
 });
 
 // ============================================================

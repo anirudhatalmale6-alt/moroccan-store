@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
   <%- include('partials/head') %>
-  <title><%= typeof siteName !== 'undefined' ? siteName : 'متجرنا' %> — منتجاتنا</title>
+  <title><%= (typeof metaTitle !== 'undefined' && metaTitle) ? metaTitle : ((typeof siteName !== 'undefined' ? siteName : 'متجرنا') + ' — منتجاتنا') %></title>
 </head>
 <body>
   <div class="pattern-overlay"></div>

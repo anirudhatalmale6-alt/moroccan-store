@@ -101,6 +101,88 @@
                 </form>
             </div>
 
+            <!-- SEO Settings -->
+            <div class="form-card">
+                <h3>SEO — محركات البحث</h3>
+                <form method="POST" action="/admin/settings/seo">
+                    <div class="form-group">
+                        <label>عنوان الصفحة الرئيسية (Meta Title)</label>
+                        <input type="text" name="meta_title" value="<%= settings.meta_title || '' %>" placeholder="مثال: متجر الإلكترونيات الفاخرة" dir="auto">
+                        <div class="hint">يظهر في تبويب المتصفح ونتائج Google (50-60 حرف مثالي)</div>
+                    </div>
+                    <div class="form-group">
+                        <label>وصف الصفحة الرئيسية (Meta Description)</label>
+                        <textarea name="meta_description" rows="3" style="width: 100%; padding: 12px 16px; border: 2px solid #e8e0d8; border-radius: 10px; font-family: 'Cairo', sans-serif; font-size: 14px; color: #333; resize: vertical;" placeholder="وصف مختصر يظهر في نتائج البحث..." dir="auto"><%= settings.meta_description || '' %></textarea>
+                        <div class="hint">يظهر أسفل العنوان في نتائج Google (120-160 حرف مثالي)</div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">حفظ SEO</button>
+                </form>
+            </div>
+
+            <!-- OG Image (Social Sharing) -->
+            <div class="form-card">
+                <h3>صورة المشاركة (OG Image)</h3>
+                <form method="POST" action="/admin/settings/og-image" enctype="multipart/form-data">
+                    <div class="form-group">
+                        <label>صورة المشاركة على فيسبوك / واتساب / تيك توك</label>
+                        <input type="file" name="og_image" accept="image/*" style="width: 100%; padding: 10px; border: 2px solid #e8e0d8; border-radius: 10px; font-size: 14px;">
+                        <div class="hint">الحجم المثالي: 1200×630 بكسل — تظهر عند مشاركة الرابط</div>
+                        <% if (settings.og_image) { %>
+                            <div style="margin-top: 12px;">
+                                <img src="/uploads/settings/<%= settings.og_image %>" alt="OG Image" style="max-width: 300px; border-radius: 10px; border: 1px solid #e8e0d8;">
+                                <div style="font-size: 12px; color: #2e7d32; margin-top: 6px;">الصورة الحالية: <%= settings.og_image %></div>
+                            </div>
+                        <% } %>
+                    </div>
+                    <button type="submit" class="btn btn-primary">رفع الصورة</button>
+                </form>
+            </div>
+
+            <!-- Favicon -->
+            <div class="form-card">
+                <h3>أيقونة المتجر (Favicon)</h3>
+                <form method="POST" action="/admin/settings/favicon" enctype="multipart/form-data">
+                    <div class="form-group">
+                        <label>أيقونة تبويب المتصفح</label>
+                        <input type="file" name="favicon" accept="image/png,image/x-icon,image/ico,image/svg+xml,.ico,.png,.svg" style="width: 100%; padding: 10px; border: 2px solid #e8e0d8; border-radius: 10px; font-size: 14px;">
+                        <div class="hint">PNG أو ICO — الحجم المثالي: 32×32 أو 64×64 بكسل</div>
+                        <% if (settings.favicon) { %>
+                            <div style="margin-top: 12px; display: flex; align-items: center; gap: 12px;">
+                                <img src="/uploads/settings/<%= settings.favicon %>" alt="Favicon" style="width: 32px; height: 32px; border-radius: 4px; border: 1px solid #e8e0d8;">
+                                <span style="font-size: 12px; color: #2e7d32;">الأيقونة الحالية</span>
+                            </div>
+                        <% } %>
+                    </div>
+                    <button type="submit" class="btn btn-primary">رفع الأيقونة</button>
+                </form>
+            </div>
+
+            <!-- Tracking Pixels -->
+            <div class="form-card">
+                <h3>التتبع والتحليلات</h3>
+                <form method="POST" action="/admin/settings/tracking">
+                    <div class="form-group">
+                        <label>Google Analytics ID</label>
+                        <input type="text" name="ga_id" value="<%= settings.ga_id || '' %>" placeholder="G-XXXXXXXXXX" dir="ltr" style="text-align:left;">
+                        <div class="hint">معرف Google Analytics 4 — مثال: G-ABC123DEF4</div>
+                    </div>
+                    <div class="form-group">
+                        <label>Facebook / Meta Pixel ID</label>
+                        <input type="text" name="fb_pixel_id" value="<%= settings.fb_pixel_id || '' %>" placeholder="123456789012345" dir="ltr" style="text-align:left;">
+                    </div>
+                    <div class="form-group">
+                        <label>TikTok Pixel ID</label>
+                        <input type="text" name="tiktok_pixel_id" value="<%= settings.tiktok_pixel_id || '' %>" placeholder="CXXXXXXXXXXXXXXXXX" dir="ltr" style="text-align:left;">
+                    </div>
+                    <div class="form-group">
+                        <label>أكواد مخصصة (Custom Meta/Script Tags)</label>
+                        <textarea name="custom_meta_tags" rows="5" style="width: 100%; padding: 12px 16px; border: 2px solid #e8e0d8; border-radius: 10px; font-family: monospace; font-size: 13px; color: #333; resize: vertical; direction: ltr; text-align: left;" placeholder="<meta name=&quot;...&quot; content=&quot;...&quot;>&#10;<script>...</script>"><%= settings.custom_meta_tags || '' %></textarea>
+                        <div class="hint">أكواد إضافية تُحقن في &lt;head&gt; — مثل أكواد التحقق أو تتبع إضافي</div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">حفظ التتبع</button>
+                </form>
+            </div>
+
             <!-- Typography Settings -->
             <div class="form-card">
                 <h3>الخطوط</h3>

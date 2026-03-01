@@ -1,8 +1,12 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <title><%= product.title %> — <%= typeof siteName !== 'undefined' ? siteName : 'متجرنا' %></title>
+  <title><%= (product.meta_title ? product.meta_title : product.title) %> — <%= typeof siteName !== 'undefined' ? siteName : 'متجرنا' %></title>
   <%- include('partials/head') %>
+  <% if (product.meta_description) { %><meta name="description" content="<%= product.meta_description %>"><% } %>
+  <% if (product.meta_title || product.title) { %><meta property="og:title" content="<%= product.meta_title || product.title %>"><% } %>
+  <% if (product.meta_description || product.description) { %><meta property="og:description" content="<%= product.meta_description || (product.description || '').substring(0, 200) %>"><% } %>
+  <% if (product.main_image) { %><meta property="og:image" content="/uploads/products/<%= product.main_image %>"><% } %>
 </head>
 <body>
 
@@ -29,10 +33,23 @@
     <div class="container">
       <div class="hero__grid">
         <div class="hero__content">
+          <% var prodAvail = product.availability_status || 'in_stock'; %>
+          <% if (prodAvail === 'out_of_stock') { %>
+          <div class="hero__badge" style="background: rgba(198,40,40,0.1); color: #c62828;">
+            <span class="hero__badge-dot" style="background: #c62828;"></span>
+            غير متوفر حاليا
+          </div>
+          <% } else if (prodAvail === 'preorder') { %>
+          <div class="hero__badge" style="background: rgba(245,127,23,0.1); color: #f57f17;">
+            <span class="hero__badge-dot" style="background: #f57f17;"></span>
+            طلب مسبق — سيتم الشحن قريبا
+          </div>
+          <% } else { %>
           <div class="hero__badge">
             <span class="hero__badge-dot"></span>
             متوفر الآن — توصيل لجميع المدن
           </div>
+          <% } %>
           <h1 class="hero__title">
             <%= product.title %>
           </h1>
@@ -110,13 +127,20 @@
               <span class="hero__price-badge">-<%= product.discount %>%</span>
             <% } %>
           </div>
+          <% if (product.stock_quantity !== null && product.stock_quantity >= 0 && product.stock_quantity <= 10) { %>
+            <div style="font-size: 13px; font-weight: 700; color: #c62828; margin-top: 4px; margin-bottom: 4px;"><%= product.stock_quantity === 0 ? 'نفذت الكمية!' : 'باقي ' + product.stock_quantity + ' قطع فقط!' %></div>
+          <% } %>
           <div class="hero__actions" style="display: flex; gap: 12px; flex-wrap: wrap;">
+            <% if (prodAvail !== 'out_of_stock' && (product.stock_quantity === null || product.stock_quantity < 0 || product.stock_quantity > 0)) { %>
             <a href="/product/<%= product.slug %>/checkout" id="buyNowBtn" class="btn btn--primary btn--lg">
               اشتري الآن 🛍️
             </a>
             <button type="button" class="btn btn--outline btn--lg" id="addToCartBtn" onclick="addToCartFromProduct()">
               أضف للسلة 🛒
             </button>
+            <% } else { %>
+            <button type="button" class="btn btn--lg" style="background: #ccc; color: #666; cursor: not-allowed;" disabled>غير متوفر حاليا</button>
+            <% } %>
           </div>
         </div>
         <div class="hero__image">

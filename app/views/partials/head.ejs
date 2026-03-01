@@ -17,4 +17,49 @@
 <% var pc = typeof primaryColor !== 'undefined' ? primaryColor : '#8B6F47'; %>
 <link rel="stylesheet" href="/css/style.css">
 <style>:root { --font-body: '<%= ff %>', 'Segoe UI', sans-serif; --color-primary: <%= pc %>; --color-primary-dark: <%= pc %>; }</style>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛍️</text></svg>">
+
+<%/* SEO Meta Tags */%>
+<% if (typeof metaDescription !== 'undefined' && metaDescription) { %>
+  <meta name="description" content="<%= metaDescription %>">
+<% } %>
+
+<%/* OG Tags for Social Sharing */%>
+<% if (typeof metaTitle !== 'undefined' && metaTitle) { %>
+  <meta property="og:title" content="<%= metaTitle %>">
+<% } %>
+<% if (typeof metaDescription !== 'undefined' && metaDescription) { %>
+  <meta property="og:description" content="<%= metaDescription %>">
+<% } %>
+<% if (typeof ogImage !== 'undefined' && ogImage) { %>
+  <meta property="og:image" content="/uploads/settings/<%= ogImage %>">
+<% } %>
+<meta property="og:type" content="website">
+
+<%/* Favicon */%>
+<% if (typeof favicon !== 'undefined' && favicon) { %>
+  <link rel="icon" type="image/png" href="/uploads/settings/<%= favicon %>">
+<% } else { %>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛍️</text></svg>">
+<% } %>
+
+<%/* Google Analytics */%>
+<% if (typeof gaId !== 'undefined' && gaId) { %>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=<%= gaId %>"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','<%= gaId %>');</script>
+<% } %>
+
+<%/* Facebook / Meta Pixel */%>
+<% if (typeof fbPixelId !== 'undefined' && fbPixelId) { %>
+  <script>!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq('init','<%= fbPixelId %>');fbq('track','PageView');</script>
+  <noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=<%= fbPixelId %>&ev=PageView&noscript=1"/></noscript>
+<% } %>
+
+<%/* TikTok Pixel */%>
+<% if (typeof tiktokPixelId !== 'undefined' && tiktokPixelId) { %>
+  <script>!function(w,d,t){w.TiktokAnalyticsObject=t;var ttq=w[t]=w[t]||[];ttq.methods=["page","track","identify","instances","debug","on","off","once","ready","alias","group","enableCookie","disableCookie","holdConsent","revokeConsent","grantConsent"],ttq.setAndDefer=function(t,e){t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}};for(var i=0;i<ttq.methods.length;i++)ttq.setAndDefer(ttq,ttq.methods[i]);ttq.instance=function(t){for(var e=ttq._i[t]||[],n=0;n<ttq.methods.length;n++)ttq.setAndDefer(e,ttq.methods[n]);return e},ttq.load=function(e,n){var r="https://analytics.tiktok.com/i18n/pixel/events.js",o=n&&n.partner;ttq._i=ttq._i||{},ttq._i[e]=[],ttq._t=ttq._t||{},ttq._t[e]=+new Date,ttq._o=ttq._o||{},ttq._o[e]=n||{};var a=d.createElement("script");a.type="text/javascript",a.async=!0,a.src=r+"?sdkid="+e+"&lib="+t;var s=d.getElementsByTagName("script")[0];s.parentNode.insertBefore(a,s)};ttq.load('<%= tiktokPixelId %>');ttq.page();}(window,document,'ttq');</script>
+<% } %>
+
+<%/* Custom Meta/Script Tags */%>
+<% if (typeof customMetaTags !== 'undefined' && customMetaTags) { %>
+  <%- customMetaTags %>
+<% } %>
