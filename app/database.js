@@ -322,6 +322,16 @@ async function initDatabase() {
       updated_at TEXT DEFAULT (datetime('now'))
     );
 
+    CREATE TABLE IF NOT EXISTS banners (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      desktop_image TEXT NOT NULL DEFAULT '',
+      mobile_image TEXT DEFAULT '',
+      link_url TEXT DEFAULT '',
+      is_active INTEGER DEFAULT 1,
+      sort_order INTEGER DEFAULT 0,
+      created_at TEXT DEFAULT (datetime('now'))
+    );
+
     CREATE TABLE IF NOT EXISTS categories (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT NOT NULL,
@@ -426,6 +436,11 @@ async function initDatabase() {
   // Primary color setting
   if (!db.prepare("SELECT 1 FROM admin_settings WHERE setting_key = 'primary_color'").get()) {
     db.prepare("INSERT INTO admin_settings (setting_key, setting_value) VALUES (?, ?)").run('primary_color', '#8B6F47');
+  }
+
+  // Banner interval setting
+  if (!db.prepare("SELECT 1 FROM admin_settings WHERE setting_key = 'banner_interval'").get()) {
+    db.prepare("INSERT INTO admin_settings (setting_key, setting_value) VALUES (?, ?)").run('banner_interval', '4');
   }
 
   // Seed a default product if none exists

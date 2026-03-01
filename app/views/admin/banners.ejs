@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>سلايدر الرئيسية — لوحة التحكم</title>
+    <title>البانرات — لوحة التحكم</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -30,29 +30,32 @@
         .btn-primary { background: #8B6F47; color: #fff; }
         .btn-delete { background: #ffebee; color: #c62828; }
         .btn-sm { padding: 6px 14px; font-size: 12px; }
-        .form-card { background: #fff; border-radius: 14px; box-shadow: 0 2px 12px rgba(0,0,0,0.04); padding: 32px; max-width: 700px; margin-bottom: 28px; }
+        .form-card { background: #fff; border-radius: 14px; box-shadow: 0 2px 12px rgba(0,0,0,0.04); padding: 32px; max-width: 800px; margin-bottom: 28px; }
         .form-card h3 { font-size: 18px; color: #6B5335; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid #f0ebe5; }
         .form-group { margin-bottom: 20px; }
         .form-group label { display: block; font-size: 14px; font-weight: 700; color: #555; margin-bottom: 8px; }
-        .form-group input[type="text"], .form-group input[type="number"], .form-group input[type="file"] {
+        .form-group input[type="text"], .form-group input[type="number"], .form-group input[type="file"], .form-group select {
             width: 100%; padding: 12px 16px; border: 2px solid #e8e0d8; border-radius: 10px;
             font-family: 'Cairo', sans-serif; font-size: 14px; color: #333; transition: border-color 0.2s;
         }
-        .form-group input:focus { outline: none; border-color: #8B6F47; }
+        .form-group input:focus, .form-group select:focus { outline: none; border-color: #8B6F47; }
         .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
         .checkbox-group { display: flex; align-items: center; gap: 10px; }
         .checkbox-group input[type="checkbox"] { width: 20px; height: 20px; accent-color: #8B6F47; cursor: pointer; }
         .checkbox-group label { margin-bottom: 0; cursor: pointer; font-size: 15px; }
-        .slider-card { background: #fff; border-radius: 14px; box-shadow: 0 2px 12px rgba(0,0,0,0.04); padding: 20px; margin-bottom: 16px; max-width: 700px; display: flex; gap: 20px; align-items: center; }
-        .slider-card img { width: 200px; height: 100px; object-fit: cover; border-radius: 10px; border: 2px solid #e8e0d8; flex-shrink: 0; }
-        .slider-card .slider-info { flex: 1; }
-        .slider-card .slider-title { font-size: 15px; font-weight: 700; color: #333; margin-bottom: 4px; }
-        .slider-card .slider-meta { font-size: 13px; color: #888; }
-        .slider-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+        .banner-card { background: #fff; border-radius: 14px; box-shadow: 0 2px 12px rgba(0,0,0,0.04); padding: 20px; margin-bottom: 16px; max-width: 800px; }
+        .banner-card .banner-images { display: flex; gap: 16px; margin-bottom: 16px; }
+        .banner-card .banner-img-wrap { flex: 1; }
+        .banner-card .banner-img-wrap .img-label { font-size: 11px; font-weight: 700; color: #888; margin-bottom: 6px; text-transform: uppercase; }
+        .banner-card img { width: 100%; height: 120px; object-fit: cover; border-radius: 10px; border: 2px solid #e8e0d8; }
+        .banner-card .banner-info { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+        .banner-actions { display: flex; gap: 8px; flex-wrap: wrap; }
         .badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; }
         .badge-active { background: #e8f5e9; color: #2e7d32; }
         .badge-inactive { background: #ffebee; color: #c62828; }
-        .empty-state { padding: 40px; text-align: center; color: #bbb; font-size: 14px; background: #fff; border-radius: 14px; box-shadow: 0 2px 12px rgba(0,0,0,0.04); max-width: 700px; }
+        .empty-state { padding: 40px; text-align: center; color: #bbb; font-size: 14px; background: #fff; border-radius: 14px; box-shadow: 0 2px 12px rgba(0,0,0,0.04); max-width: 800px; }
+        .hint { font-size: 12px; color: #999; margin-top: 4px; }
         .mobile-toggle { display: none; position: fixed; top: 16px; right: 16px; z-index: 200; background: #6B5335; color: #fff; border: none; border-radius: 10px; width: 44px; height: 44px; font-size: 20px; cursor: pointer; }
         .sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 90; }
         @media (max-width: 768px) {
@@ -61,9 +64,8 @@
             .sidebar.open { transform: translateX(0); }
             .sidebar-overlay.open { display: block; }
             .main-content { margin-right: 0; padding: 24px 16px; padding-top: 72px; }
-            .form-row { grid-template-columns: 1fr; }
-            .slider-card { flex-direction: column; }
-            .slider-card img { width: 100%; height: 150px; }
+            .form-row, .form-row-3 { grid-template-columns: 1fr; }
+            .banner-card .banner-images { flex-direction: column; }
         }
     </style>
 </head>
@@ -82,8 +84,8 @@
                 <div class="sidebar-divider"></div>
                 <li><a href="/admin/categories"><svg viewBox="0 0 24 24"><path d="M12 2l-5.5 9h11L12 2zm0 3.84L13.93 9h-3.87L12 5.84zM17.5 13c-2.49 0-4.5 2.01-4.5 4.5s2.01 4.5 4.5 4.5 4.5-2.01 4.5-4.5-2.01-4.5-4.5-4.5zm0 7c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5zM3 21.5h8v-8H3v8zm2-6h4v4H5v-4z"/></svg>التصنيفات</a></li>
                 <li><a href="/admin/landing-pages"><svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zM7 10h2v7H7zm4-3h2v10h-2zm4 6h2v4h-2z"/></svg>صفحات الهبوط</a></li>
-                <li><a href="/admin/sliders" class="active"><svg viewBox="0 0 24 24"><path d="M22 16V4c0-1.1-.9-2-2-2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2zm-11-4l2.03 2.71L16 11l4 5H8l3-4zM2 6v14c0 1.1.9 2 2 2h14v-2H4V6H2z"/></svg>سلايدر الرئيسية</a></li>
-                <li><a href="/admin/banners"><svg viewBox="0 0 24 24"><path d="M19 5H5c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 12H5V7h14v10zM6 13h2v2H6zm0-4h12v2H6zm4 4h8v2h-8z"/></svg>البانرات</a></li>
+                <li><a href="/admin/sliders"><svg viewBox="0 0 24 24"><path d="M22 16V4c0-1.1-.9-2-2-2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2zm-11-4l2.03 2.71L16 11l4 5H8l3-4zM2 6v14c0 1.1.9 2 2 2h14v-2H4V6H2z"/></svg>سلايدر الرئيسية</a></li>
+                <li><a href="/admin/banners" class="active"><svg viewBox="0 0 24 24"><path d="M19 5H5c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 12H5V7h14v10zM6 13h2v2H6zm0-4h12v2H6zm4 4h8v2h-8z"/></svg>البانرات</a></li>
                 <li><a href="/admin/gifts"><svg viewBox="0 0 24 24"><path d="M20 6h-2.18c.11-.31.18-.65.18-1 0-1.66-1.34-3-3-3-1.05 0-1.96.54-2.5 1.35l-.5.67-.5-.68C10.96 2.54 10.05 2 9 2 7.34 2 6 3.34 6 5c0 .35.07.69.18 1H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-5-2c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zM9 4c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm11 15H4v-2h16v2zm0-5H4V8h5.08L7 10.83 8.62 12 11 8.76l1-1.36 1 1.36L15.38 12 17 10.83 14.92 8H20v6z"/></svg>الهدايا</a></li>
                 <div class="sidebar-divider"></div>
                 <li><a href="/admin/users"><svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>المسوقين</a></li>
@@ -96,62 +98,92 @@
         </aside>
 
         <main class="main-content">
-            <h1 class="page-title">سلايدر الرئيسية</h1>
+            <h1 class="page-title">البانرات</h1>
 
-            <!-- Add New Slider -->
+            <!-- Banner Interval Setting -->
             <div class="form-card">
-                <h3>اضافة سلايد جديد</h3>
-                <form method="POST" action="/admin/sliders" enctype="multipart/form-data">
+                <h3>اعدادات عرض البانر</h3>
+                <form method="POST" action="/admin/banners/interval">
                     <div class="form-group">
-                        <label>صورة السلايد * (يفضل 1200x400)</label>
-                        <input type="file" name="image" accept="image/*" required>
+                        <label>عدد المنتجات قبل ظهور البانر</label>
+                        <select name="banner_interval" style="width: auto; min-width: 200px;">
+                            <option value="2" <%= bannerInterval === '2' ? 'selected' : '' %>>بعد كل 2 منتجات</option>
+                            <option value="4" <%= bannerInterval === '4' ? 'selected' : '' %>>بعد كل 4 منتجات</option>
+                            <option value="6" <%= bannerInterval === '6' ? 'selected' : '' %>>بعد كل 6 منتجات</option>
+                            <option value="8" <%= bannerInterval === '8' ? 'selected' : '' %>>بعد كل 8 منتجات</option>
+                        </select>
+                        <div class="hint">البانرات ستظهر بين المنتجات في الصفحة الرئيسية بالترتيب</div>
                     </div>
-                    <div class="form-group">
-                        <label>العنوان</label>
-                        <input type="text" name="title" placeholder="عنوان اختياري">
-                    </div>
+                    <button type="submit" class="btn btn-primary btn-sm">حفظ</button>
+                </form>
+            </div>
+
+            <!-- Add New Banner -->
+            <div class="form-card">
+                <h3>اضافة بانر جديد</h3>
+                <form method="POST" action="/admin/banners" enctype="multipart/form-data">
                     <div class="form-row">
                         <div class="form-group">
+                            <label>صورة Desktop * (يفضل 1200x300)</label>
+                            <input type="file" name="desktop_image" accept="image/*" required>
+                        </div>
+                        <div class="form-group">
+                            <label>صورة Mobile (يفضل 600x300)</label>
+                            <input type="file" name="mobile_image" accept="image/*">
+                            <div class="hint">اختيارية - إذا لم يتم رفعها ستُعرض صورة Desktop</div>
+                        </div>
+                    </div>
+                    <div class="form-row-3">
+                        <div class="form-group">
                             <label>رابط (URL)</label>
-                            <input type="text" name="link_url" placeholder="/product/slug" dir="ltr" style="text-align:left;">
+                            <input type="text" name="link_url" placeholder="/product/slug أو https://..." dir="ltr" style="text-align:left;">
                         </div>
                         <div class="form-group">
                             <label>الترتيب</label>
                             <input type="number" name="sort_order" value="0" placeholder="0">
                         </div>
-                    </div>
-                    <div class="form-group">
-                        <div class="checkbox-group">
-                            <input type="checkbox" name="is_active" id="is_active_new" value="1" checked>
-                            <label for="is_active_new">نشط</label>
+                        <div class="form-group" style="display:flex; align-items:flex-end; padding-bottom:4px;">
+                            <div class="checkbox-group">
+                                <input type="checkbox" name="is_active" id="is_active_new" value="1" checked>
+                                <label for="is_active_new">نشط</label>
+                            </div>
                         </div>
                     </div>
-                    <button type="submit" class="btn btn-primary">+ اضافة سلايد</button>
+                    <button type="submit" class="btn btn-primary">+ اضافة بانر</button>
                 </form>
             </div>
 
-            <!-- Slider List -->
-            <% if (sliders && sliders.length > 0) { %>
-                <% sliders.forEach(function(slider) { %>
-                    <div class="slider-card">
-                        <img src="/uploads/sliders/<%= slider.image_filename %>" alt="<%= slider.title || 'سلايد' %>">
-                        <div class="slider-info">
-                            <div class="slider-title"><%= slider.title || '(بدون عنوان)' %> <span class="badge <%= slider.is_active ? 'badge-active' : 'badge-inactive' %>"><%= slider.is_active ? 'نشط' : 'غير نشط' %></span></div>
-                            <div class="slider-meta">
-                                <% if (slider.link_url) { %>رابط: <span dir="ltr"><%= slider.link_url %></span> | <% } %>
-                                ترتيب: <%= slider.sort_order || 0 %>
+            <!-- Banner List -->
+            <% if (banners && banners.length > 0) { %>
+                <% banners.forEach(function(banner) { %>
+                    <div class="banner-card">
+                        <div class="banner-images">
+                            <div class="banner-img-wrap">
+                                <div class="img-label">Desktop</div>
+                                <img src="/uploads/banners/<%= banner.desktop_image %>" alt="Desktop">
                             </div>
-                            <div class="slider-actions" style="margin-top:10px;">
-                                <form method="POST" action="/admin/sliders/<%= slider.id %>/update" enctype="multipart/form-data" style="display:inline;">
-                                    <input type="hidden" name="title" value="<%= slider.title || '' %>">
-                                    <input type="hidden" name="link_url" value="<%= slider.link_url || '' %>">
-                                    <input type="hidden" name="sort_order" value="<%= slider.sort_order || 0 %>">
-                                    <input type="hidden" name="is_active" value="<%= slider.is_active ? '0' : '1' %>">
-                                    <button type="submit" class="btn btn-sm" style="background: <%= slider.is_active ? '#fff3e0' : '#e8f5e9' %>; color: <%= slider.is_active ? '#e65100' : '#2e7d32' %>;">
-                                        <%= slider.is_active ? 'تعطيل' : 'تفعيل' %>
+                            <% if (banner.mobile_image) { %>
+                            <div class="banner-img-wrap">
+                                <div class="img-label">Mobile</div>
+                                <img src="/uploads/banners/<%= banner.mobile_image %>" alt="Mobile">
+                            </div>
+                            <% } %>
+                        </div>
+                        <div class="banner-info">
+                            <div>
+                                <span class="badge <%= banner.is_active ? 'badge-active' : 'badge-inactive' %>"><%= banner.is_active ? 'نشط' : 'غير نشط' %></span>
+                                <% if (banner.link_url) { %>
+                                    <span style="font-size: 13px; color: #888; margin-right: 8px;">رابط: <span dir="ltr"><%= banner.link_url %></span></span>
+                                <% } %>
+                                <span style="font-size: 13px; color: #888; margin-right: 8px;">ترتيب: <%= banner.sort_order || 0 %></span>
+                            </div>
+                            <div class="banner-actions">
+                                <form method="POST" action="/admin/banners/<%= banner.id %>/toggle" style="display:inline;">
+                                    <button type="submit" class="btn btn-sm" style="background: <%= banner.is_active ? '#fff3e0' : '#e8f5e9' %>; color: <%= banner.is_active ? '#e65100' : '#2e7d32' %>;">
+                                        <%= banner.is_active ? 'تعطيل' : 'تفعيل' %>
                                     </button>
                                 </form>
-                                <form method="POST" action="/admin/sliders/<%= slider.id %>/delete" style="display:inline;" onclick="return confirm('هل تريد حذف هذا السلايد؟')">
+                                <form method="POST" action="/admin/banners/<%= banner.id %>/delete" style="display:inline;" onclick="return confirm('هل تريد حذف هذا البانر؟')">
                                     <button type="submit" class="btn btn-delete btn-sm">حذف</button>
                                 </form>
                             </div>
@@ -159,7 +191,7 @@
                     </div>
                 <% }); %>
             <% } else { %>
-                <div class="empty-state">لا توجد سلايدات حتى الان</div>
+                <div class="empty-state">لا توجد بانرات حتى الان</div>
             <% } %>
         </main>
     </div>

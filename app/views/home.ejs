@@ -88,9 +88,24 @@
         <div class="section-header__divider"></div>
       </div>
 
+      <% var _banners = (typeof banners !== 'undefined' && banners) ? banners : []; %>
+      <% var _bInterval = (typeof bannerInterval !== 'undefined') ? bannerInterval : 4; %>
+      <% var _bIdx = 0; %>
       <div class="products-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
-        <% products.forEach(function(p) { %>
-          <a href="/product/<%= p.slug %>" style="text-decoration: none; cursor: pointer; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.06); transition: transform 0.2s, box-shadow 0.2s; display: block;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)';" onmouseout="this.style.transform=''; this.style.boxShadow='0 1px 4px rgba(0,0,0,0.06)';">
+        <% products.forEach(function(p, idx) { %>
+          <%/* Insert banner after every N products */%>
+          <% if (_banners.length > 0 && idx > 0 && idx % _bInterval === 0) { %>
+            <% var _b = _banners[_bIdx % _banners.length]; _bIdx++; %>
+            <div class="grid-banner" style="grid-column: 1 / -1; border-radius: 12px; overflow: hidden;">
+              <% if (_b.link_url) { %><a href="<%= _b.link_url %>" style="display:block;"><% } %>
+                <picture>
+                  <% if (_b.mobile_image) { %><source media="(max-width: 600px)" srcset="/uploads/banners/<%= _b.mobile_image %>"><% } %>
+                  <img src="/uploads/banners/<%= _b.desktop_image %>" alt="" style="width: 100%; height: auto; display: block; border-radius: 12px;" loading="lazy">
+                </picture>
+              <% if (_b.link_url) { %></a><% } %>
+            </div>
+          <% } %>
+          <a href="/product/<%= p.slug %>" class="product-card" style="text-decoration: none; cursor: pointer; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.06); transition: transform 0.2s, box-shadow 0.2s; display: block;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)';" onmouseout="this.style.transform=''; this.style.boxShadow='0 1px 4px rgba(0,0,0,0.06)';">
             <div style="width: 100%; aspect-ratio: 1; overflow: hidden; background: #f8f6f3; position: relative;">
               <% if (p.main_image) { %>
                 <img src="/uploads/products/<%= p.main_image %>" alt="<%= p.title %>" style="width: 100%; height: 100%; object-fit: cover;" loading="lazy">
@@ -134,10 +149,12 @@
   <%- include('partials/footer') %>
 
   <script>
-    // Infinite scroll
+    // Infinite scroll with banner support
     var currentPage = 1;
     var isLoadingMore = false;
     var hasMoreProducts = <%= products.length >= 6 ? 'true' : 'false' %>;
+    var totalProductCount = <%= products.length %>;
+    var bannerIdx = <%= typeof _bIdx !== 'undefined' ? _bIdx : 0 %>;
 
     window.addEventListener('scroll', function() {
       if (isLoadingMore || !hasMoreProducts) return;
@@ -145,6 +162,18 @@
         loadMoreProducts();
       }
     });
+
+    function createBannerHtml(banner) {
+      var html = '<div class="grid-banner" style="grid-column: 1 / -1; border-radius: 12px; overflow: hidden;">';
+      if (banner.link_url) html += '<a href="' + banner.link_url + '" style="display:block;">';
+      html += '<picture>';
+      if (banner.mobile_image) html += '<source media="(max-width: 600px)" srcset="/uploads/banners/' + banner.mobile_image + '">';
+      html += '<img src="/uploads/banners/' + banner.desktop_image + '" alt="" style="width: 100%; height: auto; display: block; border-radius: 12px;" loading="lazy">';
+      html += '</picture>';
+      if (banner.link_url) html += '</a>';
+      html += '</div>';
+      return html;
+    }
 
     function loadMoreProducts() {
       if (isLoadingMore || !hasMoreProducts) return;
@@ -157,9 +186,23 @@
       .then(function(data) {
         if (data.products && data.products.length > 0) {
           var grid = document.querySelector('.products-grid');
+          var apiBanners = data.banners || [];
+          var apiInterval = data.bannerInterval || 4;
+
           data.products.forEach(function(p) {
+            // Check if we need to insert a banner before this product
+            if (apiBanners.length > 0 && totalProductCount > 0 && totalProductCount % apiInterval === 0) {
+              var b = apiBanners[bannerIdx % apiBanners.length];
+              bannerIdx++;
+              var bannerDiv = document.createElement('div');
+              bannerDiv.innerHTML = createBannerHtml(b);
+              grid.appendChild(bannerDiv.firstChild);
+            }
+            totalProductCount++;
+
             var card = document.createElement('a');
             card.href = '/product/' + p.slug;
+            card.className = 'product-card';
             card.style.cssText = 'text-decoration: none; cursor: pointer; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.06); transition: transform 0.2s, box-shadow 0.2s; display: block;';
 
             var imgHtml = '';

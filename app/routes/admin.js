@@ -88,6 +88,20 @@ const landingStorage = multer.diskStorage({
 });
 const landingUpload = multer({ storage: landingStorage, limits: { fileSize: 50 * 1024 * 1024 } });
 
+// Banner image upload
+const bannerStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const dir = path.join(__dirname, '..', 'public', 'uploads', 'banners');
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    cb(null, dir);
+  },
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname);
+    cb(null, 'banner-' + Date.now() + '-' + Math.random().toString(36).substring(7) + ext);
+  }
+});
+const bannerUpload = multer({ storage: bannerStorage, limits: { fileSize: 10 * 1024 * 1024 } });
+
 // ============================================================
 // AUTH ROUTES
 // ============================================================
@@ -999,6 +1013,85 @@ router.post('/settings/tracking', requireAdmin, (req, res) => {
   upsertSetting('tiktok_pixel_id', tiktok_pixel_id || '');
   upsertSetting('custom_meta_tags', custom_meta_tags || '');
   res.redirect('/admin/settings?success=تم تحديث اعدادات التتبع');
+});
+
+// ============================================================
+// BANNERS
+// ============================================================
+
+router.get('/banners', requireAdmin, (req, res) => {
+  const banners = db.prepare('SELECT * FROM banners ORDER BY sort_order, id').all();
+  const bannerInterval = db.prepare("SELECT setting_value FROM admin_settings WHERE setting_key = 'banner_interval'").get();
+  res.render('admin/banners', { banners, bannerInterval: bannerInterval ? bannerInterval.setting_value : '4' });
+});
+
+router.post('/banners', requireAdmin, bannerUpload.fields([
+  { name: 'desktop_image', maxCount: 1 },
+  { name: 'mobile_image', maxCount: 1 }
+]), (req, res) => {
+  const { link_url, is_active, sort_order } = req.body;
+  const desktopImage = req.files && req.files.desktop_image ? req.files.desktop_image[0].filename : '';
+  const mobileImage = req.files && req.files.mobile_image ? req.files.mobile_image[0].filename : '';
+  if (desktopImage) {
+    db.prepare('INSERT INTO banners (desktop_image, mobile_image, link_url, is_active, sort_order) VALUES (?, ?, ?, ?, ?)').run(
+      desktopImage, mobileImage, link_url || '', is_active === '1' ? 1 : 0, parseInt(sort_order) || 0
+    );
+  }
+  res.redirect('/admin/banners');
+});
+
+router.post('/banners/:id/update', requireAdmin, bannerUpload.fields([
+  { name: 'desktop_image', maxCount: 1 },
+  { name: 'mobile_image', maxCount: 1 }
+]), (req, res) => {
+  const { link_url, is_active, sort_order } = req.body;
+  const banner = db.prepare('SELECT * FROM banners WHERE id = ?').get(req.params.id);
+  if (!banner) return res.redirect('/admin/banners');
+  const desktopImage = req.files && req.files.desktop_image ? req.files.desktop_image[0].filename : banner.desktop_image;
+  const mobileImage = req.files && req.files.mobile_image ? req.files.mobile_image[0].filename : banner.mobile_image;
+  // Delete old images if replaced
+  if (req.files && req.files.desktop_image && banner.desktop_image) {
+    const oldPath = path.join(__dirname, '..', 'public', 'uploads', 'banners', banner.desktop_image);
+    try { if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath); } catch(e) {}
+  }
+  if (req.files && req.files.mobile_image && banner.mobile_image) {
+    const oldPath = path.join(__dirname, '..', 'public', 'uploads', 'banners', banner.mobile_image);
+    try { if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath); } catch(e) {}
+  }
+  db.prepare('UPDATE banners SET desktop_image=?, mobile_image=?, link_url=?, is_active=?, sort_order=? WHERE id=?').run(
+    desktopImage, mobileImage, link_url || '', is_active === '1' ? 1 : 0, parseInt(sort_order) || 0, req.params.id
+  );
+  res.redirect('/admin/banners');
+});
+
+router.post('/banners/:id/toggle', requireAdmin, (req, res) => {
+  const banner = db.prepare('SELECT * FROM banners WHERE id = ?').get(req.params.id);
+  if (banner) {
+    db.prepare('UPDATE banners SET is_active = ? WHERE id = ?').run(banner.is_active ? 0 : 1, req.params.id);
+  }
+  res.redirect('/admin/banners');
+});
+
+router.post('/banners/:id/delete', requireAdmin, (req, res) => {
+  const banner = db.prepare('SELECT * FROM banners WHERE id = ?').get(req.params.id);
+  if (banner) {
+    if (banner.desktop_image) {
+      const p1 = path.join(__dirname, '..', 'public', 'uploads', 'banners', banner.desktop_image);
+      try { if (fs.existsSync(p1)) fs.unlinkSync(p1); } catch(e) {}
+    }
+    if (banner.mobile_image) {
+      const p2 = path.join(__dirname, '..', 'public', 'uploads', 'banners', banner.mobile_image);
+      try { if (fs.existsSync(p2)) fs.unlinkSync(p2); } catch(e) {}
+    }
+    db.prepare('DELETE FROM banners WHERE id = ?').run(req.params.id);
+  }
+  res.redirect('/admin/banners');
+});
+
+router.post('/banners/interval', requireAdmin, (req, res) => {
+  const { banner_interval } = req.body;
+  upsertSetting('banner_interval', banner_interval || '4');
+  res.redirect('/admin/banners');
 });
 
 // ============================================================

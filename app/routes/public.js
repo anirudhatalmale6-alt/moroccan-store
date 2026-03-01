@@ -102,7 +102,15 @@ router.get('/api/products', (req, res) => {
   const products = db.prepare('SELECT * FROM products WHERE is_active = 1 ORDER BY created_at DESC LIMIT ? OFFSET ?').all(limit, offset);
   const total = db.prepare('SELECT COUNT(*) as count FROM products WHERE is_active = 1').get();
 
-  res.json({ products, total: total.count, page, hasMore: offset + products.length < total.count });
+  let banners = [];
+  let bannerInterval = 4;
+  try {
+    banners = db.prepare('SELECT * FROM banners WHERE is_active = 1 ORDER BY sort_order').all();
+    const intervalRow = db.prepare("SELECT setting_value FROM admin_settings WHERE setting_key = 'banner_interval'").get();
+    if (intervalRow) bannerInterval = parseInt(intervalRow.setting_value) || 4;
+  } catch (e) {}
+
+  res.json({ products, total: total.count, page, hasMore: offset + products.length < total.count, banners, bannerInterval });
 });
 
 
@@ -125,7 +133,15 @@ router.get('/', (req, res) => {
     categories = db.prepare('SELECT * FROM categories WHERE is_active = 1 ORDER BY sort_order').all();
   } catch (e) {}
 
-  res.render('home', { products, sliders, categories });
+  let banners = [];
+  let bannerInterval = 4;
+  try {
+    banners = db.prepare('SELECT * FROM banners WHERE is_active = 1 ORDER BY sort_order').all();
+    const intervalRow = db.prepare("SELECT setting_value FROM admin_settings WHERE setting_key = 'banner_interval'").get();
+    if (intervalRow) bannerInterval = parseInt(intervalRow.setting_value) || 4;
+  } catch (e) {}
+
+  res.render('home', { products, sliders, categories, banners, bannerInterval });
 });
 
 
@@ -144,7 +160,15 @@ router.get('/category/:slug', (req, res) => {
   let categories = [];
   try { categories = db.prepare('SELECT * FROM categories WHERE is_active = 1 ORDER BY sort_order').all(); } catch(e) {}
 
-  res.render('home', { products, sliders, categories, currentCategory: category });
+  let banners = [];
+  let bannerInterval = 4;
+  try {
+    banners = db.prepare('SELECT * FROM banners WHERE is_active = 1 ORDER BY sort_order').all();
+    const intervalRow = db.prepare("SELECT setting_value FROM admin_settings WHERE setting_key = 'banner_interval'").get();
+    if (intervalRow) bannerInterval = parseInt(intervalRow.setting_value) || 4;
+  } catch (e) {}
+
+  res.render('home', { products, sliders, categories, currentCategory: category, banners, bannerInterval });
 });
 
 // ============================================================
