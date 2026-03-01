@@ -33,11 +33,11 @@
         .btn-delete { background: #ffebee; color: #c62828; }
         .btn-sm { padding: 6px 14px; font-size: 12px; }
         .btn-lg { padding: 14px 40px; font-size: 16px; }
-        .form-card { background: #fff; border-radius: 14px; box-shadow: 0 2px 12px rgba(0,0,0,0.04); padding: 32px; max-width: 800px; margin-bottom: 28px; }
+        .form-card { background: #fff; border-radius: 14px; box-shadow: 0 2px 12px rgba(0,0,0,0.04); padding: 32px; max-width: 900px; margin-bottom: 28px; }
         .form-card h3 { font-size: 18px; color: #6B5335; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid #f0ebe5; }
         .form-group { margin-bottom: 24px; }
         .form-group label { display: block; font-size: 14px; font-weight: 700; color: #555; margin-bottom: 8px; }
-        .form-group input[type="text"], .form-group input[type="file"], .form-group textarea, .form-group select {
+        .form-group input[type="text"], .form-group input[type="file"], .form-group input[type="url"], .form-group textarea, .form-group select {
             width: 100%; padding: 12px 16px; border: 2px solid #e8e0d8; border-radius: 10px;
             font-family: 'Cairo', sans-serif; font-size: 14px; color: #333; transition: border-color 0.2s;
         }
@@ -45,17 +45,42 @@
         .form-group textarea { min-height: 100px; resize: vertical; }
         .form-group .hint { font-size: 12px; color: #aaa; margin-top: 6px; }
         .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
         .checkbox-group { display: flex; align-items: center; gap: 10px; }
         .checkbox-group input[type="checkbox"] { width: 20px; height: 20px; accent-color: #8B6F47; cursor: pointer; }
         .checkbox-group label { margin-bottom: 0; cursor: pointer; font-size: 15px; }
         .form-actions { display: flex; gap: 12px; margin-top: 32px; padding-top: 24px; border-top: 1px solid #f0ebe5; }
-        .section-item { background: #faf7f3; border-radius: 12px; padding: 20px; margin-bottom: 16px; border: 2px solid #e8e0d8; }
-        .section-item-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; gap: 12px; }
-        .section-item-header .section-type { font-size: 13px; font-weight: 700; color: #8B6F47; background: #f0ebe5; padding: 4px 12px; border-radius: 6px; }
-        .section-item-header .section-actions { display: flex; gap: 6px; }
-        .section-item h4 { font-size: 15px; color: #333; margin-bottom: 6px; }
+
+        /* Section items - draggable */
+        .section-item { background: #faf7f3; border-radius: 12px; padding: 20px; margin-bottom: 12px; border: 2px solid #e8e0d8; cursor: grab; transition: all 0.2s; position: relative; }
+        .section-item:hover { border-color: #8B6F47; }
+        .section-item.dragging { opacity: 0.4; border-style: dashed; }
+        .section-item.drag-over { border-color: #1565c0; background: #e3f2fd; }
+        .section-item-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; gap: 12px; }
+        .section-type-badge { font-size: 12px; font-weight: 700; color: #fff; padding: 4px 12px; border-radius: 6px; display: inline-flex; align-items: center; gap: 6px; }
+        .type-text { background: #6B5335; }
+        .type-image { background: #1565c0; }
+        .type-video { background: #c62828; }
+        .type-button { background: #2e7d32; }
+        .type-gif { background: #f57f17; }
+        .section-actions { display: flex; gap: 6px; }
+        .section-item h4 { font-size: 15px; color: #333; margin-bottom: 4px; }
         .section-item p { font-size: 13px; color: #888; }
-        .section-item img { max-width: 200px; max-height: 100px; border-radius: 8px; margin-top: 8px; border: 1px solid #ddd; }
+        .section-item img { max-width: 200px; max-height: 80px; border-radius: 8px; margin-top: 8px; border: 1px solid #ddd; }
+        .drag-handle { cursor: grab; font-size: 18px; color: #aaa; margin-left: 8px; user-select: none; }
+
+        /* Section type selector */
+        .section-types { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
+        .section-type-btn { display: flex; align-items: center; gap: 8px; padding: 10px 18px; border: 2px solid #e8e0d8; border-radius: 10px; background: #fff; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 600; color: #555; transition: all 0.2s; }
+        .section-type-btn:hover { border-color: #8B6F47; color: #8B6F47; }
+        .section-type-btn .emoji { font-size: 20px; }
+
+        /* Edit modal */
+        .edit-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; }
+        .edit-overlay.active { display: flex; }
+        .edit-modal { background: #fff; border-radius: 16px; padding: 32px; width: 90%; max-width: 600px; max-height: 90vh; overflow-y: auto; }
+        .edit-modal h3 { font-size: 18px; color: #6B5335; margin-bottom: 20px; }
+
         .mobile-toggle { display: none; position: fixed; top: 16px; right: 16px; z-index: 200; background: #6B5335; color: #fff; border: none; border-radius: 10px; width: 44px; height: 44px; font-size: 20px; cursor: pointer; }
         .sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 90; }
         @media (max-width: 768px) {
@@ -65,7 +90,10 @@
             .sidebar-overlay.open { display: block; }
             .main-content { margin-right: 0; padding: 24px 16px; padding-top: 72px; }
             .form-row { grid-template-columns: 1fr; }
+            .form-row-3 { grid-template-columns: 1fr; }
             .form-card { padding: 24px 20px; }
+            .section-types { gap: 8px; }
+            .section-type-btn { padding: 8px 14px; font-size: 13px; }
         }
     </style>
 </head>
@@ -99,10 +127,17 @@
         <main class="main-content">
             <div class="page-header">
                 <h1 class="page-title"><%= page ? 'تعديل صفحة الهبوط' : 'صفحة هبوط جديدة' %></h1>
-                <a href="/admin/landing-pages" class="btn btn-secondary">&#8592; رجوع</a>
+                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    <% if (page && page.is_published) { %>
+                        <a href="/p/<%= page.slug %>" target="_blank" class="btn" style="background: #1565c0; color: #fff;">معاينة الصفحة</a>
+                    <% } %>
+                    <a href="/admin/landing-pages" class="btn btn-secondary">&#8592; رجوع</a>
+                </div>
             </div>
 
+            <!-- Page Settings -->
             <div class="form-card">
+                <h3>اعدادات الصفحة</h3>
                 <form method="POST" action="<%= page ? '/admin/landing-pages/' + page.id : '/admin/landing-pages' %>">
                     <div class="form-group">
                         <label>العنوان *</label>
@@ -147,84 +182,350 @@
                 </form>
             </div>
 
-            <!-- Sections Management (only for existing pages) -->
             <% if (page) { %>
+            <!-- Background Audio Section -->
             <div class="form-card">
-                <h3>اقسام الصفحة</h3>
+                <h3>صوت الخلفية (Background Audio)</h3>
+                <form method="POST" action="/admin/landing-pages/<%= page.id %>/bg-audio" enctype="multipart/form-data">
+                    <div class="form-group" style="margin-bottom: 14px;">
+                        <label>ملف صوت (MP3)</label>
+                        <input type="file" name="media" accept="audio/mp3,audio/mpeg,.mp3">
+                        <% if (page.bg_audio_filename) { %>
+                            <div class="hint" style="color: #2e7d32; margin-top: 8px;">ملف حالي: <%= page.bg_audio_filename %></div>
+                        <% } %>
+                    </div>
+                    <div class="checkbox-group" style="margin-bottom: 16px;">
+                        <input type="checkbox" name="bg_audio_enabled" id="bg_audio_enabled" value="1" <%= page.bg_audio_enabled ? 'checked' : '' %>>
+                        <label for="bg_audio_enabled">تشغيل الصوت تلقائيا عند دخول الصفحة</label>
+                    </div>
+                    <button type="submit" class="btn btn-primary">حفظ الصوت</button>
+                </form>
+            </div>
 
+            <!-- Sections Management -->
+            <div class="form-card">
+                <h3>اقسام الصفحة <span style="font-size: 13px; color: #aaa; font-weight: 400;">— اسحب لإعادة الترتيب</span></h3>
+
+                <div id="sectionsList">
                 <% if (sections && sections.length > 0) { %>
                     <% sections.forEach(function(section, idx) { %>
-                        <div class="section-item">
+                        <div class="section-item" draggable="true" data-section-id="<%= section.id %>">
                             <div class="section-item-header">
-                                <span class="section-type">
-                                    <%= section.section_type === 'text' ? 'نص' : section.section_type === 'image' ? 'صورة' : section.section_type === 'video' ? 'فيديو' : 'GIF' %>
-                                </span>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <span class="drag-handle">&#9776;</span>
+                                    <span class="section-type-badge type-<%= section.section_type %>">
+                                        <%= section.section_type === 'text' ? 'نص' : section.section_type === 'image' ? 'صورة' : section.section_type === 'video' ? 'فيديو' : section.section_type === 'button' ? 'زر' : 'GIF' %>
+                                    </span>
+                                    <% if (section.full_width) { %><span style="font-size: 11px; background: #e3f2fd; color: #1565c0; padding: 2px 8px; border-radius: 4px;">Full Width</span><% } %>
+                                </div>
                                 <div class="section-actions">
-                                    <% if (idx > 0) { %>
-                                    <form method="POST" action="/admin/landing-pages/<%= page.id %>/section/<%= section.id %>/move" style="display:inline;">
-                                        <input type="hidden" name="direction" value="up">
-                                        <button type="submit" class="btn btn-sm" style="background:#e3f2fd; color:#1565c0; padding:4px 10px;">&#8593;</button>
-                                    </form>
-                                    <% } %>
-                                    <% if (idx < sections.length - 1) { %>
-                                    <form method="POST" action="/admin/landing-pages/<%= page.id %>/section/<%= section.id %>/move" style="display:inline;">
-                                        <input type="hidden" name="direction" value="down">
-                                        <button type="submit" class="btn btn-sm" style="background:#e3f2fd; color:#1565c0; padding:4px 10px;">&#8595;</button>
-                                    </form>
-                                    <% } %>
+                                    <button type="button" class="btn btn-sm" style="background:#fff3e0; color:#e65100; padding:4px 10px;" onclick="openEditModal(<%= section.id %>)">تعديل</button>
                                     <form method="POST" action="/admin/landing-pages/<%= page.id %>/section/<%= section.id %>/delete" style="display:inline;" onclick="return confirm('حذف هذا القسم؟')">
                                         <button type="submit" class="btn btn-delete btn-sm">حذف</button>
                                     </form>
                                 </div>
                             </div>
                             <% if (section.title) { %><h4><%= section.title %></h4><% } %>
-                            <% if (section.content) { %><p><%= section.content.substring(0, 150) %><%= section.content.length > 150 ? '...' : '' %></p><% } %>
-                            <% if (section.media_filename) { %>
-                                <% if (section.section_type === 'image' || section.section_type === 'gif') { %>
-                                    <img src="/uploads/landing-pages/<%= section.media_filename %>" alt="">
-                                <% } else if (section.section_type === 'video') { %>
-                                    <div style="font-size:13px; color:#2e7d32; margin-top:6px;">ملف فيديو: <%= section.media_filename %></div>
-                                <% } %>
+                            <% if (section.content) { %><p><%= section.content.substring(0, 120) %><%= section.content.length > 120 ? '...' : '' %></p><% } %>
+                            <% if (section.section_type === 'button') { %>
+                                <div style="margin-top: 8px;">
+                                    <span style="display: inline-block; padding: 6px 20px; border-radius: 8px; font-size: 13px; font-weight: 700; color: #fff; background: <%= section.button_color || '#8B6F47' %>;"><%= section.title || 'اشترِ الآن' %></span>
+                                    <span style="font-size: 11px; color: #888; margin-right: 8px;"><%= section.button_type === 'add_to_cart' ? 'أضف للسلة' : 'اشتري الآن' %> — <%= section.button_size || 'medium' %></span>
+                                </div>
+                            <% } %>
+                            <% if (section.media_filename && (section.section_type === 'image' || section.section_type === 'gif')) { %>
+                                <img src="/uploads/landing-pages/<%= section.media_filename %>" alt="">
+                            <% } else if (section.media_filename && section.section_type === 'video') { %>
+                                <div style="font-size: 12px; color: #1565c0; margin-top: 6px;">ملف فيديو: <%= section.media_filename %></div>
+                            <% } %>
+                            <% if (section.video_url) { %>
+                                <div style="font-size: 12px; color: #c62828; margin-top: 4px;">رابط: <%= section.video_url.substring(0, 60) %>...</div>
                             <% } %>
                         </div>
                     <% }); %>
                 <% } else { %>
-                    <p style="color:#aaa; text-align:center; padding:20px 0; font-size:14px;">لا توجد اقسام بعد</p>
+                    <p style="color:#aaa; text-align:center; padding:30px 0; font-size:14px;">لا توجد اقسام بعد — اختر نوع القسم من الأسفل</p>
                 <% } %>
+                </div>
 
-                <!-- Add Section Form -->
-                <div style="background: #f3f7fa; border-radius: 12px; padding: 20px; margin-top: 20px; border: 2px solid #d8e0e8;">
-                    <h4 style="font-size: 15px; color: #335b6b; margin-bottom: 14px;">اضافة قسم جديد</h4>
-                    <form method="POST" action="/admin/landing-pages/<%= page.id %>/section" enctype="multipart/form-data">
-                        <div class="form-row">
-                            <div class="form-group" style="margin-bottom:12px;">
-                                <label>نوع القسم *</label>
-                                <select name="section_type" style="width:100%; padding:10px; border:2px solid #d8e0e8; border-radius:8px; font-family:inherit; font-size:14px;">
-                                    <option value="text">نص</option>
-                                    <option value="image">صورة</option>
-                                    <option value="video">فيديو</option>
-                                    <option value="gif">GIF</option>
-                                </select>
-                            </div>
-                            <div class="form-group" style="margin-bottom:12px;">
-                                <label>العنوان</label>
-                                <input type="text" name="title" placeholder="عنوان القسم (اختياري)" style="width:100%; padding:10px; border:2px solid #d8e0e8; border-radius:8px; font-family:inherit; font-size:14px;">
-                            </div>
+                <div id="saveOrderMsg" style="display: none; padding: 12px 20px; background: #e8f5e9; color: #2e7d32; border-radius: 10px; margin-bottom: 16px; font-weight: 600; text-align: center;"></div>
+
+                <!-- Add New Section -->
+                <div style="background: #f3f7fa; border-radius: 12px; padding: 24px; margin-top: 20px; border: 2px solid #d8e0e8;">
+                    <h4 style="font-size: 16px; color: #335b6b; margin-bottom: 16px;">اضافة قسم جديد</h4>
+
+                    <div class="section-types" id="sectionTypeSelector">
+                        <button type="button" class="section-type-btn" onclick="showAddForm('text')"><span class="emoji">📝</span> نص</button>
+                        <button type="button" class="section-type-btn" onclick="showAddForm('image')"><span class="emoji">🖼️</span> صورة</button>
+                        <button type="button" class="section-type-btn" onclick="showAddForm('video')"><span class="emoji">🎥</span> فيديو</button>
+                        <button type="button" class="section-type-btn" onclick="showAddForm('button')"><span class="emoji">🔘</span> زر</button>
+                        <button type="button" class="section-type-btn" onclick="showAddForm('gif')"><span class="emoji">✨</span> GIF</button>
+                    </div>
+
+                    <!-- Dynamic Add Form -->
+                    <form method="POST" action="/admin/landing-pages/<%= page.id %>/section" enctype="multipart/form-data" id="addSectionForm" style="display: none;">
+                        <input type="hidden" name="section_type" id="addSectionType">
+
+                        <div class="form-group" style="margin-bottom:14px;">
+                            <label id="addTitleLabel">العنوان</label>
+                            <input type="text" name="title" id="addTitle" placeholder="عنوان القسم (اختياري)">
                         </div>
-                        <div class="form-group" style="margin-bottom:12px;">
+
+                        <div class="form-group" style="margin-bottom:14px;" id="addContentGroup">
                             <label>المحتوى</label>
-                            <textarea name="content" placeholder="النص او المحتوى..." style="width:100%; padding:10px; border:2px solid #d8e0e8; border-radius:8px; font-family:inherit; font-size:14px; min-height:80px; resize:vertical;"></textarea>
+                            <textarea name="content" id="addContent" placeholder="النص او المحتوى..." style="min-height:80px; resize:vertical;"></textarea>
                         </div>
-                        <div class="form-group" style="margin-bottom:12px;">
-                            <label>ملف وسائط (صورة / فيديو / GIF)</label>
-                            <input type="file" name="media" accept="image/*,video/*" style="width:100%; padding:8px; border:2px solid #d8e0e8; border-radius:8px; font-size:13px;">
+
+                        <div class="form-group" style="margin-bottom:14px;" id="addMediaGroup">
+                            <label id="addMediaLabel">ملف وسائط</label>
+                            <input type="file" name="media" id="addMedia" accept="image/*,video/*">
                         </div>
-                        <button type="submit" style="background:#335b6b; color:#fff; border:none; border-radius:8px; padding:10px 24px; font-weight:700; cursor:pointer; font-family:inherit; font-size:14px;">+ اضافة قسم</button>
+
+                        <!-- Video options -->
+                        <div id="addVideoOptions" style="display:none;">
+                            <div class="form-group" style="margin-bottom:14px;">
+                                <label>رابط يوتيوب (اختياري — بدل رفع الملف)</label>
+                                <input type="url" name="video_url" placeholder="https://www.youtube.com/watch?v=..." dir="ltr" style="text-align:left;">
+                            </div>
+                            <div style="display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 14px;">
+                                <div class="checkbox-group"><input type="checkbox" name="autoplay" value="1" id="addAutoplay"><label for="addAutoplay">تشغيل تلقائي</label></div>
+                                <div class="checkbox-group"><input type="checkbox" name="muted" value="1" id="addMuted" checked><label for="addMuted">صامت</label></div>
+                                <div class="checkbox-group"><input type="checkbox" name="loop_video" value="1" id="addLoop"><label for="addLoop">تكرار</label></div>
+                            </div>
+                        </div>
+
+                        <!-- Button options -->
+                        <div id="addButtonOptions" style="display:none;">
+                            <div class="form-row" style="margin-bottom: 14px;">
+                                <div class="form-group" style="margin-bottom:0;">
+                                    <label>نوع الزر</label>
+                                    <select name="button_type">
+                                        <option value="buy_now">اشترِ الآن</option>
+                                        <option value="add_to_cart">أضف للسلة</option>
+                                    </select>
+                                </div>
+                                <div class="form-group" style="margin-bottom:0;">
+                                    <label>حجم الزر</label>
+                                    <select name="button_size">
+                                        <option value="small">صغير</option>
+                                        <option value="medium" selected>متوسط</option>
+                                        <option value="large">كبير</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group" style="margin-bottom: 14px;">
+                                <label>لون الزر</label>
+                                <div style="display: flex; align-items: center; gap: 12px;">
+                                    <input type="color" name="button_color" value="#8B6F47" style="width: 50px; height: 36px; border: 2px solid #e8e0d8; border-radius: 8px; cursor: pointer; padding: 2px;">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Image options -->
+                        <div id="addImageOptions" style="display:none;">
+                            <div class="checkbox-group" style="margin-bottom: 14px;">
+                                <input type="checkbox" name="full_width" value="1" id="addFullWidth">
+                                <label for="addFullWidth">عرض كامل (Full Width — بدون هوامش)</label>
+                            </div>
+                        </div>
+
+                        <div style="display: flex; gap: 10px;">
+                            <button type="submit" class="btn btn-primary">+ اضافة القسم</button>
+                            <button type="button" class="btn btn-secondary" onclick="hideAddForm()">الغاء</button>
+                        </div>
                     </form>
                 </div>
             </div>
+
+            <!-- Edit Section Modals -->
+            <% if (sections && sections.length > 0) { %>
+            <% sections.forEach(function(section) { %>
+            <div class="edit-overlay" id="editModal_<%= section.id %>">
+                <div class="edit-modal">
+                    <h3>تعديل القسم — <%= section.section_type === 'text' ? 'نص' : section.section_type === 'image' ? 'صورة' : section.section_type === 'video' ? 'فيديو' : section.section_type === 'button' ? 'زر' : 'GIF' %></h3>
+                    <form method="POST" action="/admin/landing-pages/<%= page.id %>/section/<%= section.id %>/edit" enctype="multipart/form-data">
+                        <div class="form-group" style="margin-bottom:14px;">
+                            <label><%= section.section_type === 'button' ? 'نص الزر' : 'العنوان' %></label>
+                            <input type="text" name="title" value="<%= section.title || '' %>">
+                        </div>
+
+                        <% if (section.section_type !== 'button') { %>
+                        <div class="form-group" style="margin-bottom:14px;">
+                            <label>المحتوى</label>
+                            <textarea name="content" style="min-height:80px; resize:vertical;"><%= section.content || '' %></textarea>
+                        </div>
+                        <% } %>
+
+                        <% if (section.section_type === 'image' || section.section_type === 'gif' || section.section_type === 'video') { %>
+                        <div class="form-group" style="margin-bottom:14px;">
+                            <label>استبدال الملف (اختياري)</label>
+                            <input type="file" name="media" accept="<%= section.section_type === 'video' ? 'video/*' : 'image/*' %>">
+                            <% if (section.media_filename) { %>
+                                <div class="hint" style="color: #2e7d32;">ملف حالي: <%= section.media_filename %></div>
+                            <% } %>
+                        </div>
+                        <% } %>
+
+                        <% if (section.section_type === 'video') { %>
+                        <div class="form-group" style="margin-bottom:14px;">
+                            <label>رابط يوتيوب</label>
+                            <input type="url" name="video_url" value="<%= section.video_url || '' %>" dir="ltr" style="text-align:left;">
+                        </div>
+                        <div style="display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 14px;">
+                            <div class="checkbox-group"><input type="checkbox" name="autoplay" value="1" <%= section.autoplay ? 'checked' : '' %>><label>تشغيل تلقائي</label></div>
+                            <div class="checkbox-group"><input type="checkbox" name="muted" value="1" <%= section.muted ? 'checked' : '' %>><label>صامت</label></div>
+                            <div class="checkbox-group"><input type="checkbox" name="loop_video" value="1" <%= section.loop_video ? 'checked' : '' %>><label>تكرار</label></div>
+                        </div>
+                        <% } %>
+
+                        <% if (section.section_type === 'button') { %>
+                        <div class="form-row" style="margin-bottom: 14px;">
+                            <div class="form-group" style="margin-bottom:0;">
+                                <label>نوع الزر</label>
+                                <select name="button_type">
+                                    <option value="buy_now" <%= section.button_type === 'buy_now' ? 'selected' : '' %>>اشترِ الآن</option>
+                                    <option value="add_to_cart" <%= section.button_type === 'add_to_cart' ? 'selected' : '' %>>أضف للسلة</option>
+                                </select>
+                            </div>
+                            <div class="form-group" style="margin-bottom:0;">
+                                <label>حجم الزر</label>
+                                <select name="button_size">
+                                    <option value="small" <%= section.button_size === 'small' ? 'selected' : '' %>>صغير</option>
+                                    <option value="medium" <%= section.button_size === 'medium' || !section.button_size ? 'selected' : '' %>>متوسط</option>
+                                    <option value="large" <%= section.button_size === 'large' ? 'selected' : '' %>>كبير</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group" style="margin-bottom: 14px;">
+                            <label>لون الزر</label>
+                            <input type="color" name="button_color" value="<%= section.button_color || '#8B6F47' %>" style="width: 50px; height: 36px; border: 2px solid #e8e0d8; border-radius: 8px; cursor: pointer; padding: 2px;">
+                        </div>
+                        <% } %>
+
+                        <% if (section.section_type === 'image' || section.section_type === 'gif') { %>
+                        <div class="checkbox-group" style="margin-bottom: 14px;">
+                            <input type="checkbox" name="full_width" value="1" <%= section.full_width ? 'checked' : '' %>><label>عرض كامل (Full Width)</label>
+                        </div>
+                        <% } %>
+
+                        <div style="display: flex; gap: 10px;">
+                            <button type="submit" class="btn btn-primary">حفظ التعديلات</button>
+                            <button type="button" class="btn btn-secondary" onclick="closeEditModal(<%= section.id %>)">الغاء</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <% }); %>
+            <% } %>
+
             <% } %>
         </main>
     </div>
+
+    <script>
+    // === Section Type Add Form ===
+    function showAddForm(type) {
+        var form = document.getElementById('addSectionForm');
+        document.getElementById('addSectionType').value = type;
+        form.style.display = 'block';
+
+        // Show/hide fields based on type
+        document.getElementById('addContentGroup').style.display = (type === 'button') ? 'none' : '';
+        document.getElementById('addMediaGroup').style.display = (type === 'text' || type === 'button') ? 'none' : '';
+        document.getElementById('addVideoOptions').style.display = (type === 'video') ? '' : 'none';
+        document.getElementById('addButtonOptions').style.display = (type === 'button') ? '' : 'none';
+        document.getElementById('addImageOptions').style.display = (type === 'image' || type === 'gif') ? '' : 'none';
+
+        // Update labels
+        if (type === 'button') {
+            document.getElementById('addTitleLabel').textContent = 'نص الزر';
+            document.getElementById('addTitle').placeholder = 'اشترِ الآن';
+        } else {
+            document.getElementById('addTitleLabel').textContent = 'العنوان';
+            document.getElementById('addTitle').placeholder = 'عنوان القسم (اختياري)';
+        }
+
+        // Media accept
+        var mediaInput = document.getElementById('addMedia');
+        if (type === 'video') mediaInput.accept = 'video/*';
+        else if (type === 'gif') mediaInput.accept = 'image/gif';
+        else mediaInput.accept = 'image/*';
+    }
+
+    function hideAddForm() {
+        document.getElementById('addSectionForm').style.display = 'none';
+    }
+
+    // === Edit Modal ===
+    function openEditModal(id) { document.getElementById('editModal_' + id).classList.add('active'); }
+    function closeEditModal(id) { document.getElementById('editModal_' + id).classList.remove('active'); }
+
+    // Close modal on overlay click
+    document.querySelectorAll('.edit-overlay').forEach(function(overlay) {
+        overlay.addEventListener('click', function(e) {
+            if (e.target === overlay) overlay.classList.remove('active');
+        });
+    });
+
+    // === Drag & Drop Reordering ===
+    var dragItem = null;
+    var sectionsList = document.getElementById('sectionsList');
+    if (sectionsList) {
+        var items = sectionsList.querySelectorAll('.section-item');
+        items.forEach(function(item) {
+            item.addEventListener('dragstart', function(e) {
+                dragItem = this;
+                setTimeout(function() { dragItem.classList.add('dragging'); }, 0);
+            });
+            item.addEventListener('dragend', function() {
+                this.classList.remove('dragging');
+                document.querySelectorAll('.section-item').forEach(function(el) { el.classList.remove('drag-over'); });
+                dragItem = null;
+                saveSectionOrder();
+            });
+            item.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                if (this !== dragItem) this.classList.add('drag-over');
+            });
+            item.addEventListener('dragleave', function() { this.classList.remove('drag-over'); });
+            item.addEventListener('drop', function(e) {
+                e.preventDefault();
+                this.classList.remove('drag-over');
+                if (this !== dragItem && dragItem) {
+                    var all = Array.from(sectionsList.querySelectorAll('.section-item'));
+                    var fromIdx = all.indexOf(dragItem);
+                    var toIdx = all.indexOf(this);
+                    if (fromIdx < toIdx) {
+                        sectionsList.insertBefore(dragItem, this.nextSibling);
+                    } else {
+                        sectionsList.insertBefore(dragItem, this);
+                    }
+                }
+            });
+        });
+    }
+
+    function saveSectionOrder() {
+        var items = document.querySelectorAll('#sectionsList .section-item');
+        var order = [];
+        items.forEach(function(item) { order.push(parseInt(item.dataset.sectionId)); });
+
+        var pageId = '<%= page ? page.id : "" %>';
+        if (!pageId) return;
+
+        fetch('/admin/landing-pages/' + pageId + '/sections/reorder', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ order: order })
+        }).then(function(r) { return r.json(); }).then(function(data) {
+            if (data.success) {
+                var msg = document.getElementById('saveOrderMsg');
+                msg.textContent = 'تم حفظ الترتيب الجديد بنجاح';
+                msg.style.display = 'block';
+                setTimeout(function() { msg.style.display = 'none'; }, 2500);
+            }
+        });
+    }
+    </script>
 </body>
 </html>

@@ -73,16 +73,12 @@
             <% } %>
 
             <% if (review.audio_filename) { %>
-              <div class="custom-audio-player" data-src="/uploads/reviews/<%= review.audio_filename %>" style="margin-top: 16px;">
-                <button type="button" class="cap-play-btn" onclick="toggleCustomAudio(this)">
-                  <svg class="cap-icon-play" viewBox="0 0 24 24" width="20" height="20"><polygon points="5,3 19,12 5,21" fill="currentColor"/></svg>
-                  <svg class="cap-icon-pause" viewBox="0 0 24 24" width="20" height="20" style="display:none"><rect x="5" y="3" width="4" height="18" fill="currentColor"/><rect x="15" y="3" width="4" height="18" fill="currentColor"/></svg>
-                </button>
-                <div class="cap-progress-wrap" onclick="seekCustomAudio(event, this)">
-                  <div class="cap-progress-bar"><div class="cap-progress-fill"></div></div>
+              <div class="wa-audio-player" data-src="/uploads/reviews/<%= review.audio_filename %>" style="margin-top: 16px;">
+                <button type="button" class="wa-play-btn" onclick="toggleWaAudio(this)">▶</button>
+                <div class="wa-progress-wrap" onclick="seekWaAudio(event, this)">
+                  <div class="wa-waveform"></div>
                 </div>
-                <span class="cap-time">0:00</span>
-                <span class="cap-label">🎤 تسجيل صوتي</span>
+                <span class="wa-time">0:00</span>
               </div>
             <% } %>
           </div>

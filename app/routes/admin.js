@@ -667,11 +667,15 @@ router.post('/landing-pages/:id', requireAdmin, (req, res) => {
 
 // Add section to landing page
 router.post('/landing-pages/:id/section', requireAdmin, landingUpload.single('media'), (req, res) => {
-  const { section_type, title, content } = req.body;
+  const { section_type, title, content, button_type, button_color, button_size, video_url, autoplay, loop_video, muted, full_width } = req.body;
   const mediaFilename = req.file ? req.file.filename : '';
   const maxOrder = db.prepare('SELECT COALESCE(MAX(sort_order), -1) as max_order FROM landing_page_sections WHERE landing_page_id = ?').get(req.params.id);
   const sortOrder = (maxOrder ? maxOrder.max_order : -1) + 1;
-  db.prepare('INSERT INTO landing_page_sections (landing_page_id, section_type, title, content, media_filename, sort_order) VALUES (?, ?, ?, ?, ?, ?)').run(req.params.id, section_type || 'text', title || '', content || '', mediaFilename, sortOrder);
+  db.prepare('INSERT INTO landing_page_sections (landing_page_id, section_type, title, content, media_filename, sort_order, button_type, button_color, button_size, video_url, autoplay, loop_video, muted, full_width) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)').run(
+    req.params.id, section_type || 'text', title || '', content || '', mediaFilename, sortOrder,
+    button_type || '', button_color || '', button_size || 'medium', video_url || '',
+    autoplay === '1' ? 1 : 0, loop_video === '1' ? 1 : 0, muted === '1' ? 1 : 0, full_width === '1' ? 1 : 0
+  );
   res.redirect('/admin/landing-pages/' + req.params.id + '/edit');
 });
 
@@ -688,6 +692,62 @@ router.post('/landing-pages/:id/section/:sectionId/move', requireAdmin, (req, re
       db.prepare('UPDATE landing_page_sections SET sort_order = ? WHERE id = ?').run(sections[idx + 1].sort_order, sections[idx].id);
       db.prepare('UPDATE landing_page_sections SET sort_order = ? WHERE id = ?').run(sections[idx].sort_order, sections[idx + 1].id);
     }
+  }
+  res.redirect('/admin/landing-pages/' + req.params.id + '/edit');
+});
+
+// API: Reorder sections via drag & drop (JSON body)
+router.post('/landing-pages/:id/sections/reorder', requireAdmin, (req, res) => {
+  try {
+    const { order } = req.body; // array of section IDs in new order
+    if (Array.isArray(order)) {
+      order.forEach((sectionId, idx) => {
+        db.prepare('UPDATE landing_page_sections SET sort_order = ? WHERE id = ? AND landing_page_id = ?').run(idx, sectionId, req.params.id);
+      });
+    }
+    res.json({ success: true });
+  } catch(err) {
+    console.error('Reorder error:', err);
+    res.json({ success: false, error: err.message });
+  }
+});
+
+// Edit section
+router.post('/landing-pages/:id/section/:sectionId/edit', requireAdmin, landingUpload.single('media'), (req, res) => {
+  const { title, content, button_type, button_color, button_size, video_url, autoplay, loop_video, muted, full_width } = req.body;
+  const section = db.prepare('SELECT * FROM landing_page_sections WHERE id = ? AND landing_page_id = ?').get(req.params.sectionId, req.params.id);
+  if (!section) return res.redirect('/admin/landing-pages/' + req.params.id + '/edit');
+
+  const mediaFilename = req.file ? req.file.filename : section.media_filename;
+  // If new media uploaded, delete old one
+  if (req.file && section.media_filename) {
+    const oldPath = path.join(__dirname, '..', 'public', 'uploads', 'landing-pages', section.media_filename);
+    try { if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath); } catch(e) {}
+  }
+
+  db.prepare('UPDATE landing_page_sections SET title=?, content=?, media_filename=?, button_type=?, button_color=?, button_size=?, video_url=?, autoplay=?, loop_video=?, muted=?, full_width=? WHERE id=? AND landing_page_id=?').run(
+    title || '', content || '', mediaFilename, button_type || '', button_color || '', button_size || 'medium', video_url || '',
+    autoplay === '1' ? 1 : 0, loop_video === '1' ? 1 : 0, muted === '1' ? 1 : 0, full_width === '1' ? 1 : 0,
+    req.params.sectionId, req.params.id
+  );
+  res.redirect('/admin/landing-pages/' + req.params.id + '/edit');
+});
+
+// Upload background audio for landing page
+router.post('/landing-pages/:id/bg-audio', requireAdmin, landingUpload.single('media'), (req, res) => {
+  const { bg_audio_enabled } = req.body;
+  const page = db.prepare('SELECT * FROM landing_pages WHERE id = ?').get(req.params.id);
+  if (!page) return res.redirect('/admin/landing-pages');
+
+  if (req.file) {
+    // Delete old audio if exists
+    if (page.bg_audio_filename) {
+      const oldPath = path.join(__dirname, '..', 'public', 'uploads', 'landing-pages', page.bg_audio_filename);
+      try { if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath); } catch(e) {}
+    }
+    db.prepare('UPDATE landing_pages SET bg_audio_filename=?, bg_audio_enabled=? WHERE id=?').run(req.file.filename, bg_audio_enabled === '1' ? 1 : 0, req.params.id);
+  } else {
+    db.prepare('UPDATE landing_pages SET bg_audio_enabled=? WHERE id=?').run(bg_audio_enabled === '1' ? 1 : 0, req.params.id);
   }
   res.redirect('/admin/landing-pages/' + req.params.id + '/edit');
 });

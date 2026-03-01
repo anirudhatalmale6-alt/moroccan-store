@@ -3,6 +3,43 @@
 <head>
   <%- include('partials/head') %>
   <title><%= landingPage.title %> — <%= typeof siteName !== 'undefined' ? siteName : 'متجرنا' %></title>
+  <style>
+    /* Fade-in animation */
+    .lp-section { opacity: 0; transform: translateY(24px); transition: opacity 0.6s ease, transform 0.6s ease; }
+    .lp-section.visible { opacity: 1; transform: translateY(0); }
+
+    /* WhatsApp-style audio player */
+    .wa-audio-player { display: flex; align-items: center; gap: 10px; background: #dcf8c6; border-radius: 12px; padding: 10px 16px; max-width: 340px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+    .wa-play-btn { width: 40px; height: 40px; border-radius: 50%; border: none; background: #25D366; color: #fff; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background 0.2s; }
+    .wa-play-btn:hover { background: #1EBE5B; }
+    .wa-progress-wrap { flex: 1; position: relative; height: 28px; display: flex; align-items: center; }
+    .wa-waveform { display: flex; align-items: center; gap: 2px; height: 28px; width: 100%; }
+    .wa-waveform-bar { width: 3px; border-radius: 2px; background: #93d882; transition: background 0.2s; }
+    .wa-waveform-bar.played { background: #075E54; }
+    .wa-time { font-size: 11px; color: #667781; font-weight: 600; flex-shrink: 0; min-width: 36px; text-align: center; }
+
+    /* Button section sizes */
+    .lp-btn-small { padding: 10px 24px; font-size: 14px; }
+    .lp-btn-medium { padding: 14px 40px; font-size: 17px; }
+    .lp-btn-large { padding: 18px 56px; font-size: 20px; width: 100%; max-width: 420px; }
+
+    /* Background audio floating control */
+    .bg-audio-control { position: fixed; bottom: 80px; left: 16px; z-index: 998; width: 44px; height: 44px; border-radius: 50%; border: none; background: rgba(0,0,0,0.6); color: #fff; font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(8px); transition: background 0.2s; }
+    .bg-audio-control:hover { background: rgba(0,0,0,0.8); }
+
+    /* Image protection */
+    .landing-sections img {
+      -webkit-user-select: none;
+      user-select: none;
+      -webkit-touch-callout: none;
+      pointer-events: none;
+    }
+
+    /* Bottom padding for sticky button */
+    body { padding-bottom: 70px; }
+
+    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+  </style>
 </head>
 <body>
   <div class="pattern-overlay"></div>
@@ -19,13 +56,21 @@
         </div>
         <% var navPayType = typeof landingPage !== 'undefined' ? (landingPage.payment_type || 'bank') : 'bank'; %>
         <% if (navPayType === 'cod') { %>
-          <a href="#landingCheckout" class="navbar__cta">🛒 اطلب الآن</a>
+          <a href="#landingCheckout" class="navbar__cta">اطلب الآن</a>
         <% } else { %>
-          <a href="/product/<%= typeof product !== 'undefined' && product ? product.slug : '' %>/checkout" class="navbar__cta">🛒 اطلب الآن</a>
+          <a href="/product/<%= typeof product !== 'undefined' && product ? product.slug : '' %>/checkout" class="navbar__cta">اطلب الآن</a>
         <% } %>
       </div>
     </div>
   </nav>
+
+  <!-- Background Audio -->
+  <% if (landingPage.bg_audio_enabled && landingPage.bg_audio_filename) { %>
+    <audio id="bgAudio" preload="auto" loop>
+      <source src="/uploads/landing-pages/<%= landingPage.bg_audio_filename %>" type="audio/mpeg">
+    </audio>
+    <button type="button" class="bg-audio-control" id="bgAudioBtn" onclick="toggleBgAudio()" title="صوت الخلفية">🔇</button>
+  <% } %>
 
   <!-- Landing Page Sections -->
   <div class="landing-sections" style="padding-top: 80px;">
@@ -35,7 +80,7 @@
 
         <% if (section.section_type === 'text') { %>
           <!-- Text Section -->
-          <section style="padding: 40px 0;">
+          <section class="lp-section" style="padding: 40px 0;">
             <div class="container" style="max-width: 900px;">
               <% if (section.title) { %>
                 <h2 style="font-size: 28px; font-weight: 800; color: var(--color-primary-dark); margin-bottom: 16px; text-align: center;"><%= section.title %></h2>
@@ -48,35 +93,75 @@
 
         <% } else if (section.section_type === 'image' || section.section_type === 'gif') { %>
           <!-- Image/GIF Section -->
-          <section style="padding: 0; margin: 0;">
-            <div style="max-width: 900px; margin: 0 auto; padding: 0 16px;">
+          <section class="lp-section" style="padding: 0; margin: 0;">
+            <% var imgFullWidth = section.full_width; %>
+            <div style="<%= imgFullWidth ? '' : 'max-width: 900px; margin: 0 auto; padding: 0 16px;' %>">
               <% if (section.title) { %>
-                <h2 style="font-size: 24px; font-weight: 800; color: var(--color-primary-dark); margin-bottom: 12px; text-align: center; padding-top: 24px;"><%= section.title %></h2>
+                <h2 style="font-size: 24px; font-weight: 800; color: var(--color-primary-dark); margin-bottom: 12px; text-align: center; padding-top: 24px; <%= imgFullWidth ? 'padding-left:16px; padding-right:16px;' : '' %>"><%= section.title %></h2>
               <% } %>
               <% if (section.media_filename) { %>
                 <img src="/uploads/landing-pages/<%= section.media_filename %>" alt="<%= section.title || '' %>"
                   style="width: 100%; height: auto; display: block; margin: 0 auto;" loading="lazy">
               <% } %>
               <% if (section.content) { %>
-                <p style="font-size: 15px; color: var(--color-text-secondary); text-align: center; margin-top: 12px; padding-bottom: 16px;"><%= section.content %></p>
+                <p style="font-size: 15px; color: var(--color-text-secondary); text-align: center; margin-top: 12px; padding: 0 16px 16px;"><%= section.content %></p>
               <% } %>
             </div>
           </section>
 
         <% } else if (section.section_type === 'video') { %>
           <!-- Video Section -->
-          <section style="padding: 20px 0;">
+          <section class="lp-section" style="padding: 20px 0;">
             <div style="max-width: 900px; margin: 0 auto; padding: 0 16px;">
               <% if (section.title) { %>
                 <h2 style="font-size: 24px; font-weight: 800; color: var(--color-primary-dark); margin-bottom: 12px; text-align: center;"><%= section.title %></h2>
               <% } %>
-              <% if (section.media_filename) { %>
-                <video controls playsinline style="width: 100%; border-radius: var(--radius-md); box-shadow: var(--shadow-md);">
+              <% if (section.video_url) { %>
+                <%
+                  var videoUrl = section.video_url || '';
+                  var ytMatch = videoUrl.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/);
+                  var ytId = ytMatch ? ytMatch[1] : '';
+                %>
+                <% if (ytId) { %>
+                  <div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: var(--radius-md); box-shadow: var(--shadow-md);">
+                    <iframe src="https://www.youtube.com/embed/<%= ytId %>?rel=0<%= section.autoplay ? '&autoplay=1' : '' %><%= section.muted ? '&mute=1' : '' %><%= section.loop_video ? '&loop=1&playlist=' + ytId : '' %>"
+                      style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none;" allowfullscreen allow="autoplay"></iframe>
+                  </div>
+                <% } %>
+              <% } else if (section.media_filename) { %>
+                <video <%= section.autoplay ? 'autoplay' : '' %> <%= section.muted ? 'muted' : '' %> <%= section.loop_video ? 'loop' : '' %> controls playsinline
+                  style="width: 100%; border-radius: var(--radius-md); box-shadow: var(--shadow-md);" loading="lazy">
                   <source src="/uploads/landing-pages/<%= section.media_filename %>" type="video/mp4">
                 </video>
               <% } %>
               <% if (section.content) { %>
                 <p style="font-size: 15px; color: var(--color-text-secondary); text-align: center; margin-top: 12px;"><%= section.content %></p>
+              <% } %>
+            </div>
+          </section>
+
+        <% } else if (section.section_type === 'button') { %>
+          <!-- Button Section -->
+          <% var payType = typeof landingPage !== 'undefined' ? (landingPage.payment_type || 'bank') : 'bank'; %>
+          <% var btnColor = section.button_color || 'var(--color-primary)'; %>
+          <% var btnSize = section.button_size || 'medium'; %>
+          <% var btnText = section.title || (section.button_type === 'add_to_cart' ? 'أضف للسلة 🛒' : 'اشترِ الآن 🛍️'); %>
+          <section class="lp-section" style="padding: 24px 0; text-align: center;">
+            <div class="container">
+              <% if (section.button_type === 'add_to_cart') { %>
+                <button type="button" class="btn lp-btn-<%= btnSize %>" onclick="lpAddToCart()" style="background: <%= btnColor %>; color: #fff; border: none; border-radius: 50px; font-family: var(--font-body); font-weight: 800; cursor: pointer; display: inline-block; text-align: center;">
+                  <%= btnText %>
+                </button>
+              <% } else { %>
+                <% if (payType === 'cod') { %>
+                  <a href="#landingCheckout" class="btn lp-btn-<%= btnSize %>" style="background: <%= btnColor %>; color: #fff; border-radius: 50px; font-weight: 800; display: inline-block; text-decoration: none; text-align: center;">
+                    <%= btnText %>
+                  </a>
+                <% } else { %>
+                  <a href="/product/<%= typeof product !== 'undefined' && product ? product.slug : '' %>/checkout" class="btn lp-btn-<%= btnSize %>" style="background: <%= btnColor %>; color: #fff; border-radius: 50px; font-weight: 800; display: inline-block; text-decoration: none; text-align: center;">
+                    <%= btnText %>
+                  </a>
+                <% } %>
               <% } %>
             </div>
           </section>
@@ -91,7 +176,7 @@
   <% var paymentType = landingPage.payment_type || 'bank'; %>
   <% if (paymentType === 'cod') { %>
   <!-- COD: Show form directly in landing page -->
-  <section id="landingCheckout" style="padding: 60px 0; background: var(--color-bg-warm);">
+  <section id="landingCheckout" class="lp-section" style="padding: 60px 0; background: var(--color-bg-warm);">
     <div class="container" style="max-width: 600px;">
       <div class="section-header" style="margin-bottom: 30px;">
         <span class="section-header__label">اطلب الآن</span>
@@ -107,61 +192,45 @@
 
       <div class="feedback-card" style="padding: 30px;">
         <form id="landingOrderForm" novalidate>
-
           <div class="form-group">
-            <label class="form-label" for="lpFullName">
-              <span class="required">*</span> 👤 الاسم الكامل
-            </label>
+            <label class="form-label" for="lpFullName"><span class="required">*</span> 👤 الاسم الكامل</label>
             <input type="text" id="lpFullName" name="fullName" class="form-input" placeholder="أدخل اسمك الكامل" required>
             <div class="form-error"></div>
           </div>
-
           <div class="form-group">
-            <label class="form-label" for="lpPhone">
-              <span class="required">*</span> 📱 رقم الهاتف
-            </label>
+            <label class="form-label" for="lpPhone"><span class="required">*</span> 📱 رقم الهاتف</label>
             <input type="tel" id="lpPhone" name="phone" class="form-input" placeholder="0612345678" required dir="ltr" style="text-align: left;">
             <div class="form-error"></div>
           </div>
-
-          <!-- Quantity -->
           <div class="form-group">
             <label class="form-label">📦 الكمية</label>
             <div style="display: flex; align-items: center; gap: 12px;">
               <div class="qty-control" style="display: flex; align-items: center;">
-                <button type="button" onclick="lpQtyChange(-1)" style="width: 36px; height: 36px; border: 1px solid var(--color-border); background: var(--color-card); border-radius: var(--radius-sm) 0 0 var(--radius-sm); cursor: pointer; font-size: 18px; font-weight: 700;">−</button>
+                <button type="button" onclick="lpQtyChange(-1)" style="width: 36px; height: 36px; border: 1px solid var(--color-border); background: var(--color-card); border-radius: var(--radius-sm) 0 0 var(--radius-sm); cursor: pointer; font-size: 18px; font-weight: 700;">-</button>
                 <div id="lpQtyValue" style="width: 44px; height: 36px; border-top: 1px solid var(--color-border); border-bottom: 1px solid var(--color-border); display: flex; align-items: center; justify-content: center; font-weight: 700; background: var(--color-bg);">1</div>
                 <button type="button" onclick="lpQtyChange(1)" style="width: 36px; height: 36px; border: 1px solid var(--color-border); background: var(--color-card); border-radius: 0 var(--radius-sm) var(--radius-sm) 0; cursor: pointer; font-size: 18px; font-weight: 700;">+</button>
               </div>
               <span id="lpTotalPrice" style="font-size: 18px; font-weight: 700; color: var(--color-primary);"><%= product.price %> درهم</span>
             </div>
           </div>
-
           <div class="form-group">
-            <label class="form-label" for="lpCity">
-              <span class="required">*</span> 🏙️ المدينة
-            </label>
+            <label class="form-label" for="lpCity"><span class="required">*</span> 🏙️ المدينة</label>
             <input type="text" id="lpCity" name="city" class="form-input" placeholder="الدار البيضاء، الرباط..." required>
             <div class="form-error"></div>
           </div>
           <div class="form-group">
-            <label class="form-label" for="lpAddress">
-              <span class="required">*</span> 📍 العنوان
-            </label>
+            <label class="form-label" for="lpAddress"><span class="required">*</span> 📍 العنوان</label>
             <textarea id="lpAddress" name="address" class="form-input form-textarea" placeholder="العنوان الكامل للتوصيل..." rows="2" required></textarea>
             <div class="form-error"></div>
           </div>
-
-          <button type="submit" class="btn btn--primary btn--lg btn--full" id="lpSubmitBtn" style="margin-top: 20px;">
-            تأكيد الطلب
-          </button>
+          <button type="submit" class="btn btn--primary btn--lg btn--full" id="lpSubmitBtn" style="margin-top: 20px;">تأكيد الطلب</button>
         </form>
       </div>
     </div>
   </section>
   <% } else { %>
   <!-- Bank: Just show a CTA section that links to checkout -->
-  <section id="landingCheckout" style="padding: 60px 0; background: var(--color-bg-warm);">
+  <section id="landingCheckout" class="lp-section" style="padding: 60px 0; background: var(--color-bg-warm);">
     <div class="container" style="max-width: 600px; text-align: center;">
       <div class="section-header" style="margin-bottom: 30px;">
         <span class="section-header__label">اطلب الآن</span>
@@ -190,9 +259,23 @@
 
   <%- include('partials/footer') %>
 
+  <!-- Sticky Buy Button -->
+  <% if (typeof product !== 'undefined' && product) { %>
+  <div id="stickyBuyBtn" style="position: fixed; bottom: 0; left: 0; right: 0; background: white; padding: 12px 16px; box-shadow: 0 -4px 20px rgba(0,0,0,0.1); z-index: 999; display: flex; align-items: center; justify-content: center; gap: 12px;">
+    <span style="font-size: 20px; font-weight: 800; color: var(--color-primary);"><%= product.price %> درهم</span>
+    <% var lpPayType = typeof landingPage !== 'undefined' ? (landingPage.payment_type || 'bank') : 'bank'; %>
+    <% if (lpPayType === 'cod') { %>
+      <a href="#landingCheckout" class="btn btn--primary" style="padding: 12px 32px; font-size: 16px; font-weight: 700;">اطلب الآن 🛒</a>
+    <% } else { %>
+      <a href="/product/<%= product.slug %>/checkout" class="btn btn--primary" style="padding: 12px 32px; font-size: 16px; font-weight: 700;">اطلب الآن 🛒</a>
+    <% } %>
+  </div>
+  <% } %>
+
   <script>
     var LP_PRICE = <%= typeof product !== 'undefined' && product ? product.price : 0 %>;
     var LP_PRODUCT_SLUG = '<%= typeof product !== 'undefined' && product ? product.slug : '' %>';
+    var LP_PRODUCT_ID = '<%= typeof product !== 'undefined' && product ? product.id : '' %>';
 
     function lpQtyChange(delta) {
       var el = document.getElementById('lpQtyValue');
@@ -206,6 +289,73 @@
       if (totalEl) totalEl.textContent = (qty * LP_PRICE) + ' درهم';
     }
 
+    // Add to cart from landing page button
+    function lpAddToCart() {
+      if (!LP_PRODUCT_ID) return;
+      fetch('/api/cart/add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ productId: LP_PRODUCT_ID, quantity: 1 })
+      }).then(function(r) { return r.json(); }).then(function(data) {
+        if (data.success) {
+          var badge = document.getElementById('cartBadge');
+          if (badge) { badge.textContent = data.cartCount || '1'; badge.style.display = 'flex'; }
+          if (typeof showToast === 'function') showToast('تمت الاضافة للسلة', 'success');
+        }
+      });
+    }
+
+    // Background audio control
+    function toggleBgAudio() {
+      var audio = document.getElementById('bgAudio');
+      var btn = document.getElementById('bgAudioBtn');
+      if (!audio) return;
+      if (audio.paused) {
+        audio.volume = 0.3;
+        audio.play().then(function() { btn.textContent = '🔊'; });
+      } else {
+        audio.pause();
+        btn.textContent = '🔇';
+      }
+    }
+
+    // Auto-start background audio on first user interaction
+    <% if (landingPage.bg_audio_enabled && landingPage.bg_audio_filename) { %>
+    (function() {
+      var started = false;
+      function startBgAudio() {
+        if (started) return;
+        started = true;
+        var audio = document.getElementById('bgAudio');
+        var btn = document.getElementById('bgAudioBtn');
+        if (audio) {
+          audio.volume = 0.15;
+          audio.play().then(function() { if (btn) btn.textContent = '🔊'; }).catch(function() {});
+        }
+        document.removeEventListener('click', startBgAudio);
+        document.removeEventListener('scroll', startBgAudio);
+        document.removeEventListener('touchstart', startBgAudio);
+      }
+      document.addEventListener('click', startBgAudio, { once: true });
+      document.addEventListener('scroll', startBgAudio, { once: true });
+      document.addEventListener('touchstart', startBgAudio, { once: true });
+    })();
+    <% } %>
+
+    // Fade-in animation on scroll (Intersection Observer)
+    document.addEventListener('DOMContentLoaded', function() {
+      var observer = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+            observer.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+
+      document.querySelectorAll('.lp-section').forEach(function(el) { observer.observe(el); });
+    });
+
     // COD Form submission
     document.addEventListener('DOMContentLoaded', function() {
       var form = document.getElementById('landingOrderForm');
@@ -216,7 +366,6 @@
         e.preventDefault();
         if (isSubmitting) return;
 
-        // Clear errors
         document.querySelectorAll('.form-input--error').forEach(function(el) { el.classList.remove('form-input--error'); });
         document.querySelectorAll('.form-error').forEach(function(el) { el.classList.remove('visible'); });
 
@@ -231,12 +380,12 @@
         if (city && !city.value.trim()) { showFieldError(city, 'يرجى إدخال المدينة'); isValid = false; }
         if (address && !address.value.trim()) { showFieldError(address, 'يرجى إدخال العنوان'); isValid = false; }
 
-        if (!isValid) { showToast('يرجى تعبئة جميع الحقول المطلوبة', 'error'); return; }
+        if (!isValid) { if (typeof showToast === 'function') showToast('يرجى تعبئة جميع الحقول المطلوبة', 'error'); return; }
 
         isSubmitting = true;
         var submitBtn = document.getElementById('lpSubmitBtn');
         if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'جاري الإرسال...'; }
-        showLoading();
+        if (typeof showLoading === 'function') showLoading();
 
         var qty = parseInt(document.getElementById('lpQtyValue').textContent) || 1;
         var formData = new FormData();
@@ -254,50 +403,22 @@
             sessionStorage.setItem('orderRef', data.orderRef);
             window.location.href = '/thankyou';
           } else {
-            hideLoading();
+            if (typeof hideLoading === 'function') hideLoading();
             isSubmitting = false;
             if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'تأكيد الطلب'; }
-            showToast(data.error || 'حدث خطأ', 'error');
+            if (typeof showToast === 'function') showToast(data.error || 'حدث خطأ', 'error');
           }
         })
         .catch(function(err) {
-          hideLoading();
+          if (typeof hideLoading === 'function') hideLoading();
           isSubmitting = false;
           if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'تأكيد الطلب'; }
-          showToast('حدث خطأ في الاتصال', 'error');
+          if (typeof showToast === 'function') showToast('حدث خطأ في الاتصال', 'error');
         });
       });
     });
   </script>
 
-  <!-- Sticky Buy Button -->
-  <% if (typeof product !== 'undefined' && product) { %>
-  <div id="stickyBuyBtn" style="position: fixed; bottom: 0; left: 0; right: 0; background: white; padding: 12px 16px; box-shadow: 0 -4px 20px rgba(0,0,0,0.1); z-index: 999; display: flex; align-items: center; justify-content: center; gap: 12px;">
-    <span style="font-size: 20px; font-weight: 800; color: var(--color-primary);"><%= product.price %> درهم</span>
-    <% var lpPayType = typeof landingPage !== 'undefined' ? (landingPage.payment_type || 'bank') : 'bank'; %>
-    <% if (lpPayType === 'cod') { %>
-      <a href="#landingCheckout" class="btn btn--primary" style="padding: 12px 32px; font-size: 16px; font-weight: 700;">اطلب الآن 🛒</a>
-    <% } else { %>
-      <a href="/product/<%= product.slug %>/checkout" class="btn btn--primary" style="padding: 12px 32px; font-size: 16px; font-weight: 700;">اطلب الآن 🛒</a>
-    <% } %>
-  </div>
-  <% } %>
-
-  <style>
-    @keyframes spin {
-      from { transform: rotate(0deg); }
-      to { transform: rotate(360deg); }
-    }
-    /* Add bottom padding to body so content isn't hidden behind sticky button */
-    body { padding-bottom: 70px; }
-    /* Image protection */
-    .landing-sections img {
-      -webkit-user-select: none;
-      user-select: none;
-      -webkit-touch-callout: none;
-      pointer-events: none;
-    }
-  </style>
   <script src="/js/main.js"></script>
 </body>
 </html>

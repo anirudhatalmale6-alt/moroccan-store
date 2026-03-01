@@ -368,6 +368,18 @@ async function initDatabase() {
 
   // Landing pages table
   addColumnIfNotExists('landing_pages', 'views', "ALTER TABLE landing_pages ADD COLUMN views INTEGER DEFAULT 0");
+  addColumnIfNotExists('landing_pages', 'bg_audio_filename', "ALTER TABLE landing_pages ADD COLUMN bg_audio_filename TEXT DEFAULT ''");
+  addColumnIfNotExists('landing_pages', 'bg_audio_enabled', "ALTER TABLE landing_pages ADD COLUMN bg_audio_enabled INTEGER DEFAULT 0");
+
+  // Landing page sections — extended fields
+  addColumnIfNotExists('landing_page_sections', 'button_type', "ALTER TABLE landing_page_sections ADD COLUMN button_type TEXT DEFAULT ''");
+  addColumnIfNotExists('landing_page_sections', 'button_color', "ALTER TABLE landing_page_sections ADD COLUMN button_color TEXT DEFAULT ''");
+  addColumnIfNotExists('landing_page_sections', 'button_size', "ALTER TABLE landing_page_sections ADD COLUMN button_size TEXT DEFAULT 'medium'");
+  addColumnIfNotExists('landing_page_sections', 'video_url', "ALTER TABLE landing_page_sections ADD COLUMN video_url TEXT DEFAULT ''");
+  addColumnIfNotExists('landing_page_sections', 'autoplay', "ALTER TABLE landing_page_sections ADD COLUMN autoplay INTEGER DEFAULT 0");
+  addColumnIfNotExists('landing_page_sections', 'loop_video', "ALTER TABLE landing_page_sections ADD COLUMN loop_video INTEGER DEFAULT 0");
+  addColumnIfNotExists('landing_page_sections', 'muted', "ALTER TABLE landing_page_sections ADD COLUMN muted INTEGER DEFAULT 1");
+  addColumnIfNotExists('landing_page_sections', 'full_width', "ALTER TABLE landing_page_sections ADD COLUMN full_width INTEGER DEFAULT 0");
 
   // Admins table
   addColumnIfNotExists('admins', 'email', "ALTER TABLE admins ADD COLUMN email TEXT DEFAULT ''");

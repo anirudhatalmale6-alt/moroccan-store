@@ -2347,79 +2347,74 @@ a {
   }
 }
 
-/* --- Custom Audio Player --- */
-.custom-audio-player {
+/* --- WhatsApp-style Audio Player --- */
+.wa-audio-player {
   display: flex;
   align-items: center;
   gap: 10px;
-  background: linear-gradient(135deg, #f5f0eb 0%, #ede6dd 100%);
+  background: #dcf8c6;
   border-radius: 12px;
-  padding: 10px 14px;
+  padding: 10px 16px;
+  max-width: 340px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
   margin-bottom: 12px;
-  flex-wrap: wrap;
-  max-width: 100%;
 }
 
-.cap-play-btn {
-  width: 36px;
-  height: 36px;
-  min-width: 36px;
+.wa-play-btn {
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
   border-radius: 50%;
   border: none;
-  background: var(--color-primary);
+  background: #25D366;
   color: #fff;
+  font-size: 16px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: var(--transition-fast);
   flex-shrink: 0;
+  transition: background 0.2s;
 }
 
-.cap-play-btn:hover {
-  opacity: 0.85;
-  transform: scale(1.05);
-}
+.wa-play-btn:hover { background: #1EBE5B; }
 
-.cap-progress-wrap {
+.wa-progress-wrap {
   flex: 1;
-  min-width: 60px;
-  cursor: pointer;
-  padding: 6px 0;
-}
-
-.cap-progress-bar {
-  height: 4px;
-  background: rgba(0,0,0,0.1);
-  border-radius: 4px;
-  overflow: hidden;
   position: relative;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
 }
 
-.cap-progress-fill {
-  height: 100%;
-  background: var(--color-primary);
-  border-radius: 4px;
-  width: 0%;
-  transition: width 0.1s linear;
+.wa-waveform {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  height: 28px;
+  width: 100%;
 }
 
-.cap-time {
-  font-size: 12px;
+.wa-waveform-bar {
+  width: 3px;
+  border-radius: 2px;
+  background: #93d882;
+  transition: background 0.15s;
+}
+
+.wa-waveform-bar.played { background: #075E54; }
+
+.wa-time {
+  font-size: 11px;
+  color: #667781;
   font-weight: 600;
-  color: var(--color-text-secondary);
-  min-width: 32px;
+  flex-shrink: 0;
+  min-width: 36px;
   text-align: center;
   direction: ltr;
-  flex-shrink: 0;
-}
-
-.cap-label {
-  font-size: 12px;
-  color: var(--color-text-muted);
-  flex-shrink: 0;
 }
 
 @media (max-width: 400px) {
-  .cap-label { display: none; }
+  .wa-audio-player { max-width: 100%; }
 }
