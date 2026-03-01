@@ -45,6 +45,7 @@
   <div class="pattern-overlay"></div>
 
   <!-- Navbar -->
+  <% if (!landingPage.hide_header) { %>
   <nav class="navbar scrolled">
     <div class="container">
       <div class="navbar__inner">
@@ -63,6 +64,7 @@
       </div>
     </div>
   </nav>
+  <% } %>
 
   <!-- Background Audio -->
   <% if (landingPage.bg_audio_enabled && landingPage.bg_audio_filename) { %>
@@ -73,7 +75,7 @@
   <% } %>
 
   <!-- Landing Page Sections -->
-  <div class="landing-sections" style="padding-top: 80px;">
+  <div class="landing-sections" style="padding-top: <%= landingPage.hide_header ? '16' : '80' %>px;">
     <% if (typeof sections !== 'undefined' && sections && sections.length > 0) { %>
       <% sections.forEach(function(section) { %>
         <% if (!section.is_visible) return; %>
@@ -249,6 +251,57 @@
     </div>
   </section>
   <% } %>
+  <% } %>
+
+  <!-- Reviews / Feedback Section -->
+  <% if (landingPage.show_reviews && typeof lpReviews !== 'undefined' && lpReviews && lpReviews.length > 0) { %>
+  <section class="lp-section" style="padding: 60px 0; background: var(--color-bg-warm);">
+    <div class="container" style="max-width: 900px;">
+      <div class="section-header" style="margin-bottom: 30px;">
+        <span class="section-header__label">آراء العملاء</span>
+        <h2 class="section-header__title">ماذا يقول عملاؤنا</h2>
+        <div class="section-header__divider"></div>
+        <% if (typeof lpAvgRating !== 'undefined') { %>
+        <div style="text-align: center; margin-top: 12px;">
+          <span style="font-size: 28px; color: #f5a623; letter-spacing: 2px;">
+            <% for (var si = 1; si <= 5; si++) { %><%= si <= Math.round(parseFloat(lpAvgRating)) ? '★' : '☆' %><% } %>
+          </span>
+          <span style="font-size: 14px; color: var(--color-text-muted); margin-right: 8px;">(<%= lpReviewCount %> تقييم)</span>
+        </div>
+        <% } %>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px;">
+        <% lpReviews.forEach(function(review) { %>
+        <div class="trust-card" style="background: var(--color-card); border-radius: var(--radius-md); padding: 20px; box-shadow: var(--shadow-sm);">
+          <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+            <div style="width: 44px; height: 44px; border-radius: 50%; background: var(--color-bg-warm); display: flex; align-items: center; justify-content: center; font-size: 22px;"><%= (function(n){ var e=['😊','😎','🤩','😇','🥰','😄','🤗','😺','🦊','🐻','🐶','🐱','🐸','🦁','🐼','🐯','🐨','🦋','🌸','⭐']; var h=0; for(var i=0;i<n.length;i++) h=((h<<5)-h)+n.charCodeAt(i); return e[Math.abs(h)%e.length]; })(review.name) %></div>
+            <div>
+              <div style="font-weight: 700; font-size: 15px; display: flex; align-items: center; gap: 6px;"><%= review.name %> <span style="background: var(--color-success); color: #fff; font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px;">✓ موثّق</span></div>
+            </div>
+          </div>
+          <div style="color: #f5a623; font-size: 16px; margin-bottom: 8px;">
+            <% for (var ri = 1; ri <= 5; ri++) { %><%= ri <= review.rating ? '★' : '☆' %><% } %>
+          </div>
+          <p style="font-size: 14px; line-height: 1.8; color: var(--color-text);">"<%= review.message %>"</p>
+          <% if (review.image_filename) { %>
+          <div style="margin-top: 12px; text-align: center;">
+            <img src="/uploads/reviews/<%= review.image_filename %>" alt="صورة من <%= review.name %>" style="max-width: 100%; border-radius: var(--radius-sm); max-height: 200px; object-fit: cover;" loading="lazy">
+          </div>
+          <% } %>
+          <% if (review.audio_filename && review.audio_filename.length > 0) { %>
+          <div class="wa-audio-player" data-src="/uploads/reviews/<%= review.audio_filename %>" style="margin-top: 12px;">
+            <button type="button" class="wa-play-btn" onclick="toggleWaAudio(this)">▶</button>
+            <div class="wa-progress-wrap" onclick="seekWaAudio(event, this)">
+              <div class="wa-waveform"></div>
+            </div>
+            <span class="wa-time">0:00</span>
+          </div>
+          <% } %>
+        </div>
+        <% }); %>
+      </div>
+    </div>
+  </section>
   <% } %>
 
   <!-- Loading Overlay -->

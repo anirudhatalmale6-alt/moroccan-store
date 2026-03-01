@@ -676,7 +676,22 @@ router.get('/p/:slug', (req, res) => {
 
     const bankSettings = getBankSettings();
 
-    res.render('landing-page', { landingPage, product, sections, bankSettings });
+    // Load reviews if show_reviews is enabled and product is linked
+    let lpReviews = [];
+    let lpAvgRating = '5.0';
+    let lpReviewCount = 0;
+    if (landingPage.show_reviews && product) {
+      lpReviews = db.prepare(
+        'SELECT name, phone, rating, message, image_filename, audio_filename, created_at FROM reviews WHERE product_id = ? AND status = ? ORDER BY created_at DESC'
+      ).all(product.id, 'approved');
+      const avgRow = db.prepare(
+        'SELECT AVG(rating) as avg, COUNT(*) as count FROM reviews WHERE product_id = ? AND status = ?'
+      ).get(product.id, 'approved');
+      lpAvgRating = avgRow && avgRow.avg ? avgRow.avg.toFixed(1) : '5.0';
+      lpReviewCount = avgRow ? avgRow.count : 0;
+    }
+
+    res.render('landing-page', { landingPage, product, sections, bankSettings, lpReviews, lpAvgRating, lpReviewCount });
   } catch (err) {
     console.error('Landing page error:', err);
     res.status(500).render('404');

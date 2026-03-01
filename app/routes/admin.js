@@ -652,10 +652,10 @@ router.get('/landing-pages/new', requireAdmin, (req, res) => {
 
 // Create landing page
 router.post('/landing-pages', requireAdmin, (req, res) => {
-  const { title, slug, product_id, payment_type, is_published } = req.body;
+  const { title, slug, product_id, payment_type, is_published, hide_header, show_reviews } = req.body;
   const finalSlug = slug || title.toLowerCase().replace(/[^\w\u0600-\u06FF]+/g, '-').replace(/^-|-$/g, '') || 'page-' + Date.now();
   try {
-    db.prepare('INSERT INTO landing_pages (title, slug, product_id, payment_type, is_published) VALUES (?, ?, ?, ?, ?)').run(title, finalSlug, product_id ? parseInt(product_id) : null, payment_type || 'bank', is_published === '1' ? 1 : 0);
+    db.prepare('INSERT INTO landing_pages (title, slug, product_id, payment_type, is_published, hide_header, show_reviews) VALUES (?, ?, ?, ?, ?, ?, ?)').run(title, finalSlug, product_id ? parseInt(product_id) : null, payment_type || 'bank', is_published === '1' ? 1 : 0, hide_header === '1' ? 1 : 0, show_reviews === '1' ? 1 : 0);
     res.redirect('/admin/landing-pages');
   } catch(err) {
     console.error('Create landing page error:', err);
@@ -674,8 +674,8 @@ router.get('/landing-pages/:id/edit', requireAdmin, (req, res) => {
 
 // Update landing page
 router.post('/landing-pages/:id', requireAdmin, (req, res) => {
-  const { title, slug, product_id, payment_type, is_published } = req.body;
-  db.prepare('UPDATE landing_pages SET title=?, slug=?, product_id=?, payment_type=?, is_published=?, updated_at=datetime(\'now\') WHERE id=?').run(title, slug, product_id ? parseInt(product_id) : null, payment_type || 'bank', is_published === '1' ? 1 : 0, req.params.id);
+  const { title, slug, product_id, payment_type, is_published, hide_header, show_reviews } = req.body;
+  db.prepare('UPDATE landing_pages SET title=?, slug=?, product_id=?, payment_type=?, is_published=?, hide_header=?, show_reviews=?, updated_at=datetime(\'now\') WHERE id=?').run(title, slug, product_id ? parseInt(product_id) : null, payment_type || 'bank', is_published === '1' ? 1 : 0, hide_header === '1' ? 1 : 0, show_reviews === '1' ? 1 : 0, req.params.id);
   res.redirect('/admin/landing-pages/' + req.params.id + '/edit');
 });
 

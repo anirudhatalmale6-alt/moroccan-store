@@ -176,6 +176,22 @@
                         </div>
                     </div>
 
+                    <div class="form-group">
+                        <div class="checkbox-group">
+                            <input type="checkbox" name="hide_header" id="hide_header" value="1" <%= page && page.hide_header ? 'checked' : '' %>>
+                            <label for="hide_header">إخفاء اسم المتجر / اللوجو (الهيدر)</label>
+                        </div>
+                        <div class="hint">عند التفعيل، لن يظهر اسم المتجر أو اللوجو في أعلى الصفحة — يمنع الزائر من الرجوع للصفحة الرئيسية</div>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="checkbox-group">
+                            <input type="checkbox" name="show_reviews" id="show_reviews" value="1" <%= page && page.show_reviews ? 'checked' : '' %>>
+                            <label for="show_reviews">عرض تعليقات وتقييمات العملاء (Feedback)</label>
+                        </div>
+                        <div class="hint">عند التفعيل، ستظهر تعليقات العملاء أسفل صفحة الهبوط</div>
+                    </div>
+
                     <div class="form-actions">
                         <button type="submit" class="btn btn-primary btn-lg"><%= page ? 'حفظ التعديلات' : 'انشاء الصفحة' %></button>
                         <a href="/admin/landing-pages" class="btn btn-secondary btn-lg">الغاء</a>
