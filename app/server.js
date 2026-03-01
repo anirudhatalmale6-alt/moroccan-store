@@ -19,20 +19,21 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(session({
   secret: 'moroccan-store-secret-2024-xyz',
   resave: false,
-  saveUninitialized: false,
-  cookie: { maxAge: 24 * 60 * 60 * 1000 } // 24 hours
+  saveUninitialized: true,
+  cookie: { maxAge: 7 * 24 * 60 * 60 * 1000 } // 7 days
 }));
 
 // Make session available in templates
 app.use((req, res, next) => {
   res.locals.admin = req.session.admin || null;
+  res.locals.user = req.session.user || null;
   next();
 });
 
-// Routes
-app.use('/', require('./routes/public'));
+// Routes (admin must be before public due to /:username catch-all)
 app.use('/admin', require('./routes/admin'));
 app.use('/api', require('./routes/api'));
+app.use('/', require('./routes/public'));
 
 // 404
 app.use((req, res) => {

@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <%- include('partials/head') %>
+  <title>سلة المشتريات — متجرنا</title>
+</head>
+<body>
+  <div class="pattern-overlay"></div>
+
+  <!-- Navbar -->
+  <nav class="navbar scrolled">
+    <div class="container">
+      <div class="navbar__inner">
+        <div class="navbar__brand">
+          <a href="/" style="display: flex; align-items: center; gap: 10px;">
+            <div class="navbar__logo">م</div>
+            <span class="navbar__name">متجرنا</span>
+          </a>
+        </div>
+        <a href="/" class="navbar__cta">🏠 الرئيسية</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Cart Page -->
+  <section class="hero" style="padding-bottom: 80px;">
+    <div class="container">
+      <div class="section-header" style="margin-top: 20px;">
+        <span class="section-header__label">🛒 سلة المشتريات</span>
+        <h1 class="section-header__title">سلتك</h1>
+        <div class="section-header__divider"></div>
+      </div>
+
+      <% if (items && items.length > 0) { %>
+      <div style="max-width: 900px; margin: 0 auto;">
+        <!-- Cart Items -->
+        <% items.forEach(function(item) { %>
+        <div class="cart-item" data-item-id="<%= item.id %>" style="
+          background: var(--color-card); border-radius: var(--radius-lg); padding: 20px;
+          margin-bottom: 16px; box-shadow: var(--shadow-sm);
+          display: flex; gap: 16px; align-items: flex-start; flex-wrap: wrap;
+        ">
+          <!-- Product Image -->
+          <div style="flex-shrink: 0; width: 100px; height: 100px; border-radius: var(--radius-md); overflow: hidden; background: var(--color-bg-warm);">
+            <% if (item.main_image) { %>
+              <img src="/uploads/products/<%= item.main_image %>" alt="<%= item.title %>" style="width: 100%; height: 100%; object-fit: cover;">
+            <% } else { %>
+              <div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 36px;">🛍️</div>
+            <% } %>
+          </div>
+
+          <!-- Product Details -->
+          <div style="flex: 1; min-width: 200px;">
+            <h3 style="font-size: 16px; font-weight: 700; color: var(--color-text); margin-bottom: 6px;">
+              <a href="/product/<%= item.slug %>" style="color: inherit;"><%= item.title %></a>
+            </h3>
+
+            <!-- Variation Info -->
+            <% if (item.size_label) { %>
+              <div style="font-size: 13px; color: var(--color-text-secondary); margin-bottom: 4px;">
+                الحجم: <strong><%= item.size_label %></strong>
+              </div>
+            <% } %>
+            <% if (item.color_label) { %>
+              <div style="font-size: 13px; color: var(--color-text-secondary); margin-bottom: 4px;">
+                اللون: <strong><%= item.color_label %></strong>
+              </div>
+            <% } %>
+
+            <!-- Unit Price -->
+            <div style="font-size: 15px; font-weight: 700; color: var(--color-primary); margin-bottom: 8px;">
+              <%= item.unit_price %> درهم
+            </div>
+
+            <!-- Quantity Control -->
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <div class="qty-control" style="display: flex; align-items: center; gap: 0;">
+                <button type="button" class="qty-control__btn" onclick="updateCartQty(<%= item.id %>, <%= item.quantity - 1 %>)" style="
+                  width: 36px; height: 36px; border: 1px solid var(--color-border); background: var(--color-card);
+                  border-radius: var(--radius-sm) 0 0 var(--radius-sm); cursor: pointer; font-size: 18px; font-weight: 700;
+                ">−</button>
+                <div style="
+                  width: 44px; height: 36px; border-top: 1px solid var(--color-border); border-bottom: 1px solid var(--color-border);
+                  display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 15px;
+                  background: var(--color-bg);
+                " id="cartQty_<%= item.id %>"><%= item.quantity %></div>
+                <button type="button" class="qty-control__btn" onclick="updateCartQty(<%= item.id %>, <%= item.quantity + 1 %>)" style="
+                  width: 36px; height: 36px; border: 1px solid var(--color-border); background: var(--color-card);
+                  border-radius: 0 var(--radius-sm) var(--radius-sm) 0; cursor: pointer; font-size: 18px; font-weight: 700;
+                ">+</button>
+              </div>
+              <button type="button" onclick="removeCartItem(<%= item.id %>)" style="
+                background: none; border: none; color: var(--color-error); cursor: pointer;
+                font-size: 14px; font-weight: 600; padding: 4px 8px;
+              ">حذف</button>
+            </div>
+          </div>
+
+          <!-- Item Subtotal -->
+          <div style="text-align: left; min-width: 100px;">
+            <div style="font-size: 18px; font-weight: 800; color: var(--color-primary);">
+              <%= item.subtotal %> درهم
+            </div>
+          </div>
+        </div>
+        <% }); %>
+
+        <!-- Gift Product -->
+        <% if (typeof giftProduct !== 'undefined' && giftProduct) { %>
+        <div style="
+          background: linear-gradient(135deg, #FFF8E1, #FFF3E0); border-radius: var(--radius-lg); padding: 20px;
+          margin-bottom: 16px; box-shadow: var(--shadow-sm); border: 2px dashed var(--color-accent);
+          display: flex; gap: 16px; align-items: center; flex-wrap: wrap;
+        ">
+          <div style="flex-shrink: 0; width: 80px; height: 80px; border-radius: var(--radius-md); overflow: hidden;">
+            <% if (giftProduct.image_filename) { %>
+              <img src="/uploads/gifts/<%= giftProduct.image_filename %>" alt="<%= giftProduct.name %>" style="width: 100%; height: 100%; object-fit: cover;">
+            <% } else { %>
+              <div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 36px; background: var(--color-bg-warm);">🎁</div>
+            <% } %>
+          </div>
+          <div style="flex: 1;">
+            <div style="font-size: 14px; font-weight: 800; color: var(--color-success); margin-bottom: 4px;">🎁 هدية مجانية!</div>
+            <h3 style="font-size: 16px; font-weight: 700; color: var(--color-text); margin-bottom: 4px;"><%= giftProduct.name %></h3>
+            <% if (giftProduct.description) { %>
+              <p style="font-size: 13px; color: var(--color-text-secondary);"><%= giftProduct.description %></p>
+            <% } %>
+          </div>
+          <div style="font-size: 18px; font-weight: 800; color: var(--color-success);">مجاناً</div>
+        </div>
+        <% } %>
+
+        <!-- Cart Summary -->
+        <div style="
+          background: var(--color-card); border-radius: var(--radius-lg); padding: 24px;
+          box-shadow: var(--shadow-md); margin-top: 24px;
+        ">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid var(--color-border-light);">
+            <span style="font-size: 16px; color: var(--color-text-secondary);">المجموع (<%= items.length %> منتجات)</span>
+            <span style="font-size: 20px; font-weight: 800; color: var(--color-primary);"><%= cartTotal %> درهم</span>
+          </div>
+          <a href="/cart/checkout" class="btn btn--primary btn--lg btn--full" style="text-align: center;">
+            إتمام الطلب
+          </a>
+          <a href="/" style="display: block; text-align: center; margin-top: 12px; color: var(--color-text-secondary); font-size: 14px;">
+            متابعة التسوق
+          </a>
+        </div>
+      </div>
+
+      <% } else { %>
+        <div style="text-align: center; padding: 60px 20px; color: var(--color-text-muted);">
+          <p style="font-size: 64px; margin-bottom: 16px;">🛒</p>
+          <p style="font-size: 20px; font-weight: 700; margin-bottom: 8px;">سلتك فارغة</p>
+          <p style="font-size: 14px; margin-bottom: 24px;">لم تضف أي منتجات بعد</p>
+          <a href="/" class="btn btn--primary">تسوق الآن</a>
+        </div>
+      <% } %>
+    </div>
+  </section>
+
+  <%- include('partials/footer') %>
+
+  <script>
+    function updateCartQty(itemId, newQty) {
+      if (newQty < 1) {
+        removeCartItem(itemId);
+        return;
+      }
+      fetch('/cart/update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ item_id: itemId, quantity: newQty })
+      })
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        if (data.success) {
+          window.location.reload();
+        } else {
+          showToast(data.error || 'حدث خطأ', 'error');
+        }
+      })
+      .catch(function() {
+        showToast('حدث خطأ في الاتصال', 'error');
+      });
+    }
+
+    function removeCartItem(itemId) {
+      fetch('/cart/remove', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ item_id: itemId })
+      })
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        if (data.success) {
+          window.location.reload();
+        } else {
+          showToast(data.error || 'حدث خطأ', 'error');
+        }
+      })
+      .catch(function() {
+        showToast('حدث خطأ في الاتصال', 'error');
+      });
+    }
+  </script>
+  <script src="/js/main.js"></script>
+</body>
+</html>

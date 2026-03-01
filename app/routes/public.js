@@ -3,6 +3,8 @@ const router = express.Router();
 const { db } = require('../database');
 const multer = require('multer');
 const path = require('path');
+const bcrypt = require('bcryptjs');
+const { requireUser } = require('../middleware/userAuth');
 
 // File upload config for reviews
 const reviewStorage = multer.diskStorage({
@@ -39,16 +41,76 @@ const receiptUpload = multer({
   limits: { fileSize: 10 * 1024 * 1024 }
 });
 
-// Home — redirect to first product or show products list
+// ============================================================
+// Helper: Get bank settings from DB
+// ============================================================
+function getBankSettings() {
+  try {
+    return db.prepare('SELECT * FROM bank_transfer_settings WHERE is_active = 1 ORDER BY sort_order').all();
+  } catch (e) {
+    return [];
+  }
+}
+
+// Helper: Get eligible gift products for a total
+function getEligibleGift(totalAmount) {
+  try {
+    return db.prepare(
+      'SELECT * FROM gift_products WHERE is_active = 1 AND min_order_amount <= ? ORDER BY min_order_amount DESC LIMIT 1'
+    ).get(totalAmount);
+  } catch (e) {
+    return undefined;
+  }
+}
+
+// Helper: Get product variations
+function getVariations(productId, type) {
+  try {
+    return db.prepare(
+      'SELECT * FROM product_variations WHERE product_id = ? AND type = ? AND is_active = 1 ORDER BY sort_order'
+    ).all(productId, type);
+  } catch (e) {
+    return [];
+  }
+}
+
+// Helper: Generate order ref
+function generateOrderRef() {
+  return 'ORD-' + Date.now().toString(36).toUpperCase() + '-' + Math.random().toString(36).substring(2, 6).toUpperCase();
+}
+
+// Helper: Get admin setting
+function getSetting(key, defaultValue) {
+  try {
+    const row = db.prepare('SELECT setting_value FROM admin_settings WHERE setting_key = ?').get(key);
+    return row ? row.setting_value : defaultValue;
+  } catch (e) {
+    return defaultValue;
+  }
+}
+
+
+// ============================================================
+// HOME PAGE
+// ============================================================
 router.get('/', (req, res) => {
   const products = db.prepare('SELECT * FROM products WHERE is_active = 1 ORDER BY created_at DESC').all();
   if (products.length === 1) {
     return res.redirect('/product/' + products[0].slug);
   }
-  res.render('home', { products });
+
+  let sliders = [];
+  try {
+    sliders = db.prepare('SELECT * FROM home_sliders WHERE is_active = 1 ORDER BY sort_order').all();
+  } catch (e) {}
+
+  res.render('home', { products, sliders });
 });
 
-// Product landing page
+
+// ============================================================
+// PRODUCT LANDING PAGE
+// ============================================================
 router.get('/product/:slug', (req, res) => {
   const product = db.prepare('SELECT * FROM products WHERE slug = ? AND is_active = 1').get(req.params.slug);
   if (!product) return res.status(404).render('404');
@@ -65,26 +127,46 @@ router.get('/product/:slug', (req, res) => {
 
   const galleryImages = db.prepare('SELECT * FROM product_images WHERE product_id = ? ORDER BY sort_order').all(product.id);
   const faqs = db.prepare('SELECT * FROM product_faqs WHERE product_id = ? ORDER BY sort_order').all(product.id);
+  const sizeVariations = getVariations(product.id, 'size');
+  const colorVariations = getVariations(product.id, 'color');
 
   res.render('product', {
     product,
     reviews,
     galleryImages,
     faqs,
+    sizeVariations,
+    colorVariations,
     avgRating: avgRating.avg ? avgRating.avg.toFixed(1) : '5.0',
     reviewCount: avgRating.count || 0
   });
 });
 
-// Product checkout page
+
+// ============================================================
+// PRODUCT CHECKOUT PAGE
+// ============================================================
 router.get('/product/:slug/checkout', (req, res) => {
   const product = db.prepare('SELECT * FROM products WHERE slug = ? AND is_active = 1').get(req.params.slug);
   if (!product) return res.status(404).render('404');
 
-  res.render('checkout', { product });
+  const bankSettings = getBankSettings();
+  const sizeVariations = getVariations(product.id, 'size');
+  const colorVariations = getVariations(product.id, 'color');
+
+  res.render('checkout', {
+    product,
+    bankSettings,
+    sizeVariations,
+    colorVariations,
+    checkoutMode: 'single'
+  });
 });
 
-// Product reviews page
+
+// ============================================================
+// PRODUCT REVIEWS PAGE
+// ============================================================
 router.get('/product/:slug/reviews', (req, res) => {
   const product = db.prepare('SELECT * FROM products WHERE slug = ? AND is_active = 1').get(req.params.slug);
   if (!product) return res.status(404).render('404');
@@ -105,32 +187,93 @@ router.get('/product/:slug/reviews', (req, res) => {
   });
 });
 
-// Submit order
+
+// ============================================================
+// SUBMIT ORDER (single product)
+// ============================================================
 router.post('/product/:slug/order', receiptUpload.single('receipt'), (req, res) => {
   try {
     const product = db.prepare('SELECT * FROM products WHERE slug = ?').get(req.params.slug);
     if (!product) return res.status(404).json({ error: 'Product not found' });
 
-    const { fullName, phone, quantity, deliveryOption } = req.body;
+    const { fullName, phone, quantity, payment_type, city, address, variation_info } = req.body;
     const qty = parseInt(quantity) || 1;
-    const totalPrice = qty * product.price;
-    const isDeposit = deliveryOption === 'deposit';
-    const paymentAmount = isDeposit ? product.deposit_amount : totalPrice;
-    const remainingAmount = isDeposit ? totalPrice - product.deposit_amount : 0;
 
-    const orderRef = 'ORD-' + Date.now().toString(36).toUpperCase() + '-' + Math.random().toString(36).substring(2, 6).toUpperCase();
+    // Calculate price with variation adjustments
+    let unitPrice = product.price;
+    if (req.body.size_variation_id) {
+      const sv = db.prepare('SELECT price_adjustment FROM product_variations WHERE id = ?').get(req.body.size_variation_id);
+      if (sv) unitPrice += sv.price_adjustment;
+    }
+    if (req.body.color_variation_id) {
+      const cv = db.prepare('SELECT price_adjustment FROM product_variations WHERE id = ?').get(req.body.color_variation_id);
+      if (cv) unitPrice += cv.price_adjustment;
+    }
+
+    const totalPrice = qty * unitPrice;
+    const paymentType = payment_type || 'bank_full';
+    const isCod = paymentType === 'cod';
+    const isDeposit = paymentType === 'bank_deposit';
+
+    let paymentAmount = totalPrice;
+    let remainingAmount = 0;
+    let deliveryOption = 'full';
+
+    if (isDeposit) {
+      paymentAmount = product.deposit_amount;
+      remainingAmount = totalPrice - product.deposit_amount + (product.delivery_fee || 50);
+      deliveryOption = 'deposit';
+    } else if (isCod) {
+      deliveryOption = 'cod';
+    }
+
+    const orderRef = generateOrderRef();
+
+    // Determine referral code from session
+    const referralCode = req.session.referral_code || '';
+
+    // Check gift eligibility
+    const gift = getEligibleGift(totalPrice);
+    const giftInfo = gift ? JSON.stringify({ name: gift.name, description: gift.description }) : '';
 
     db.prepare(`
-      INSERT INTO orders (product_id, order_ref, full_name, phone, quantity, unit_price, total_price, delivery_option, payment_amount, remaining_amount, receipt_filename, status)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO orders (product_id, order_ref, full_name, phone, quantity, unit_price, total_price,
+        delivery_option, payment_amount, remaining_amount, receipt_filename, status,
+        payment_type, variation_info, referral_code, gift_info, city, address)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).run(
-      product.id, orderRef, fullName, phone, qty, product.price,
+      product.id, orderRef, fullName, phone, qty, unitPrice,
       totalPrice, deliveryOption, paymentAmount, remainingAmount,
-      req.file ? req.file.filename : '', 'pending'
+      req.file ? req.file.filename : '', 'pending',
+      paymentType, variation_info || '', referralCode, giftInfo,
+      city || '', address || ''
     );
 
-    // Telegram notification (placeholder)
-    // sendTelegramNotification(orderRef, fullName, phone, qty, paymentAmount, deliveryOption);
+    // Handle referral commission
+    if (referralCode) {
+      try {
+        const referrer = db.prepare('SELECT * FROM users WHERE referral_code = ? AND is_active = 1').get(referralCode);
+        if (referrer) {
+          const orderId = db.prepare('SELECT id FROM orders WHERE order_ref = ?').get(orderRef);
+          const commissionRate = referrer.commission_rate || 10;
+          const commissionAmount = totalPrice * (commissionRate / 100);
+
+          db.prepare(`
+            INSERT INTO referral_commissions (user_id, order_id, order_amount, commission_rate, commission_amount, status)
+            VALUES (?, ?, ?, ?, ?, ?)
+          `).run(referrer.id, orderId.id, totalPrice, commissionRate, commissionAmount, 'pending');
+
+          // Update user stats
+          db.prepare(`
+            UPDATE users SET total_earned = total_earned + ?, available_balance = available_balance + ?,
+              total_orders = total_orders + 1, updated_at = datetime('now')
+            WHERE id = ?
+          `).run(commissionAmount, commissionAmount, referrer.id);
+        }
+      } catch (refErr) {
+        console.error('Referral commission error:', refErr);
+      }
+    }
 
     res.json({ success: true, orderRef });
   } catch (err) {
@@ -139,7 +282,10 @@ router.post('/product/:slug/order', receiptUpload.single('receipt'), (req, res) 
   }
 });
 
-// Submit review
+
+// ============================================================
+// SUBMIT REVIEW
+// ============================================================
 router.post('/product/:slug/review', reviewUpload.fields([
   { name: 'image', maxCount: 1 },
   { name: 'audio', maxCount: 1 }
@@ -164,12 +310,498 @@ router.post('/product/:slug/review', reviewUpload.fields([
   }
 });
 
-// Thank you page
+
+// ============================================================
+// CART SYSTEM
+// ============================================================
+
+// GET /cart — render cart page
+router.get('/cart', (req, res) => {
+  const sessionId = req.sessionID;
+
+  const rawItems = db.prepare(`
+    SELECT ci.*, p.title, p.slug, p.price, p.main_image
+    FROM cart_items ci
+    JOIN products p ON ci.product_id = p.id
+    WHERE ci.session_id = ?
+    ORDER BY ci.created_at
+  `).all(sessionId);
+
+  // Enrich with variation info and calculate prices
+  let cartTotal = 0;
+  const items = rawItems.map(item => {
+    let unitPrice = item.price;
+    let sizeLabel = '';
+    let colorLabel = '';
+
+    if (item.variation_size_id) {
+      const sv = db.prepare('SELECT label, price_adjustment FROM product_variations WHERE id = ?').get(item.variation_size_id);
+      if (sv) { unitPrice += sv.price_adjustment; sizeLabel = sv.label; }
+    }
+    if (item.variation_color_id) {
+      const cv = db.prepare('SELECT label, price_adjustment FROM product_variations WHERE id = ?').get(item.variation_color_id);
+      if (cv) { unitPrice += cv.price_adjustment; colorLabel = cv.label; }
+    }
+
+    const subtotal = unitPrice * item.quantity;
+    cartTotal += subtotal;
+
+    return {
+      ...item,
+      unit_price: unitPrice,
+      subtotal,
+      size_label: sizeLabel,
+      color_label: colorLabel
+    };
+  });
+
+  const giftProduct = getEligibleGift(cartTotal);
+
+  res.render('cart', { items, cartTotal, giftProduct });
+});
+
+// POST /cart/add
+router.post('/cart/add', (req, res) => {
+  try {
+    const { product_id, quantity, size_variation_id, color_variation_id } = req.body;
+    const sessionId = req.sessionID;
+    const qty = parseInt(quantity) || 1;
+
+    // Check product exists
+    const product = db.prepare('SELECT id FROM products WHERE id = ? AND is_active = 1').get(product_id);
+    if (!product) return res.status(404).json({ error: 'المنتج غير موجود' });
+
+    // Check if already in cart with same variations
+    const existing = db.prepare(
+      'SELECT * FROM cart_items WHERE session_id = ? AND product_id = ? AND variation_size_id IS ? AND variation_color_id IS ?'
+    ).get(sessionId, product_id, size_variation_id || null, color_variation_id || null);
+
+    if (existing) {
+      db.prepare('UPDATE cart_items SET quantity = quantity + ? WHERE id = ?').run(qty, existing.id);
+    } else {
+      db.prepare(
+        'INSERT INTO cart_items (session_id, product_id, variation_size_id, variation_color_id, quantity) VALUES (?, ?, ?, ?, ?)'
+      ).run(sessionId, product_id, size_variation_id || null, color_variation_id || null, qty);
+    }
+
+    // Get cart count
+    const countRow = db.prepare('SELECT SUM(quantity) as total FROM cart_items WHERE session_id = ?').get(sessionId);
+    const cartCount = countRow ? countRow.total : 0;
+
+    res.json({ success: true, cartCount });
+  } catch (err) {
+    console.error('Cart add error:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// POST /cart/update
+router.post('/cart/update', (req, res) => {
+  try {
+    const { item_id, quantity } = req.body;
+    const sessionId = req.sessionID;
+    const qty = parseInt(quantity) || 1;
+
+    if (qty < 1) {
+      db.prepare('DELETE FROM cart_items WHERE id = ? AND session_id = ?').run(item_id, sessionId);
+    } else {
+      db.prepare('UPDATE cart_items SET quantity = ? WHERE id = ? AND session_id = ?').run(qty, item_id, sessionId);
+    }
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Cart update error:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// POST /cart/remove
+router.post('/cart/remove', (req, res) => {
+  try {
+    const { item_id } = req.body;
+    const sessionId = req.sessionID;
+    db.prepare('DELETE FROM cart_items WHERE id = ? AND session_id = ?').run(item_id, sessionId);
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Cart remove error:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// GET /cart/checkout — render checkout for cart
+router.get('/cart/checkout', (req, res) => {
+  const sessionId = req.sessionID;
+
+  const rawItems = db.prepare(`
+    SELECT ci.*, p.title, p.slug, p.price, p.main_image, p.cod_enabled, p.deposit_amount, p.delivery_fee
+    FROM cart_items ci
+    JOIN products p ON ci.product_id = p.id
+    WHERE ci.session_id = ?
+    ORDER BY ci.created_at
+  `).all(sessionId);
+
+  if (!rawItems || rawItems.length === 0) {
+    return res.redirect('/cart');
+  }
+
+  let cartTotal = 0;
+  let cartHasCod = false;
+  const cartItems = rawItems.map(item => {
+    let unitPrice = item.price;
+    let sizeLabel = '';
+    let colorLabel = '';
+
+    if (item.variation_size_id) {
+      const sv = db.prepare('SELECT label, price_adjustment FROM product_variations WHERE id = ?').get(item.variation_size_id);
+      if (sv) { unitPrice += sv.price_adjustment; sizeLabel = sv.label; }
+    }
+    if (item.variation_color_id) {
+      const cv = db.prepare('SELECT label, price_adjustment FROM product_variations WHERE id = ?').get(item.variation_color_id);
+      if (cv) { unitPrice += cv.price_adjustment; colorLabel = cv.label; }
+    }
+
+    const subtotal = unitPrice * item.quantity;
+    cartTotal += subtotal;
+    if (item.cod_enabled) cartHasCod = true;
+
+    return {
+      ...item,
+      unit_price: unitPrice,
+      subtotal,
+      size_label: sizeLabel,
+      color_label: colorLabel
+    };
+  });
+
+  const bankSettings = getBankSettings();
+  const giftProduct = getEligibleGift(cartTotal);
+
+  res.render('checkout', {
+    checkoutMode: 'cart',
+    cartItems,
+    cartTotal,
+    cartHasCod,
+    bankSettings,
+    giftProduct
+  });
+});
+
+// POST /cart/checkout — submit cart order
+router.post('/cart/checkout', receiptUpload.single('receipt'), (req, res) => {
+  try {
+    const sessionId = req.sessionID;
+    const { fullName, phone, payment_type, city, address } = req.body;
+
+    const rawItems = db.prepare(`
+      SELECT ci.*, p.title, p.price, p.id as pid
+      FROM cart_items ci
+      JOIN products p ON ci.product_id = p.id
+      WHERE ci.session_id = ?
+    `).all(sessionId);
+
+    if (!rawItems || rawItems.length === 0) {
+      return res.status(400).json({ error: 'السلة فارغة' });
+    }
+
+    let cartTotal = 0;
+    rawItems.forEach(item => {
+      let unitPrice = item.price;
+      if (item.variation_size_id) {
+        const sv = db.prepare('SELECT price_adjustment FROM product_variations WHERE id = ?').get(item.variation_size_id);
+        if (sv) unitPrice += sv.price_adjustment;
+      }
+      if (item.variation_color_id) {
+        const cv = db.prepare('SELECT price_adjustment FROM product_variations WHERE id = ?').get(item.variation_color_id);
+        if (cv) unitPrice += cv.price_adjustment;
+      }
+      cartTotal += unitPrice * item.quantity;
+    });
+
+    const paymentType = payment_type || 'bank_full';
+    const isCod = paymentType === 'cod';
+    const orderRef = generateOrderRef();
+    const referralCode = req.session.referral_code || '';
+
+    // Check gift
+    const gift = getEligibleGift(cartTotal);
+    const giftInfo = gift ? JSON.stringify({ name: gift.name }) : '';
+
+    // Build variation info
+    const variationDetails = rawItems.map(item => {
+      const info = { product_id: item.pid, title: item.title, quantity: item.quantity };
+      if (item.variation_size_id) {
+        const sv = db.prepare('SELECT label FROM product_variations WHERE id = ?').get(item.variation_size_id);
+        if (sv) info.size = sv.label;
+      }
+      if (item.variation_color_id) {
+        const cv = db.prepare('SELECT label FROM product_variations WHERE id = ?').get(item.variation_color_id);
+        if (cv) info.color = cv.label;
+      }
+      return info;
+    });
+
+    // Create order for first product (primary), store all details in variation_info
+    db.prepare(`
+      INSERT INTO orders (product_id, order_ref, full_name, phone, quantity, unit_price, total_price,
+        delivery_option, payment_amount, remaining_amount, receipt_filename, status,
+        payment_type, variation_info, referral_code, gift_info, city, address)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(
+      rawItems[0].pid, orderRef, fullName, phone,
+      rawItems.reduce((sum, i) => sum + i.quantity, 0),
+      0, cartTotal,
+      isCod ? 'cod' : 'full',
+      cartTotal, 0,
+      req.file ? req.file.filename : '', 'pending',
+      paymentType, JSON.stringify(variationDetails), referralCode, giftInfo,
+      city || '', address || ''
+    );
+
+    // Handle referral commission
+    if (referralCode) {
+      try {
+        const referrer = db.prepare('SELECT * FROM users WHERE referral_code = ? AND is_active = 1').get(referralCode);
+        if (referrer) {
+          const orderId = db.prepare('SELECT id FROM orders WHERE order_ref = ?').get(orderRef);
+          const commissionRate = referrer.commission_rate || 10;
+          const commissionAmount = cartTotal * (commissionRate / 100);
+          db.prepare(`
+            INSERT INTO referral_commissions (user_id, order_id, order_amount, commission_rate, commission_amount, status)
+            VALUES (?, ?, ?, ?, ?, ?)
+          `).run(referrer.id, orderId.id, cartTotal, commissionRate, commissionAmount, 'pending');
+          db.prepare(`
+            UPDATE users SET total_earned = total_earned + ?, available_balance = available_balance + ?,
+              total_orders = total_orders + 1, updated_at = datetime('now')
+            WHERE id = ?
+          `).run(commissionAmount, commissionAmount, referrer.id);
+        }
+      } catch (refErr) {
+        console.error('Referral commission error:', refErr);
+      }
+    }
+
+    // Clear cart
+    db.prepare('DELETE FROM cart_items WHERE session_id = ?').run(sessionId);
+
+    res.json({ success: true, orderRef });
+  } catch (err) {
+    console.error('Cart checkout error:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+
+// ============================================================
+// LANDING PAGES
+// ============================================================
+router.get('/p/:slug', (req, res) => {
+  try {
+    const landingPage = db.prepare('SELECT * FROM landing_pages WHERE slug = ? AND is_published = 1').get(req.params.slug);
+    if (!landingPage) return res.status(404).render('404');
+
+    let product = null;
+    if (landingPage.product_id) {
+      product = db.prepare('SELECT * FROM products WHERE id = ?').get(landingPage.product_id);
+    }
+
+    const sections = db.prepare(
+      'SELECT * FROM landing_page_sections WHERE landing_page_id = ? AND is_visible = 1 ORDER BY sort_order'
+    ).all(landingPage.id);
+
+    const bankSettings = getBankSettings();
+
+    res.render('landing-page', { landingPage, product, sections, bankSettings });
+  } catch (err) {
+    console.error('Landing page error:', err);
+    res.status(500).render('404');
+  }
+});
+
+
+// ============================================================
+// USER/AFFILIATE SYSTEM
+// ============================================================
+
+// GET /login
+router.get('/login', (req, res) => {
+  if (req.session.user) return res.redirect('/account');
+  res.render('login');
+});
+
+// POST /login
+router.post('/login', (req, res) => {
+  try {
+    const { username, password } = req.body;
+    if (!username || !password) {
+      return res.status(400).json({ error: 'يرجى إدخال اسم المستخدم وكلمة المرور' });
+    }
+
+    const user = db.prepare('SELECT * FROM users WHERE username = ? AND is_active = 1').get(username);
+    if (!user) {
+      return res.status(401).json({ error: 'اسم المستخدم أو كلمة المرور غير صحيحة' });
+    }
+
+    const validPassword = bcrypt.compareSync(password, user.password_hash);
+    if (!validPassword) {
+      return res.status(401).json({ error: 'اسم المستخدم أو كلمة المرور غير صحيحة' });
+    }
+
+    req.session.user = {
+      id: user.id,
+      username: user.username,
+      full_name: user.full_name,
+      referral_code: user.referral_code
+    };
+
+    res.json({ success: true, redirect: '/account' });
+  } catch (err) {
+    console.error('Login error:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// GET /account
+router.get('/account', requireUser, (req, res) => {
+  try {
+    const user = db.prepare('SELECT * FROM users WHERE id = ?').get(req.session.user.id);
+    if (!user) {
+      req.session.user = null;
+      return res.redirect('/login');
+    }
+
+    const commissions = db.prepare(
+      'SELECT * FROM referral_commissions WHERE user_id = ? ORDER BY created_at DESC LIMIT 50'
+    ).all(user.id);
+
+    const minOrders = parseInt(getSetting('min_withdrawal_orders', '20'));
+
+    // Build site URL
+    const siteUrl = req.protocol + '://' + req.get('host');
+
+    res.render('account', { user, commissions, minOrders, siteUrl });
+  } catch (err) {
+    console.error('Account error:', err);
+    res.status(500).render('404');
+  }
+});
+
+// GET /account/settings
+router.get('/account/settings', requireUser, (req, res) => {
+  try {
+    const user = db.prepare('SELECT * FROM users WHERE id = ?').get(req.session.user.id);
+    if (!user) {
+      req.session.user = null;
+      return res.redirect('/login');
+    }
+    res.render('account-settings', { user });
+  } catch (err) {
+    console.error('Account settings error:', err);
+    res.status(500).render('404');
+  }
+});
+
+// POST /account/settings (change password or update whatsapp)
+router.post('/account/settings', requireUser, (req, res) => {
+  try {
+    const userId = req.session.user.id;
+    const { action } = req.body;
+
+    if (action === 'change_password') {
+      const { current_password, new_password } = req.body;
+      const user = db.prepare('SELECT * FROM users WHERE id = ?').get(userId);
+      if (!user) return res.status(404).json({ error: 'المستخدم غير موجود' });
+
+      if (!bcrypt.compareSync(current_password, user.password_hash)) {
+        return res.status(400).json({ error: 'كلمة المرور الحالية غير صحيحة' });
+      }
+
+      if (!new_password || new_password.length < 6) {
+        return res.status(400).json({ error: 'كلمة المرور يجب أن تكون 6 أحرف على الأقل' });
+      }
+
+      const hash = bcrypt.hashSync(new_password, 10);
+      db.prepare('UPDATE users SET password_hash = ?, updated_at = datetime(\'now\') WHERE id = ?').run(hash, userId);
+
+      return res.json({ success: true });
+    }
+
+    if (action === 'update_whatsapp') {
+      const { whatsapp } = req.body;
+      db.prepare('UPDATE users SET whatsapp = ?, updated_at = datetime(\'now\') WHERE id = ?').run(whatsapp || '', userId);
+      return res.json({ success: true });
+    }
+
+    res.status(400).json({ error: 'Invalid action' });
+  } catch (err) {
+    console.error('Settings update error:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// POST /account/withdraw
+router.post('/account/withdraw', requireUser, (req, res) => {
+  try {
+    const userId = req.session.user.id;
+    const { amount, bank_name, holder_name, rib } = req.body;
+
+    const user = db.prepare('SELECT * FROM users WHERE id = ?').get(userId);
+    if (!user) return res.status(404).json({ error: 'المستخدم غير موجود' });
+
+    const withdrawAmount = parseFloat(amount);
+    if (!withdrawAmount || withdrawAmount <= 0) {
+      return res.status(400).json({ error: 'يرجى إدخال مبلغ صحيح' });
+    }
+    if (withdrawAmount > user.available_balance) {
+      return res.status(400).json({ error: 'المبلغ أكبر من الرصيد المتاح' });
+    }
+
+    const minOrders = parseInt(getSetting('min_withdrawal_orders', '20'));
+    if (user.total_orders < minOrders) {
+      return res.status(400).json({ error: `يجب أن يكون لديك على الأقل ${minOrders} طلب للسحب` });
+    }
+
+    if (!bank_name || !holder_name || !rib) {
+      return res.status(400).json({ error: 'يرجى تعبئة جميع حقول البنك' });
+    }
+
+    // Create withdrawal request
+    db.prepare(`
+      INSERT INTO withdrawal_requests (user_id, amount, rib, bank_name, holder_name, status)
+      VALUES (?, ?, ?, ?, ?, ?)
+    `).run(userId, withdrawAmount, rib, bank_name, holder_name, 'pending');
+
+    // Deduct from available balance
+    db.prepare('UPDATE users SET available_balance = available_balance - ?, updated_at = datetime(\'now\') WHERE id = ?')
+      .run(withdrawAmount, userId);
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Withdrawal error:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// GET /logout
+router.get('/logout', (req, res) => {
+  req.session.user = null;
+  res.redirect('/login');
+});
+
+
+// ============================================================
+// REFERRAL TRACKING
+// ============================================================
+// Capture /:username as referral (must be last route to avoid conflicts)
+// This is placed near the bottom but before thank you and static pages
+
+
+// ============================================================
+// THANK YOU + STATIC PAGES
+// ============================================================
 router.get('/thankyou', (req, res) => {
   res.render('thankyou');
 });
 
-// Static pages
 router.get('/returns', (req, res) => {
   res.render('returns');
 });
@@ -182,5 +814,40 @@ router.get('/contact', (req, res) => {
   const product = db.prepare('SELECT whatsapp_number FROM products WHERE is_active = 1 LIMIT 1').get();
   res.render('contact', { whatsappNumber: product ? product.whatsapp_number : '' });
 });
+
+
+// ============================================================
+// REFERRAL /:username — MUST be last catch-all style route
+// ============================================================
+router.get('/:username', (req, res) => {
+  try {
+    // Skip known routes (avoid matching static assets, admin, etc.)
+    const reserved = ['admin', 'api', 'login', 'logout', 'account', 'cart', 'thankyou', 'returns', 'payment-delivery', 'contact', 'product', 'p', 'favicon.ico'];
+    if (reserved.includes(req.params.username)) {
+      return res.status(404).render('404');
+    }
+
+    const user = db.prepare('SELECT * FROM users WHERE referral_code = ? AND is_active = 1').get(req.params.username);
+    if (!user) {
+      // Also check by username
+      const userByName = db.prepare('SELECT * FROM users WHERE username = ? AND is_active = 1').get(req.params.username);
+      if (userByName) {
+        req.session.referral_code = userByName.referral_code;
+        return res.redirect('/');
+      }
+      return res.status(404).render('404');
+    }
+
+    // Store referral code in session
+    req.session.referral_code = user.referral_code;
+
+    // Redirect to home
+    res.redirect('/');
+  } catch (err) {
+    console.error('Referral route error:', err);
+    res.status(404).render('404');
+  }
+});
+
 
 module.exports = router;

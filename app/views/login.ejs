@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <%- include('partials/head') %>
+  <title>تسجيل الدخول — متجرنا</title>
+</head>
+<body>
+  <div class="pattern-overlay"></div>
+
+  <!-- Login Page -->
+  <div class="thankyou-page" style="min-height: 100vh;">
+    <div class="thankyou-card" style="max-width: 420px; padding: 40px;">
+      <div style="text-align: center; margin-bottom: 30px;">
+        <div class="navbar__logo" style="margin: 0 auto 12px; width: 56px; height: 56px; font-size: 24px;">م</div>
+        <h1 style="font-size: 24px; font-weight: 800; color: var(--color-primary-dark); margin-bottom: 6px;">تسجيل الدخول</h1>
+        <p style="font-size: 14px; color: var(--color-text-secondary);">ادخل لحسابك للوصول إلى لوحة التحكم</p>
+      </div>
+
+      <form id="loginForm" novalidate>
+        <div class="form-group" style="margin-bottom: 16px;">
+          <label class="form-label" for="username">اسم المستخدم</label>
+          <input type="text" id="username" name="username" class="form-input" placeholder="أدخل اسم المستخدم" required autocomplete="username">
+          <div class="form-error"></div>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 24px;">
+          <label class="form-label" for="password">كلمة المرور</label>
+          <input type="password" id="password" name="password" class="form-input" placeholder="أدخل كلمة المرور" required autocomplete="current-password">
+          <div class="form-error"></div>
+        </div>
+
+        <button type="submit" class="btn btn--primary btn--lg btn--full" id="loginBtn">
+          تسجيل الدخول
+        </button>
+      </form>
+
+      <div style="text-align: center; margin-top: 20px;">
+        <a href="/" style="color: var(--color-text-secondary); font-size: 14px;">← العودة للمتجر</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      var form = document.getElementById('loginForm');
+      if (!form) return;
+
+      form.addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        var username = document.getElementById('username');
+        var password = document.getElementById('password');
+        var loginBtn = document.getElementById('loginBtn');
+
+        if (!username.value.trim() || !password.value.trim()) {
+          showToast('يرجى إدخال اسم المستخدم وكلمة المرور', 'error');
+          return;
+        }
+
+        loginBtn.disabled = true;
+        loginBtn.textContent = 'جاري تسجيل الدخول...';
+
+        fetch('/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            username: username.value.trim(),
+            password: password.value
+          })
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (data.success) {
+            window.location.href = data.redirect || '/account';
+          } else {
+            showToast(data.error || 'اسم المستخدم أو كلمة المرور غير صحيحة', 'error');
+            loginBtn.disabled = false;
+            loginBtn.textContent = 'تسجيل الدخول';
+          }
+        })
+        .catch(function() {
+          showToast('حدث خطأ في الاتصال', 'error');
+          loginBtn.disabled = false;
+          loginBtn.textContent = 'تسجيل الدخول';
+        });
+      });
+    });
+  </script>
+  <script src="/js/main.js"></script>
+</body>
+</html>

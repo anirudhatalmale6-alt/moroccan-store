@@ -8,6 +8,19 @@
 
   <div class="pattern-overlay"></div>
 
+  <!-- Audio Autoplay -->
+  <% if (product.audio_filename && product.audio_autoplay) { %>
+  <audio id="productAudio" src="/uploads/products/<%= product.audio_filename %>" autoplay loop></audio>
+  <button type="button" id="audioToggleBtn" onclick="toggleProductAudio()" style="
+    position: fixed; bottom: 20px; left: 20px; z-index: 9999;
+    width: 48px; height: 48px; border-radius: 50%;
+    background: var(--color-primary); color: #fff; border: none;
+    font-size: 20px; cursor: pointer; box-shadow: var(--shadow-md);
+    display: flex; align-items: center; justify-content: center;
+    transition: var(--transition-fast);
+  ">🔊</button>
+  <% } %>
+
   <!-- Navbar -->
   <%- include('partials/navbar', { product }) %>
 
@@ -31,21 +44,65 @@
           <p class="hero__desc">
             <%= product.description %>
           </p>
-          <%
-            var descImages = [];
-            try { descImages = JSON.parse(product.description_images || '[]'); } catch(e) {}
-          %>
-          <% if (descImages && descImages.length > 0) { %>
-          <div class="hero__desc-images" style="display: flex; flex-wrap: wrap; gap: 12px; margin-top: 16px; margin-bottom: 16px;">
-            <% descImages.forEach(function(imgFile) { %>
-              <div style="flex: 1 1 200px; max-width: 300px;">
-                <img src="/uploads/products/<%= imgFile %>" alt="<%= product.title %>" style="width: 100%; border-radius: var(--radius-md); object-fit: cover;">
-              </div>
-            <% }); %>
+
+          <!-- Variations -->
+          <% if (typeof sizeVariations !== 'undefined' && sizeVariations && sizeVariations.length > 0) { %>
+          <div class="product-variations" style="margin-top: 20px; margin-bottom: 16px;">
+            <label style="display: block; font-weight: 700; font-size: 15px; margin-bottom: 10px; color: var(--color-primary-dark);">اختر الحجم:</label>
+            <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+              <% sizeVariations.forEach(function(v, idx) { %>
+                <button type="button" class="variation-btn size-variation-btn<%= idx === 0 ? ' active' : '' %>"
+                  data-variation-id="<%= v.id %>"
+                  data-price-adjustment="<%= v.price_adjustment %>"
+                  onclick="selectSizeVariation(this)"
+                  style="
+                    padding: 10px 20px; border-radius: var(--radius-md); border: 2px solid var(--color-border);
+                    background: var(--color-card); cursor: pointer; font-family: var(--font-body);
+                    font-size: 14px; font-weight: 600; color: var(--color-text);
+                    transition: var(--transition-fast);
+                  "><%= v.label %>
+                  <% if (v.price_adjustment > 0) { %><span style="font-size: 11px; color: var(--color-text-muted);"> (+<%= v.price_adjustment %> د.م)</span><% } %>
+                  <% if (v.price_adjustment < 0) { %><span style="font-size: 11px; color: var(--color-success);"> (<%= v.price_adjustment %> د.م)</span><% } %>
+                </button>
+              <% }); %>
+            </div>
           </div>
           <% } %>
-          <div class="hero__price">
-            <span class="hero__price-current"><%= product.price %> درهم</span>
+
+          <% if (typeof colorVariations !== 'undefined' && colorVariations && colorVariations.length > 0) { %>
+          <div class="product-variations" style="margin-top: 16px; margin-bottom: 16px;">
+            <label style="display: block; font-weight: 700; font-size: 15px; margin-bottom: 10px; color: var(--color-primary-dark);">اختر اللون:</label>
+            <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+              <% colorVariations.forEach(function(v, idx) { %>
+                <button type="button" class="variation-btn color-variation-btn<%= idx === 0 ? ' active' : '' %>"
+                  data-variation-id="<%= v.id %>"
+                  data-price-adjustment="<%= v.price_adjustment %>"
+                  onclick="selectColorVariation(this)"
+                  title="<%= v.label %>"
+                  style="
+                    width: 52px; height: 52px; border-radius: 50%; border: 3px solid var(--color-border);
+                    cursor: pointer; padding: 0; overflow: hidden; position: relative;
+                    transition: var(--transition-fast);
+                    <% if (v.image_filename) { %>
+                      background-image: url('/uploads/variations/<%= v.image_filename %>');
+                      background-size: cover; background-position: center;
+                    <% } else if (v.value) { %>
+                      background-color: <%= v.value %>;
+                    <% } else { %>
+                      background-color: #ccc;
+                    <% } %>
+                  ">
+                </button>
+              <% }); %>
+            </div>
+            <div id="selectedColorLabel" style="margin-top: 6px; font-size: 13px; color: var(--color-text-secondary);">
+              <% if (colorVariations.length > 0) { %><%= colorVariations[0].label %><% } %>
+            </div>
+          </div>
+          <% } %>
+
+          <div class="hero__price" id="heroPrice">
+            <span class="hero__price-current" id="currentPrice"><%= product.price %> درهم</span>
             <% if (product.old_price) { %>
               <span class="hero__price-old"><%= product.old_price %> درهم</span>
             <% } %>
@@ -53,19 +110,21 @@
               <span class="hero__price-badge"><%= product.discount %></span>
             <% } %>
           </div>
-          <div class="hero__actions">
-            <a href="/product/<%= product.slug %>/checkout" class="btn btn--primary btn--lg">
+          <div class="hero__actions" style="display: flex; gap: 12px; flex-wrap: wrap;">
+            <a href="/product/<%= product.slug %>/checkout" id="buyNowBtn" class="btn btn--primary btn--lg">
               اشتري الآن 🛍️
             </a>
-            <a href="#features" class="btn btn--outline">
-              معرفة المزيد
-            </a>
+            <button type="button" class="btn btn--outline btn--lg" id="addToCartBtn" onclick="addToCartFromProduct()">
+              أضف للسلة 🛒
+            </button>
           </div>
         </div>
         <div class="hero__image">
           <div class="hero__image-decorator"></div>
           <div class="hero__image-wrapper">
-            <% if (product.video_filename) { %>
+            <% if (product.main_image) { %>
+              <img src="/uploads/products/<%= product.main_image %>" alt="<%= product.title %>" style="width: 100%; height: 100%; object-fit: cover; border-radius: var(--radius-lg);">
+            <% } else if (product.video_filename) { %>
               <video class="hero__video" autoplay muted loop playsinline poster="">
                 <source src="/uploads/products/<%= product.video_filename %>" type="video/mp4">
               </video>
@@ -79,6 +138,24 @@
       </div>
     </div>
   </section>
+
+  <!-- Description Images Section (Landing-page style, full-width) -->
+  <%
+    var descImages = [];
+    try { descImages = JSON.parse(product.description_images || '[]'); } catch(e) {}
+  %>
+  <% if (descImages && descImages.length > 0) { %>
+  <section class="description-images-section" style="padding: 0; margin: 40px 0;">
+    <div style="max-width: 900px; margin: 0 auto; padding: 0 16px;">
+      <% descImages.forEach(function(imgFile) { %>
+        <div style="margin-bottom: 0; text-align: center;">
+          <img src="/uploads/products/<%= imgFile %>" alt="<%= product.title %>"
+            style="width: 100%; max-width: 100%; height: auto; display: block; margin: 0 auto;">
+        </div>
+      <% }); %>
+    </div>
+  </section>
+  <% } %>
 
   <!-- Features Section -->
   <% if (product.features && product.features.length) { %>
@@ -221,7 +298,7 @@
                 <span class="required">*</span> الاسم
               </label>
               <input type="text" id="feedbackName" name="name" class="form-input" placeholder="أدخل اسمك" required>
-              <div class="form-error">⚠️ يرجى إدخال الاسم</div>
+              <div class="form-error">يرجى إدخال الاسم</div>
             </div>
           </div>
           <div class="form-group">
@@ -240,11 +317,11 @@
               <span class="required">*</span> تعليقك
             </label>
             <textarea id="feedbackMessage" name="message" class="form-input form-textarea" placeholder="اكتب تجربتك مع المنتج أو أي ملاحظة..." rows="4" required></textarea>
-            <div class="form-error">⚠️ يرجى كتابة تعليقك</div>
+            <div class="form-error">يرجى كتابة تعليقك</div>
           </div>
           <!-- Image Upload -->
           <div class="form-group">
-            <label class="form-label">📷 أضف صورة (اختياري)</label>
+            <label class="form-label">صورة (اختياري)</label>
             <div class="feedback-upload-zone" id="feedbackImageZone">
               <div class="feedback-upload-zone__icon">📷</div>
               <div class="feedback-upload-zone__text">اضغط لرفع صورة</div>
@@ -259,7 +336,7 @@
           </div>
           <!-- Voice Recording -->
           <div class="form-group">
-            <label class="form-label">🎙️ تعليق صوتي (اختياري)</label>
+            <label class="form-label">تعليق صوتي (اختياري)</label>
             <div class="voice-recorder" id="voiceRecorder">
               <button type="button" class="voice-recorder__btn" id="voiceRecordBtn">
                 <span class="voice-recorder__icon">🎙️</span>
@@ -268,14 +345,14 @@
               <div class="voice-recorder__status" id="voiceStatus"></div>
               <div class="voice-recorder__player" id="voicePlayer">
                 <audio id="voiceAudio" controls></audio>
-                <button type="button" class="voice-recorder__remove" id="voiceRemoveBtn">🗑️ حذف</button>
+                <button type="button" class="voice-recorder__remove" id="voiceRemoveBtn">حذف</button>
               </div>
             </div>
           </div>
           <button type="submit" class="btn btn--primary">
-            إرسال التعليق ✉️
+            إرسال التعليق
           </button>
-          <p class="feedback-form__note">💡 سيتم مراجعة تعليقك قبل نشره</p>
+          <p class="feedback-form__note">سيتم مراجعة تعليقك قبل نشره</p>
         </form>
         <!-- Success state (hidden by default) -->
         <div class="feedback-success" id="feedbackSuccess">
@@ -297,7 +374,7 @@
           احصل على منتجك اليوم بسعر مخفض مع توصيل سريع لجميع مدن المغرب
         </p>
         <a href="/product/<%= product.slug %>/checkout" class="btn btn--primary btn--lg">
-          اطلب الآن — <%= product.price %> درهم فقط 🔥
+          اطلب الآن — <%= product.price %> درهم فقط
         </a>
       </div>
     </div>
@@ -306,7 +383,134 @@
   <!-- Footer -->
   <%- include('partials/footer') %>
 
+  <style>
+    .variation-btn.active {
+      border-color: var(--color-primary) !important;
+      box-shadow: 0 0 0 2px var(--color-primary-light);
+    }
+    .color-variation-btn.active {
+      border-color: var(--color-primary) !important;
+      box-shadow: 0 0 0 3px var(--color-primary-light);
+      transform: scale(1.1);
+    }
+  </style>
+
   <script>
+    var PRODUCT_BASE_PRICE = <%= product.price %>;
+    var PRODUCT_SLUG = '<%= product.slug %>';
+    var PRODUCT_ID = <%= product.id %>;
+    var selectedSizeId = null;
+    var selectedColorId = null;
+    var sizePriceAdj = 0;
+    var colorPriceAdj = 0;
+
+    // Initialize default selections
+    (function() {
+      var firstSize = document.querySelector('.size-variation-btn');
+      if (firstSize) {
+        selectedSizeId = parseInt(firstSize.dataset.variationId);
+        sizePriceAdj = parseFloat(firstSize.dataset.priceAdjustment) || 0;
+      }
+      var firstColor = document.querySelector('.color-variation-btn');
+      if (firstColor) {
+        selectedColorId = parseInt(firstColor.dataset.variationId);
+        colorPriceAdj = parseFloat(firstColor.dataset.priceAdjustment) || 0;
+      }
+    })();
+
+    function selectSizeVariation(btn) {
+      document.querySelectorAll('.size-variation-btn').forEach(function(b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      selectedSizeId = parseInt(btn.dataset.variationId);
+      sizePriceAdj = parseFloat(btn.dataset.priceAdjustment) || 0;
+      updateDisplayedPrice();
+    }
+
+    function selectColorVariation(btn) {
+      document.querySelectorAll('.color-variation-btn').forEach(function(b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      selectedColorId = parseInt(btn.dataset.variationId);
+      colorPriceAdj = parseFloat(btn.dataset.priceAdjustment) || 0;
+      var label = document.getElementById('selectedColorLabel');
+      if (label) label.textContent = btn.title;
+      updateDisplayedPrice();
+    }
+
+    function updateDisplayedPrice() {
+      var total = PRODUCT_BASE_PRICE + sizePriceAdj + colorPriceAdj;
+      var priceEl = document.getElementById('currentPrice');
+      if (priceEl) priceEl.textContent = total + ' درهم';
+    }
+
+    function addToCartFromProduct() {
+      var btn = document.getElementById('addToCartBtn');
+      btn.disabled = true;
+      btn.innerHTML = 'جاري الإضافة...';
+
+      fetch('/cart/add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          product_id: PRODUCT_ID,
+          quantity: 1,
+          size_variation_id: selectedSizeId,
+          color_variation_id: selectedColorId
+        })
+      })
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        if (data.success) {
+          showToast('تمت إضافة المنتج للسلة', 'success');
+          // Update cart badge if exists
+          var badge = document.getElementById('cartBadge');
+          if (badge) {
+            badge.textContent = data.cartCount || '';
+            badge.style.display = (data.cartCount > 0) ? 'flex' : 'none';
+          }
+        } else {
+          showToast(data.error || 'حدث خطأ', 'error');
+        }
+        btn.disabled = false;
+        btn.innerHTML = 'أضف للسلة 🛒';
+      })
+      .catch(function(err) {
+        showToast('حدث خطأ في الاتصال', 'error');
+        btn.disabled = false;
+        btn.innerHTML = 'أضف للسلة 🛒';
+      });
+    }
+
+    function toggleProductAudio() {
+      var audio = document.getElementById('productAudio');
+      var btn = document.getElementById('audioToggleBtn');
+      if (!audio) return;
+      if (audio.muted || audio.paused) {
+        audio.muted = false;
+        audio.play().catch(function(){});
+        btn.textContent = '🔊';
+      } else {
+        audio.muted = true;
+        btn.textContent = '🔇';
+      }
+    }
+
+    // Auto-play with muted first (browsers require user interaction for unmuted autoplay)
+    (function() {
+      var audio = document.getElementById('productAudio');
+      if (audio) {
+        audio.muted = true;
+        audio.play().then(function() {
+          // Auto-play succeeded muted, try unmuted after user interaction
+          document.addEventListener('click', function unmute() {
+            audio.muted = false;
+            var btn = document.getElementById('audioToggleBtn');
+            if (btn) btn.textContent = '🔊';
+            document.removeEventListener('click', unmute);
+          }, { once: true });
+        }).catch(function(){});
+      }
+    })();
+
     function toggleFaq(btn) {
       var item = btn.parentElement;
       var answer = item.querySelector('.faq-answer');

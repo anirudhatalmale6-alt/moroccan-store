@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <%- include('partials/head') %>
+  <title>إعدادات الحساب — متجرنا</title>
+</head>
+<body>
+  <div class="pattern-overlay"></div>
+
+  <!-- Navbar -->
+  <nav class="navbar scrolled">
+    <div class="container">
+      <div class="navbar__inner">
+        <div class="navbar__brand">
+          <a href="/" style="display: flex; align-items: center; gap: 10px;">
+            <div class="navbar__logo">م</div>
+            <span class="navbar__name">متجرنا</span>
+          </a>
+        </div>
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <a href="/account" style="color: var(--color-text); font-size: 14px; text-decoration: none;">← لوحة التحكم</a>
+          <a href="/logout" class="navbar__cta" style="font-size: 13px; padding: 8px 16px; background: var(--color-error);">تسجيل الخروج</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Account Settings -->
+  <section class="hero" style="padding-bottom: 80px;">
+    <div class="container" style="max-width: 600px;">
+      <div class="section-header" style="margin-top: 20px;">
+        <span class="section-header__label">الإعدادات</span>
+        <h1 class="section-header__title">إعدادات الحساب</h1>
+        <div class="section-header__divider"></div>
+      </div>
+
+      <!-- Change Password -->
+      <div class="feature-card" style="padding: 24px; margin-bottom: 24px;">
+        <h3 style="font-size: 18px; font-weight: 700; color: var(--color-primary-dark); margin-bottom: 16px;">🔒 تغيير كلمة المرور</h3>
+        <form id="passwordForm" novalidate>
+          <div class="form-group" style="margin-bottom: 12px;">
+            <label class="form-label">كلمة المرور الحالية</label>
+            <input type="password" id="currentPassword" class="form-input" placeholder="أدخل كلمة المرور الحالية" required>
+            <div class="form-error"></div>
+          </div>
+          <div class="form-group" style="margin-bottom: 12px;">
+            <label class="form-label">كلمة المرور الجديدة</label>
+            <input type="password" id="newPassword" class="form-input" placeholder="أدخل كلمة المرور الجديدة" required>
+            <div class="form-error"></div>
+          </div>
+          <div class="form-group" style="margin-bottom: 16px;">
+            <label class="form-label">تأكيد كلمة المرور الجديدة</label>
+            <input type="password" id="confirmPassword" class="form-input" placeholder="أعد إدخال كلمة المرور الجديدة" required>
+            <div class="form-error"></div>
+          </div>
+          <button type="submit" class="btn btn--primary" id="passwordBtn">حفظ كلمة المرور</button>
+        </form>
+      </div>
+
+      <!-- Update WhatsApp -->
+      <div class="feature-card" style="padding: 24px;">
+        <h3 style="font-size: 18px; font-weight: 700; color: var(--color-primary-dark); margin-bottom: 16px;">📱 رقم الواتساب</h3>
+        <form id="whatsappForm" novalidate>
+          <div class="form-group" style="margin-bottom: 16px;">
+            <label class="form-label">رقم الواتساب</label>
+            <input type="tel" id="whatsapp" class="form-input" placeholder="0612345678" value="<%= user.whatsapp || '' %>" dir="ltr" style="text-align: left;">
+            <div class="form-error"></div>
+          </div>
+          <button type="submit" class="btn btn--primary" id="whatsappBtn">حفظ الرقم</button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <%- include('partials/footer') %>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Password form
+      var pwForm = document.getElementById('passwordForm');
+      if (pwForm) {
+        pwForm.addEventListener('submit', function(e) {
+          e.preventDefault();
+          var current = document.getElementById('currentPassword');
+          var newPw = document.getElementById('newPassword');
+          var confirm = document.getElementById('confirmPassword');
+          var btn = document.getElementById('passwordBtn');
+
+          if (!current.value || !newPw.value || !confirm.value) {
+            showToast('يرجى تعبئة جميع الحقول', 'error'); return;
+          }
+          if (newPw.value.length < 6) {
+            showToast('كلمة المرور يجب أن تكون 6 أحرف على الأقل', 'error'); return;
+          }
+          if (newPw.value !== confirm.value) {
+            showToast('كلمة المرور الجديدة غير متطابقة', 'error'); return;
+          }
+
+          btn.disabled = true; btn.textContent = 'جاري الحفظ...';
+
+          fetch('/account/settings', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              action: 'change_password',
+              current_password: current.value,
+              new_password: newPw.value
+            })
+          })
+          .then(function(r) { return r.json(); })
+          .then(function(data) {
+            if (data.success) {
+              showToast('تم تغيير كلمة المرور بنجاح', 'success');
+              pwForm.reset();
+            } else {
+              showToast(data.error || 'حدث خطأ', 'error');
+            }
+            btn.disabled = false; btn.textContent = 'حفظ كلمة المرور';
+          })
+          .catch(function() {
+            showToast('حدث خطأ في الاتصال', 'error');
+            btn.disabled = false; btn.textContent = 'حفظ كلمة المرور';
+          });
+        });
+      }
+
+      // WhatsApp form
+      var waForm = document.getElementById('whatsappForm');
+      if (waForm) {
+        waForm.addEventListener('submit', function(e) {
+          e.preventDefault();
+          var whatsapp = document.getElementById('whatsapp');
+          var btn = document.getElementById('whatsappBtn');
+
+          btn.disabled = true; btn.textContent = 'جاري الحفظ...';
+
+          fetch('/account/settings', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              action: 'update_whatsapp',
+              whatsapp: whatsapp.value.trim()
+            })
+          })
+          .then(function(r) { return r.json(); })
+          .then(function(data) {
+            if (data.success) {
+              showToast('تم حفظ رقم الواتساب', 'success');
+            } else {
+              showToast(data.error || 'حدث خطأ', 'error');
+            }
+            btn.disabled = false; btn.textContent = 'حفظ الرقم';
+          })
+          .catch(function() {
+            showToast('حدث خطأ في الاتصال', 'error');
+            btn.disabled = false; btn.textContent = 'حفظ الرقم';
+          });
+        });
+      }
+    });
+  </script>
+  <script src="/js/main.js"></script>
+</body>
+</html>

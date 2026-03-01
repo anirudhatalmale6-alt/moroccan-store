@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <%- include('partials/head') %>
+  <title><%= landingPage.title %> — متجرنا</title>
+</head>
+<body>
+  <div class="pattern-overlay"></div>
+
+  <!-- Navbar -->
+  <nav class="navbar scrolled">
+    <div class="container">
+      <div class="navbar__inner">
+        <div class="navbar__brand">
+          <a href="/" style="display: flex; align-items: center; gap: 10px;">
+            <div class="navbar__logo">م</div>
+            <span class="navbar__name">متجرنا</span>
+          </a>
+        </div>
+        <a href="#landingCheckout" class="navbar__cta">🛒 اطلب الآن</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Landing Page Sections -->
+  <div class="landing-sections" style="padding-top: 20px;">
+    <% if (typeof sections !== 'undefined' && sections && sections.length > 0) { %>
+      <% sections.forEach(function(section) { %>
+        <% if (!section.is_visible) return; %>
+
+        <% if (section.section_type === 'text') { %>
+          <!-- Text Section -->
+          <section style="padding: 40px 0;">
+            <div class="container" style="max-width: 900px;">
+              <% if (section.title) { %>
+                <h2 style="font-size: 28px; font-weight: 800; color: var(--color-primary-dark); margin-bottom: 16px; text-align: center;"><%= section.title %></h2>
+              <% } %>
+              <% if (section.content) { %>
+                <div style="font-size: 16px; line-height: 2; color: var(--color-text); white-space: pre-line;"><%= section.content %></div>
+              <% } %>
+            </div>
+          </section>
+
+        <% } else if (section.section_type === 'image' || section.section_type === 'gif') { %>
+          <!-- Image/GIF Section -->
+          <section style="padding: 0; margin: 0;">
+            <div style="max-width: 900px; margin: 0 auto; padding: 0 16px;">
+              <% if (section.title) { %>
+                <h2 style="font-size: 24px; font-weight: 800; color: var(--color-primary-dark); margin-bottom: 12px; text-align: center; padding-top: 24px;"><%= section.title %></h2>
+              <% } %>
+              <% if (section.media_filename) { %>
+                <img src="/uploads/landing-pages/<%= section.media_filename %>" alt="<%= section.title || '' %>"
+                  style="width: 100%; height: auto; display: block; margin: 0 auto;">
+              <% } %>
+              <% if (section.content) { %>
+                <p style="font-size: 15px; color: var(--color-text-secondary); text-align: center; margin-top: 12px; padding-bottom: 16px;"><%= section.content %></p>
+              <% } %>
+            </div>
+          </section>
+
+        <% } else if (section.section_type === 'video') { %>
+          <!-- Video Section -->
+          <section style="padding: 20px 0;">
+            <div style="max-width: 900px; margin: 0 auto; padding: 0 16px;">
+              <% if (section.title) { %>
+                <h2 style="font-size: 24px; font-weight: 800; color: var(--color-primary-dark); margin-bottom: 12px; text-align: center;"><%= section.title %></h2>
+              <% } %>
+              <% if (section.media_filename) { %>
+                <video controls playsinline style="width: 100%; border-radius: var(--radius-md); box-shadow: var(--shadow-md);">
+                  <source src="/uploads/landing-pages/<%= section.media_filename %>" type="video/mp4">
+                </video>
+              <% } %>
+              <% if (section.content) { %>
+                <p style="font-size: 15px; color: var(--color-text-secondary); text-align: center; margin-top: 12px;"><%= section.content %></p>
+              <% } %>
+            </div>
+          </section>
+        <% } %>
+
+      <% }); %>
+    <% } %>
+  </div>
+
+  <!-- Landing Page Checkout Form -->
+  <% if (typeof product !== 'undefined' && product) { %>
+  <section id="landingCheckout" style="padding: 60px 0; background: var(--color-bg-warm);">
+    <div class="container" style="max-width: 600px;">
+      <div class="section-header" style="margin-bottom: 30px;">
+        <span class="section-header__label">اطلب الآن</span>
+        <h2 class="section-header__title"><%= product.title %></h2>
+        <div class="section-header__divider"></div>
+        <div style="text-align: center; margin-top: 12px;">
+          <span style="font-size: 28px; font-weight: 800; color: var(--color-primary);"><%= product.price %> درهم</span>
+          <% if (product.old_price && product.old_price > product.price) { %>
+            <span style="font-size: 16px; color: var(--color-text-muted); text-decoration: line-through; margin-right: 8px;"><%= product.old_price %> درهم</span>
+          <% } %>
+        </div>
+      </div>
+
+      <div class="feedback-card" style="padding: 30px;">
+        <form id="landingOrderForm" novalidate>
+
+          <div class="form-group">
+            <label class="form-label" for="lpFullName">
+              <span class="required">*</span> الاسم الكامل
+            </label>
+            <input type="text" id="lpFullName" name="fullName" class="form-input" placeholder="أدخل اسمك الكامل" required>
+            <div class="form-error"></div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="lpPhone">
+              <span class="required">*</span> رقم الهاتف
+            </label>
+            <input type="tel" id="lpPhone" name="phone" class="form-input" placeholder="0612345678" required dir="ltr" style="text-align: left;">
+            <div class="form-error"></div>
+          </div>
+
+          <!-- Quantity -->
+          <div class="form-group">
+            <label class="form-label">الكمية</label>
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <div class="qty-control" style="display: flex; align-items: center;">
+                <button type="button" onclick="lpQtyChange(-1)" style="width: 36px; height: 36px; border: 1px solid var(--color-border); background: var(--color-card); border-radius: var(--radius-sm) 0 0 var(--radius-sm); cursor: pointer; font-size: 18px; font-weight: 700;">−</button>
+                <div id="lpQtyValue" style="width: 44px; height: 36px; border-top: 1px solid var(--color-border); border-bottom: 1px solid var(--color-border); display: flex; align-items: center; justify-content: center; font-weight: 700; background: var(--color-bg);">1</div>
+                <button type="button" onclick="lpQtyChange(1)" style="width: 36px; height: 36px; border: 1px solid var(--color-border); background: var(--color-card); border-radius: 0 var(--radius-sm) var(--radius-sm) 0; cursor: pointer; font-size: 18px; font-weight: 700;">+</button>
+              </div>
+              <span id="lpTotalPrice" style="font-size: 18px; font-weight: 700; color: var(--color-primary);"><%= product.price %> درهم</span>
+            </div>
+          </div>
+
+          <% var paymentType = landingPage.payment_type || 'bank'; %>
+
+          <% if (paymentType === 'cod') { %>
+            <!-- COD Form: city + address, no receipt -->
+            <div class="form-group">
+              <label class="form-label" for="lpCity">
+                <span class="required">*</span> المدينة
+              </label>
+              <input type="text" id="lpCity" name="city" class="form-input" placeholder="الدار البيضاء، الرباط..." required>
+              <div class="form-error"></div>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="lpAddress">
+                <span class="required">*</span> العنوان
+              </label>
+              <textarea id="lpAddress" name="address" class="form-input form-textarea" placeholder="العنوان الكامل للتوصيل..." rows="2" required></textarea>
+              <div class="form-error"></div>
+            </div>
+          <% } else { %>
+            <!-- Bank Form: bank details + receipt upload -->
+            <div class="form-section" style="margin-top: 20px;">
+              <h3 style="font-size: 16px; font-weight: 700; color: var(--color-primary-dark); margin-bottom: 12px;">🏦 معلومات التحويل البنكي</h3>
+              <div class="bank-transfer-amount" style="margin-bottom: 16px;">
+                <span class="bank-transfer-amount__label">المبلغ المطلوب</span>
+                <span class="bank-transfer-amount__value" id="lpBankAmount"><%= product.price %> درهم</span>
+              </div>
+              <div class="bank-details">
+                <% if (typeof bankSettings !== 'undefined' && bankSettings && bankSettings.length > 0) { %>
+                  <% bankSettings.forEach(function(bank) { %>
+                    <div class="bank-detail">
+                      <span class="bank-detail__label">البنك</span>
+                      <span class="bank-detail__value"><%= bank.bank_name %></span>
+                    </div>
+                    <div class="bank-detail">
+                      <span class="bank-detail__label">صاحب الحساب</span>
+                      <span class="bank-detail__value">
+                        <%= bank.account_holder %>
+                        <button type="button" class="bank-detail__copy" data-value="<%= bank.account_holder %>" title="نسخ">📋</button>
+                      </span>
+                    </div>
+                    <div class="bank-detail">
+                      <span class="bank-detail__label">RIB</span>
+                      <span class="bank-detail__value">
+                        <%= bank.rib %>
+                        <button type="button" class="bank-detail__copy" data-value="<%= bank.rib.replace(/\s/g, '') %>" title="نسخ">📋</button>
+                      </span>
+                    </div>
+                  <% }); %>
+                <% } %>
+              </div>
+            </div>
+            <div class="form-group" style="margin-top: 16px;">
+              <label class="form-label">
+                <span class="required">*</span> إيصال الدفع
+              </label>
+              <div class="upload-zone" id="lpUploadZone">
+                <div class="upload-zone__icon">📤</div>
+                <div class="upload-zone__text">اضغط لرفع إيصال الدفع</div>
+                <div class="upload-zone__hint">JPG, PNG, PDF — الحد الأقصى 10MB</div>
+                <input type="file" id="lpReceipt" name="receipt" accept="image/*,.pdf">
+              </div>
+              <div class="upload-preview" id="lpUploadPreview">
+                <img class="upload-preview__img" id="lpPreviewImg" src="" alt="معاينة" style="display:none;">
+                <div class="upload-preview__name" id="lpPreviewName"></div>
+                <button type="button" class="upload-preview__remove" id="lpPreviewRemove">✕</button>
+              </div>
+              <div class="form-error" id="lpReceiptError">يرجى رفع إيصال الدفع</div>
+            </div>
+          <% } %>
+
+          <button type="submit" class="btn btn--primary btn--lg btn--full" id="lpSubmitBtn" style="margin-top: 20px;">
+            تأكيد الطلب
+          </button>
+        </form>
+      </div>
+    </div>
+  </section>
+  <% } %>
+
+  <!-- Loading Overlay -->
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-spinner"></div>
+    <div class="loading-text">جاري معالجة طلبك...</div>
+  </div>
+
+  <%- include('partials/footer') %>
+
+  <script>
+    var LP_PRICE = <%= typeof product !== 'undefined' && product ? product.price : 0 %>;
+    var LP_PAYMENT_TYPE = '<%= typeof landingPage !== 'undefined' ? (landingPage.payment_type || 'bank') : 'bank' %>';
+    var LP_PRODUCT_SLUG = '<%= typeof product !== 'undefined' && product ? product.slug : '' %>';
+
+    function lpQtyChange(delta) {
+      var el = document.getElementById('lpQtyValue');
+      var qty = parseInt(el.textContent) || 1;
+      qty += delta;
+      if (qty < 1) qty = 1;
+      if (qty > 10) qty = 10;
+      el.textContent = qty;
+      var totalEl = document.getElementById('lpTotalPrice');
+      if (totalEl) totalEl.textContent = (qty * LP_PRICE) + ' درهم';
+      var bankEl = document.getElementById('lpBankAmount');
+      if (bankEl) bankEl.textContent = (qty * LP_PRICE) + ' درهم';
+    }
+
+    // Receipt upload preview
+    (function() {
+      var input = document.getElementById('lpReceipt');
+      var zone = document.getElementById('lpUploadZone');
+      var preview = document.getElementById('lpUploadPreview');
+      var previewImg = document.getElementById('lpPreviewImg');
+      var previewName = document.getElementById('lpPreviewName');
+      var removeBtn = document.getElementById('lpPreviewRemove');
+
+      if (input) {
+        input.addEventListener('change', function(e) {
+          var file = e.target.files[0];
+          if (!file) return;
+          if (file.type.startsWith('image/')) {
+            var reader = new FileReader();
+            reader.onload = function(evt) { if (previewImg) { previewImg.src = evt.target.result; previewImg.style.display = 'block'; } };
+            reader.readAsDataURL(file);
+          } else { if (previewImg) previewImg.style.display = 'none'; }
+          if (previewName) previewName.textContent = '✅ ' + file.name;
+          if (preview) preview.classList.add('visible');
+          if (zone) { zone.classList.add('upload-zone--has-file'); zone.classList.remove('upload-zone--error'); }
+        });
+      }
+      if (removeBtn) {
+        removeBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          if (input) input.value = '';
+          if (preview) preview.classList.remove('visible');
+          if (zone) zone.classList.remove('upload-zone--has-file');
+        });
+      }
+    })();
+
+    // Copy buttons
+    document.querySelectorAll('.bank-detail__copy').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var value = btn.dataset.value;
+        if (!value) return;
+        navigator.clipboard.writeText(value).then(function() {
+          var orig = btn.textContent; btn.textContent = '✓'; btn.style.background = 'var(--color-success)'; btn.style.color = 'white';
+          setTimeout(function() { btn.textContent = orig; btn.style.background = ''; btn.style.color = ''; }, 1500);
+        }).catch(function() {});
+      });
+    });
+
+    // Form submission
+    document.addEventListener('DOMContentLoaded', function() {
+      var form = document.getElementById('landingOrderForm');
+      if (!form) return;
+      var isSubmitting = false;
+
+      form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        if (isSubmitting) return;
+
+        // Clear errors
+        document.querySelectorAll('.form-input--error').forEach(function(el) { el.classList.remove('form-input--error'); });
+        document.querySelectorAll('.form-error').forEach(function(el) { el.classList.remove('visible'); });
+
+        var fullName = document.getElementById('lpFullName');
+        var phone = document.getElementById('lpPhone');
+        var isValid = true;
+
+        if (!fullName.value.trim()) { showFieldError(fullName, 'يرجى إدخال الاسم'); isValid = false; }
+        if (!phone.value.trim()) { showFieldError(phone, 'يرجى إدخال رقم الهاتف'); isValid = false; }
+
+        if (LP_PAYMENT_TYPE === 'cod') {
+          var city = document.getElementById('lpCity');
+          var address = document.getElementById('lpAddress');
+          if (city && !city.value.trim()) { showFieldError(city, 'يرجى إدخال المدينة'); isValid = false; }
+          if (address && !address.value.trim()) { showFieldError(address, 'يرجى إدخال العنوان'); isValid = false; }
+        } else {
+          var receipt = document.getElementById('lpReceipt');
+          if (!receipt || !receipt.files || !receipt.files.length) {
+            var zone = document.getElementById('lpUploadZone');
+            if (zone) zone.classList.add('upload-zone--error');
+            var rErr = document.getElementById('lpReceiptError');
+            if (rErr) rErr.classList.add('visible');
+            isValid = false;
+          }
+        }
+
+        if (!isValid) { showToast('يرجى تعبئة جميع الحقول المطلوبة', 'error'); return; }
+
+        isSubmitting = true;
+        var submitBtn = document.getElementById('lpSubmitBtn');
+        if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'جاري الإرسال...'; }
+        showLoading();
+
+        var qty = parseInt(document.getElementById('lpQtyValue').textContent) || 1;
+        var formData = new FormData();
+        formData.append('fullName', fullName.value.trim());
+        formData.append('phone', phone.value.trim());
+        formData.append('quantity', qty);
+        formData.append('payment_type', LP_PAYMENT_TYPE === 'cod' ? 'cod' : 'bank_full');
+
+        if (LP_PAYMENT_TYPE === 'cod') {
+          formData.append('city', document.getElementById('lpCity').value.trim());
+          formData.append('address', document.getElementById('lpAddress').value.trim());
+        } else {
+          var receipt = document.getElementById('lpReceipt');
+          if (receipt && receipt.files[0]) formData.append('receipt', receipt.files[0]);
+        }
+
+        fetch('/product/' + LP_PRODUCT_SLUG + '/order', { method: 'POST', body: formData })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (data.success) {
+            sessionStorage.setItem('orderRef', data.orderRef);
+            window.location.href = '/thankyou';
+          } else {
+            hideLoading();
+            isSubmitting = false;
+            if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'تأكيد الطلب'; }
+            showToast(data.error || 'حدث خطأ', 'error');
+          }
+        })
+        .catch(function(err) {
+          hideLoading();
+          isSubmitting = false;
+          if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'تأكيد الطلب'; }
+          showToast('حدث خطأ في الاتصال', 'error');
+        });
+      });
+    });
+  </script>
+
+  <style>
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+  </style>
+  <script src="/js/main.js"></script>
+</body>
+</html>

@@ -7,11 +7,14 @@
           <span class="navbar__name">متجرنا</span>
         </a>
       </div>
-      <% if (typeof product !== 'undefined' && product) { %>
-        <a href="/product/<%= product.slug %>/checkout" class="navbar__cta">🛒 اطلب الآن</a>
-      <% } else { %>
-        <a href="/" class="navbar__cta">🏠 الرئيسية</a>
-      <% } %>
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <a href="/cart" style="position: relative; font-size: 20px; color: inherit; text-decoration: none; opacity: 0.8;" title="السلة">🛒</a>
+        <% if (typeof product !== 'undefined' && product) { %>
+          <a href="/product/<%= product.slug %>/checkout" class="navbar__cta">🛒 اطلب الآن</a>
+        <% } else { %>
+          <a href="/" class="navbar__cta">🏠 الرئيسية</a>
+        <% } %>
+      </div>
     </div>
   </div>
 </nav>
