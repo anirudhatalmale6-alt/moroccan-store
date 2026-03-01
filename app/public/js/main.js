@@ -598,7 +598,12 @@ function initFeedbackForm() {
 
     // Add voice recording if available
     if (window._voiceBlob) {
-      submitData.append('audio', window._voiceBlob, 'voice-recording.webm');
+      var ext = 'webm';
+      var blobType = window._voiceBlob.type || '';
+      if (blobType.indexOf('mp4') !== -1) ext = 'mp4';
+      else if (blobType.indexOf('ogg') !== -1) ext = 'ogg';
+      else if (blobType.indexOf('wav') !== -1) ext = 'wav';
+      submitData.append('audio', window._voiceBlob, 'voice-recording.' + ext);
     }
 
     try {
@@ -765,7 +770,7 @@ function initFeedbackUploads() {
       }
 
       if (file.size > 5 * 1024 * 1024) {
-        showToast('حجم الصورة كبير جداً (الحد الأقصى 5MB)', 'error');
+        showToast('حجم الصورة كبير جداً (الحد الأقصى 5 ميجابايت)', 'error');
         input.value = '';
         return;
       }

@@ -16,12 +16,13 @@ const reviewStorage = multer.diskStorage({
 });
 const reviewUpload = multer({
   storage: reviewStorage,
-  limits: { fileSize: 10 * 1024 * 1024 },
+  limits: { fileSize: 5 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
     if (file.fieldname === 'image') {
       cb(null, /^image\//.test(file.mimetype));
     } else if (file.fieldname === 'audio') {
-      cb(null, /^audio\/|^video\/webm/.test(file.mimetype));
+      // Accept all audio types + video/webm (Chrome records as video/webm) + application/octet-stream (some mobile browsers)
+      cb(null, /^audio\/|^video\/webm|^video\/mp4|^application\/octet-stream/.test(file.mimetype));
     } else {
       cb(null, false);
     }
@@ -127,6 +128,24 @@ router.get('/', (req, res) => {
   res.render('home', { products, sliders, categories });
 });
 
+
+// ============================================================
+// CATEGORY PAGE
+// ============================================================
+router.get('/category/:slug', (req, res) => {
+  const category = db.prepare('SELECT * FROM categories WHERE slug = ? AND is_active = 1').get(req.params.slug);
+  if (!category) return res.status(404).render('404');
+
+  const products = db.prepare('SELECT * FROM products WHERE category_id = ? AND is_active = 1 ORDER BY created_at DESC').all(category.id);
+
+  let sliders = [];
+  try { sliders = db.prepare('SELECT * FROM home_sliders WHERE is_active = 1 ORDER BY sort_order').all(); } catch(e) {}
+
+  let categories = [];
+  try { categories = db.prepare('SELECT * FROM categories WHERE is_active = 1 ORDER BY sort_order').all(); } catch(e) {}
+
+  res.render('home', { products, sliders, categories, currentCategory: category });
+});
 
 // ============================================================
 // PRODUCT LANDING PAGE
@@ -903,7 +922,7 @@ router.get('/contact', (req, res) => {
 router.get('/:username', (req, res) => {
   try {
     // Skip known routes (avoid matching static assets, admin, etc.)
-    const reserved = ['admin', 'api', 'login', 'logout', 'account', 'cart', 'thankyou', 'returns', 'payment-delivery', 'contact', 'product', 'p', 'favicon.ico'];
+    const reserved = ['admin', 'api', 'login', 'logout', 'account', 'cart', 'thankyou', 'returns', 'payment-delivery', 'contact', 'product', 'p', 'category', 'favicon.ico'];
     if (reserved.includes(req.params.username)) {
       return res.status(404).render('404');
     }

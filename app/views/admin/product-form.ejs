@@ -234,6 +234,17 @@
                 </div>
             </div>
 
+            <% if (typeof success !== 'undefined' && success) { %>
+            <div style="background: #d4edda; color: #155724; border: 1px solid #c3e6cb; border-radius: 10px; padding: 14px 20px; margin-bottom: 20px; font-weight: 600;">
+                ✅ تم حفظ التعديلات بنجاح
+            </div>
+            <% } %>
+            <% if (typeof error !== 'undefined' && error) { %>
+            <div style="background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; border-radius: 10px; padding: 14px 20px; margin-bottom: 20px; font-weight: 600;">
+                ❌ حدث خطأ أثناء الحفظ. حاول مرة أخرى
+            </div>
+            <% } %>
+
             <div class="form-card">
                 <form method="POST" action="<%= product ? '/admin/products/' + product.id : '/admin/products' %>" enctype="multipart/form-data">
 
@@ -245,6 +256,19 @@
                     <div class="form-group">
                         <label>الوصف</label>
                         <textarea name="description" placeholder="وصف تفصيلي للمنتج"><%= product ? product.description : '' %></textarea>
+                    </div>
+
+                    <!-- Category Selection -->
+                    <div class="form-group">
+                        <label>التصنيف</label>
+                        <select name="category_id" style="width: 100%; padding: 10px; border: 2px solid #e8e0d8; border-radius: 8px; font-size: 14px; font-family: inherit; background: #fff;">
+                            <option value="">بدون تصنيف</option>
+                            <% if (typeof categories !== 'undefined' && categories) { %>
+                              <% categories.forEach(function(cat) { %>
+                                <option value="<%= cat.id %>" <%= product && product.category_id == cat.id ? 'selected' : '' %>><%= cat.name %></option>
+                              <% }); %>
+                            <% } %>
+                        </select>
                     </div>
 
                     <div class="form-row-3">

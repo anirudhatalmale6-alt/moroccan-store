@@ -148,12 +148,13 @@ router.get('/products', requireAdmin, (req, res) => {
 
 // New product form
 router.get('/products/new', requireAdmin, (req, res) => {
-  res.render('admin/product-form', { product: null });
+  const categories = db.prepare('SELECT * FROM categories WHERE is_active = 1 ORDER BY sort_order').all();
+  res.render('admin/product-form', { product: null, categories });
 });
 
 // Create product
 router.post('/products', requireAdmin, productFields, (req, res) => {
-  const { title, description, price, old_price, discount, slug, deposit_amount, features, show_gallery, whatsapp_number, delivery_fee, weight, cod_enabled, bank_full_enabled, bank_deposit_enabled, audio_autoplay } = req.body;
+  const { title, description, price, old_price, discount, slug, deposit_amount, features, show_gallery, whatsapp_number, delivery_fee, weight, cod_enabled, bank_full_enabled, bank_deposit_enabled, audio_autoplay, category_id } = req.body;
   const videoFilename = req.files && req.files.video ? req.files.video[0].filename : '';
   const mainImageFilename = req.files && req.files.main_image ? req.files.main_image[0].filename : '';
   const audioFilename = req.files && req.files.audio ? req.files.audio[0].filename : '';
@@ -169,9 +170,9 @@ router.post('/products', requireAdmin, productFields, (req, res) => {
 
   try {
     const result = db.prepare(`
-      INSERT INTO products (title, description, price, old_price, discount, slug, deposit_amount, video_filename, features, main_image, show_gallery, description_images, whatsapp_number, delivery_fee, weight, audio_filename, audio_autoplay, cod_enabled, bank_full_enabled, bank_deposit_enabled)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `).run(title, description || '', parseFloat(price) || 200, parseFloat(old_price) || 0, discount || '', finalSlug, parseFloat(deposit_amount) || 50, videoFilename, features || '[]', mainImageFilename, show_gallery === 'on' || show_gallery === '1' ? 1 : 0, descriptionImagesJson, whatsapp_number || '', parseFloat(delivery_fee) || 50, parseFloat(weight) || 0, audioFilename, audio_autoplay === '1' ? 1 : 0, cod_enabled === '1' ? 1 : 0, bank_full_enabled === '1' ? 1 : 0, bank_deposit_enabled === '1' ? 1 : 0);
+      INSERT INTO products (title, description, price, old_price, discount, slug, deposit_amount, video_filename, features, main_image, show_gallery, description_images, whatsapp_number, delivery_fee, weight, audio_filename, audio_autoplay, cod_enabled, bank_full_enabled, bank_deposit_enabled, category_id)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(title, description || '', parseFloat(price) || 200, parseFloat(old_price) || 0, discount || '', finalSlug, parseFloat(deposit_amount) || 50, videoFilename, features || '[]', mainImageFilename, show_gallery === 'on' || show_gallery === '1' ? 1 : 0, descriptionImagesJson, whatsapp_number || '', parseFloat(delivery_fee) || 50, parseFloat(weight) || 0, audioFilename, audio_autoplay === '1' ? 1 : 0, cod_enabled === '1' ? 1 : 0, bank_full_enabled === '1' ? 1 : 0, bank_deposit_enabled === '1' ? 1 : 0, category_id ? parseInt(category_id) : null);
 
     // Insert gallery images into product_images table
     if (req.files && req.files.gallery_images) {
@@ -198,47 +199,53 @@ router.get('/products/:id/edit', requireAdmin, (req, res) => {
   product.faqs = faqs;
   const variations = db.prepare('SELECT * FROM product_variations WHERE product_id = ? ORDER BY type, sort_order').all(product.id);
   product.variations = variations;
-  res.render('admin/product-form', { product });
+  const categories = db.prepare('SELECT * FROM categories WHERE is_active = 1 ORDER BY sort_order').all();
+  res.render('admin/product-form', { product, categories, success: req.query.success, error: req.query.error });
 });
 
 // Update product
 router.post('/products/:id', requireAdmin, productFields, (req, res) => {
-  const { title, description, price, old_price, discount, slug, deposit_amount, features, is_active, show_gallery, whatsapp_number, delivery_fee, weight, cod_enabled, bank_full_enabled, bank_deposit_enabled, audio_autoplay } = req.body;
-  const product = db.prepare('SELECT * FROM products WHERE id = ?').get(req.params.id);
-  if (!product) return res.redirect('/admin/products');
+  try {
+    const { title, description, price, old_price, discount, slug, deposit_amount, features, is_active, show_gallery, whatsapp_number, delivery_fee, weight, cod_enabled, bank_full_enabled, bank_deposit_enabled, audio_autoplay, category_id } = req.body;
+    const product = db.prepare('SELECT * FROM products WHERE id = ?').get(req.params.id);
+    if (!product) return res.redirect('/admin/products');
 
-  const videoFilename = req.files && req.files.video ? req.files.video[0].filename : product.video_filename;
-  const mainImageFilename = req.files && req.files.main_image ? req.files.main_image[0].filename : (product.main_image || '');
-  const audioFilename = req.files && req.files.audio ? req.files.audio[0].filename : (product.audio_filename || '');
+    const videoFilename = req.files && req.files.video ? req.files.video[0].filename : product.video_filename;
+    const mainImageFilename = req.files && req.files.main_image ? req.files.main_image[0].filename : (product.main_image || '');
+    const audioFilename = req.files && req.files.audio ? req.files.audio[0].filename : (product.audio_filename || '');
 
-  // Handle description images: merge existing with new uploads
-  let existingDescImages = [];
-  try { existingDescImages = JSON.parse(product.description_images || '[]'); } catch(e) {}
-  if (req.files && req.files.description_images) {
-    const newDescImages = req.files.description_images.map(f => f.filename);
-    existingDescImages = existingDescImages.concat(newDescImages);
+    // Handle description images: merge existing with new uploads
+    let existingDescImages = [];
+    try { existingDescImages = JSON.parse(product.description_images || '[]'); } catch(e) {}
+    if (req.files && req.files.description_images) {
+      const newDescImages = req.files.description_images.map(f => f.filename);
+      existingDescImages = existingDescImages.concat(newDescImages);
+    }
+    const descriptionImagesJson = JSON.stringify(existingDescImages);
+
+    // Robust is_active handling: checkbox sends '1' or 'on' when checked, nothing when unchecked
+    const activeVal = (is_active === '1' || is_active === 'on' || is_active === 1) ? 1 : 0;
+
+    db.prepare(`
+      UPDATE products SET title=?, description=?, price=?, old_price=?, discount=?, slug=?, deposit_amount=?, video_filename=?, features=?, is_active=?, main_image=?, show_gallery=?, description_images=?, whatsapp_number=?, delivery_fee=?, weight=?, audio_filename=?, audio_autoplay=?, cod_enabled=?, bank_full_enabled=?, bank_deposit_enabled=?, category_id=?, updated_at=datetime('now')
+      WHERE id=?
+    `).run(title, description || '', parseFloat(price) || 200, parseFloat(old_price) || 0, discount || '', slug, parseFloat(deposit_amount) || 50, videoFilename, features || '[]', activeVal, mainImageFilename, show_gallery === 'on' || show_gallery === '1' ? 1 : 0, descriptionImagesJson, whatsapp_number || '', parseFloat(delivery_fee) || 50, parseFloat(weight) || 0, audioFilename, audio_autoplay === '1' ? 1 : 0, cod_enabled === '1' ? 1 : 0, bank_full_enabled === '1' ? 1 : 0, bank_deposit_enabled === '1' ? 1 : 0, category_id ? parseInt(category_id) : null, req.params.id);
+
+    // Insert new gallery images into product_images table
+    if (req.files && req.files.gallery_images) {
+      // Get current max sort_order
+      const maxOrder = db.prepare('SELECT COALESCE(MAX(sort_order), -1) as max_order FROM product_images WHERE product_id = ?').get(req.params.id);
+      let sortOrder = (maxOrder ? maxOrder.max_order : -1) + 1;
+      req.files.gallery_images.forEach((file) => {
+        db.prepare('INSERT INTO product_images (product_id, filename, sort_order) VALUES (?, ?, ?)').run(req.params.id, file.filename, sortOrder++);
+      });
+    }
+
+    res.redirect('/admin/products/' + req.params.id + '/edit?success=1');
+  } catch (err) {
+    console.error('Update product error:', err);
+    res.redirect('/admin/products/' + req.params.id + '/edit?error=1');
   }
-  const descriptionImagesJson = JSON.stringify(existingDescImages);
-
-  // Robust is_active handling: checkbox sends '1' or 'on' when checked, nothing when unchecked
-  const activeVal = (is_active === '1' || is_active === 'on' || is_active === 1) ? 1 : 0;
-
-  db.prepare(`
-    UPDATE products SET title=?, description=?, price=?, old_price=?, discount=?, slug=?, deposit_amount=?, video_filename=?, features=?, is_active=?, main_image=?, show_gallery=?, description_images=?, whatsapp_number=?, delivery_fee=?, weight=?, audio_filename=?, audio_autoplay=?, cod_enabled=?, bank_full_enabled=?, bank_deposit_enabled=?, updated_at=datetime('now')
-    WHERE id=?
-  `).run(title, description || '', parseFloat(price) || 200, parseFloat(old_price) || 0, discount || '', slug, parseFloat(deposit_amount) || 50, videoFilename, features || '[]', activeVal, mainImageFilename, show_gallery === 'on' || show_gallery === '1' ? 1 : 0, descriptionImagesJson, whatsapp_number || '', parseFloat(delivery_fee) || 50, parseFloat(weight) || 0, audioFilename, audio_autoplay === '1' ? 1 : 0, cod_enabled === '1' ? 1 : 0, bank_full_enabled === '1' ? 1 : 0, bank_deposit_enabled === '1' ? 1 : 0, req.params.id);
-
-  // Insert new gallery images into product_images table
-  if (req.files && req.files.gallery_images) {
-    // Get current max sort_order
-    const maxOrder = db.prepare('SELECT COALESCE(MAX(sort_order), -1) as max_order FROM product_images WHERE product_id = ?').get(req.params.id);
-    let sortOrder = (maxOrder ? maxOrder.max_order : -1) + 1;
-    req.files.gallery_images.forEach((file) => {
-      db.prepare('INSERT INTO product_images (product_id, filename, sort_order) VALUES (?, ?, ?)').run(req.params.id, file.filename, sortOrder++);
-    });
-  }
-
-  res.redirect('/admin/products');
 });
 
 // Delete a gallery image (product_images entry)
