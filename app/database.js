@@ -381,6 +381,14 @@ async function initDatabase() {
     console.log('Default admin settings seeded');
   }
 
+  // Font settings
+  if (!db.prepare("SELECT 1 FROM admin_settings WHERE setting_key = 'font_family'").get()) {
+    db.prepare("INSERT INTO admin_settings (setting_key, setting_value) VALUES (?, ?)").run('font_family', 'Cairo');
+  }
+  if (!db.prepare("SELECT 1 FROM admin_settings WHERE setting_key = 'custom_font_url'").get()) {
+    db.prepare("INSERT INTO admin_settings (setting_key, setting_value) VALUES (?, ?)").run('custom_font_url', '');
+  }
+
   // Seed a default product if none exists
   const productCount = db.prepare('SELECT COUNT(*) as count FROM products').get();
   if (productCount.count === 0) {

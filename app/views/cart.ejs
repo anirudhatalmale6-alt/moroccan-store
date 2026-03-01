@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
   <%- include('partials/head') %>
-  <title>سلة المشتريات — متجرنا</title>
+  <title>سلة المشتريات — <%= typeof siteName !== 'undefined' ? siteName : 'متجرنا' %></title>
 </head>
 <body>
   <div class="pattern-overlay"></div>
@@ -13,8 +13,8 @@
       <div class="navbar__inner">
         <div class="navbar__brand">
           <a href="/" style="display: flex; align-items: center; gap: 10px;">
-            <div class="navbar__logo">م</div>
-            <span class="navbar__name">متجرنا</span>
+            <div class="navbar__logo"><%= typeof siteName !== 'undefined' ? siteName.charAt(0) : 'م' %></div>
+            <span class="navbar__name"><%= typeof siteName !== 'undefined' ? siteName : 'متجرنا' %></span>
           </a>
         </div>
         <a href="/" class="navbar__cta">🏠 الرئيسية</a>
@@ -107,26 +107,45 @@
 
         <!-- Gift Product -->
         <% if (typeof giftProduct !== 'undefined' && giftProduct) { %>
-        <div style="
+        <div id="giftCard" style="
           background: linear-gradient(135deg, #FFF8E1, #FFF3E0); border-radius: var(--radius-lg); padding: 20px;
           margin-bottom: 16px; box-shadow: var(--shadow-sm); border: 2px dashed var(--color-accent);
-          display: flex; gap: 16px; align-items: center; flex-wrap: wrap;
-        ">
-          <div style="flex-shrink: 0; width: 80px; height: 80px; border-radius: var(--radius-md); overflow: hidden;">
-            <% if (giftProduct.image_filename) { %>
-              <img src="/uploads/gifts/<%= giftProduct.image_filename %>" alt="<%= giftProduct.name %>" style="width: 100%; height: 100%; object-fit: cover;">
-            <% } else { %>
-              <div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 36px; background: var(--color-bg-warm);">🎁</div>
-            <% } %>
+          cursor: pointer; transition: box-shadow 0.3s;
+        " onclick="toggleGiftDetails()">
+          <div style="display: flex; gap: 16px; align-items: center; flex-wrap: wrap;">
+            <div style="flex-shrink: 0; width: 80px; height: 80px; border-radius: var(--radius-md); overflow: hidden;">
+              <% if (giftProduct.image_filename) { %>
+                <img src="/uploads/gifts/<%= giftProduct.image_filename %>" alt="<%= giftProduct.name %>" style="width: 100%; height: 100%; object-fit: cover;">
+              <% } else { %>
+                <div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 36px; background: var(--color-bg-warm);">🎁</div>
+              <% } %>
+            </div>
+            <div style="flex: 1;">
+              <div style="font-size: 14px; font-weight: 800; color: var(--color-success); margin-bottom: 4px;">🎁 هدية مجانية!</div>
+              <h3 style="font-size: 16px; font-weight: 700; color: var(--color-text); margin-bottom: 4px;"><%= giftProduct.name %></h3>
+              <div style="font-size: 12px; color: var(--color-text-muted);" id="giftToggleHint">اضغط لعرض التفاصيل ▼</div>
+            </div>
+            <div style="font-size: 18px; font-weight: 800; color: var(--color-success);">مجاناً</div>
           </div>
-          <div style="flex: 1;">
-            <div style="font-size: 14px; font-weight: 800; color: var(--color-success); margin-bottom: 4px;">🎁 هدية مجانية!</div>
-            <h3 style="font-size: 16px; font-weight: 700; color: var(--color-text); margin-bottom: 4px;"><%= giftProduct.name %></h3>
-            <% if (giftProduct.description) { %>
-              <p style="font-size: 13px; color: var(--color-text-secondary);"><%= giftProduct.description %></p>
-            <% } %>
+          <!-- Expandable Gift Details -->
+          <div id="giftDetails" style="max-height: 0; overflow: hidden; transition: max-height 0.4s ease, margin-top 0.3s ease; margin-top: 0;">
+            <div style="padding-top: 16px; border-top: 1px dashed var(--color-accent); margin-top: 16px;">
+              <% if (giftProduct.image_filename) { %>
+                <div style="text-align: center; margin-bottom: 12px;">
+                  <img src="/uploads/gifts/<%= giftProduct.image_filename %>" alt="<%= giftProduct.name %>" style="max-width: 100%; max-height: 250px; border-radius: var(--radius-md); object-fit: contain;">
+                </div>
+              <% } %>
+              <h4 style="font-size: 18px; font-weight: 700; color: var(--color-primary); margin-bottom: 8px;"><%= giftProduct.name %></h4>
+              <% if (giftProduct.description) { %>
+                <p style="font-size: 14px; color: var(--color-text-secondary); line-height: 1.7; margin-bottom: 12px;"><%= giftProduct.description %></p>
+              <% } %>
+              <button type="button" onclick="event.stopPropagation(); scrollToCart();" style="
+                background: var(--color-primary); color: #fff; border: none; border-radius: var(--radius-md);
+                padding: 10px 20px; font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer;
+                transition: opacity 0.2s;
+              ">العودة إلى السلة ↑</button>
+            </div>
           </div>
-          <div style="font-size: 18px; font-weight: 800; color: var(--color-success);">مجاناً</div>
         </div>
         <% } %>
 
@@ -202,6 +221,38 @@
       .catch(function() {
         showToast('حدث خطأ في الاتصال', 'error');
       });
+    }
+  </script>
+  <script>
+    function toggleGiftDetails() {
+      var details = document.getElementById('giftDetails');
+      var hint = document.getElementById('giftToggleHint');
+      if (!details) return;
+      var isOpen = details.style.maxHeight && details.style.maxHeight !== '0px';
+      if (isOpen) {
+        details.style.maxHeight = '0';
+        details.style.marginTop = '0';
+        if (hint) hint.textContent = 'اضغط لعرض التفاصيل ▼';
+      } else {
+        details.style.maxHeight = details.scrollHeight + 'px';
+        details.style.marginTop = '16px';
+        if (hint) hint.textContent = 'اضغط لإخفاء التفاصيل ▲';
+      }
+    }
+
+    function scrollToCart() {
+      var cartSection = document.querySelector('.section-header');
+      if (cartSection) {
+        cartSection.scrollIntoView({ behavior: 'smooth' });
+      }
+      // Also collapse the gift details
+      var details = document.getElementById('giftDetails');
+      var hint = document.getElementById('giftToggleHint');
+      if (details) {
+        details.style.maxHeight = '0';
+        details.style.marginTop = '0';
+      }
+      if (hint) hint.textContent = 'اضغط لعرض التفاصيل ▼';
     }
   </script>
   <script src="/js/main.js"></script>

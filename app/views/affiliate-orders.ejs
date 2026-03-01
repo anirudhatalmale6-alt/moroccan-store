@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <%- include('partials/head') %>
+  <title>طلباتي — <%= typeof siteName !== 'undefined' ? siteName : 'متجرنا' %></title>
+</head>
+<body>
+  <div class="pattern-overlay"></div>
+
+  <!-- Navbar -->
+  <nav class="navbar scrolled">
+    <div class="container">
+      <div class="navbar__inner">
+        <div class="navbar__brand">
+          <a href="/" style="display: flex; align-items: center; gap: 10px;">
+            <div class="navbar__logo"><%= typeof siteName !== 'undefined' ? siteName.charAt(0) : 'م' %></div>
+            <span class="navbar__name"><%= typeof siteName !== 'undefined' ? siteName : 'متجرنا' %></span>
+          </a>
+        </div>
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <a href="/account" style="color: var(--color-text); font-size: 14px; text-decoration: none;">لوحة التحكم</a>
+          <a href="/account/settings" style="color: var(--color-text); font-size: 14px; text-decoration: none;">الإعدادات</a>
+          <a href="/logout" class="navbar__cta" style="font-size: 13px; padding: 8px 16px; background: var(--color-error);">تسجيل الخروج</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Affiliate Orders -->
+  <section class="hero" style="padding-bottom: 80px;">
+    <div class="container" style="max-width: 1100px;">
+      <div class="section-header" style="margin-top: 20px;">
+        <span class="section-header__label">مرحبا، <%= user.full_name %></span>
+        <h1 class="section-header__title">طلباتي</h1>
+        <div class="section-header__divider"></div>
+      </div>
+
+      <% if (orders && orders.length > 0) { %>
+        <div class="feature-card" style="padding: 24px;">
+          <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+              <thead>
+                <tr style="background: var(--color-bg-warm);">
+                  <th style="padding: 10px 12px; text-align: right; font-weight: 700; border-bottom: 2px solid var(--color-border);">رقم الطلب</th>
+                  <th style="padding: 10px 12px; text-align: right; font-weight: 700; border-bottom: 2px solid var(--color-border);">المنتج</th>
+                  <th style="padding: 10px 12px; text-align: right; font-weight: 700; border-bottom: 2px solid var(--color-border);">الاسم</th>
+                  <th style="padding: 10px 12px; text-align: right; font-weight: 700; border-bottom: 2px solid var(--color-border);">الهاتف</th>
+                  <th style="padding: 10px 12px; text-align: right; font-weight: 700; border-bottom: 2px solid var(--color-border);">المدينة</th>
+                  <th style="padding: 10px 12px; text-align: right; font-weight: 700; border-bottom: 2px solid var(--color-border);">المبلغ</th>
+                  <th style="padding: 10px 12px; text-align: right; font-weight: 700; border-bottom: 2px solid var(--color-border);">الدفع</th>
+                  <th style="padding: 10px 12px; text-align: right; font-weight: 700; border-bottom: 2px solid var(--color-border);">الحالة</th>
+                  <th style="padding: 10px 12px; text-align: right; font-weight: 700; border-bottom: 2px solid var(--color-border);">التاريخ</th>
+                  <th style="padding: 10px 12px; text-align: right; font-weight: 700; border-bottom: 2px solid var(--color-border);">إجراء</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% orders.forEach(function(order) { %>
+                <tr>
+                  <td style="padding: 10px 12px; border-bottom: 1px solid var(--color-border-light); font-weight: 600; font-size: 12px; direction: ltr; text-align: left;"><%= order.order_ref %></td>
+                  <td style="padding: 10px 12px; border-bottom: 1px solid var(--color-border-light);"><%= order.product_title || '-' %></td>
+                  <td style="padding: 10px 12px; border-bottom: 1px solid var(--color-border-light);"><%= order.full_name %></td>
+                  <td style="padding: 10px 12px; border-bottom: 1px solid var(--color-border-light); direction: ltr; text-align: left;"><%= order.phone %></td>
+                  <td style="padding: 10px 12px; border-bottom: 1px solid var(--color-border-light);"><%= order.city || '-' %></td>
+                  <td style="padding: 10px 12px; border-bottom: 1px solid var(--color-border-light); font-weight: 700;"><%= order.total_price %> د.م</td>
+                  <td style="padding: 10px 12px; border-bottom: 1px solid var(--color-border-light);">
+                    <% if (order.payment_type === 'cod') { %>
+                      <span style="padding: 3px 10px; border-radius: 50px; font-size: 11px; font-weight: 700; background: #fff3cd; color: #856404;">الدفع عند الاستلام</span>
+                    <% } else if (order.payment_type === 'bank_deposit') { %>
+                      <span style="padding: 3px 10px; border-radius: 50px; font-size: 11px; font-weight: 700; background: #d1ecf1; color: #0c5460;">عربون</span>
+                    <% } else { %>
+                      <span style="padding: 3px 10px; border-radius: 50px; font-size: 11px; font-weight: 700; background: #d4edda; color: #155724;">تحويل بنكي</span>
+                    <% } %>
+                  </td>
+                  <td style="padding: 10px 12px; border-bottom: 1px solid var(--color-border-light);">
+                    <% var statusColors = { pending: { bg: '#fff3cd', color: '#856404', label: 'معلق' }, new: { bg: '#fff3cd', color: '#856404', label: 'جديد' }, confirmed: { bg: '#d1ecf1', color: '#0c5460', label: 'مؤكد' }, delivered: { bg: '#d4edda', color: '#155724', label: 'تم التوصيل' }, cancelled: { bg: '#f8d7da', color: '#721c24', label: 'ملغي' } }; %>
+                    <% var sc = statusColors[order.status] || { bg: '#e2e3e5', color: '#383d41', label: order.status }; %>
+                    <span style="padding: 3px 10px; border-radius: 50px; font-size: 11px; font-weight: 700; background: <%= sc.bg %>; color: <%= sc.color %>;"><%= sc.label %></span>
+                  </td>
+                  <td style="padding: 10px 12px; border-bottom: 1px solid var(--color-border-light); font-size: 12px;"><%= order.created_at ? order.created_at.substring(0, 10) : '-' %></td>
+                  <td style="padding: 10px 12px; border-bottom: 1px solid var(--color-border-light);">
+                    <% if (order.status === 'pending' || order.status === 'new') { %>
+                      <button type="button" class="btn btn--primary" style="font-size: 11px; padding: 5px 12px;" onclick="confirmOrder(<%= order.id %>)">تأكيد</button>
+                    <% } else { %>
+                      <span style="font-size: 11px; color: var(--color-text-muted);">—</span>
+                    <% } %>
+                  </td>
+                </tr>
+                <% }); %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      <% } else { %>
+        <div class="feature-card" style="padding: 40px; text-align: center;">
+          <p style="color: var(--color-text-muted); font-size: 16px;">لا توجد طلبات بعد. شارك رابط الإحالة لبدء الربح!</p>
+          <a href="/account" class="btn btn--primary" style="margin-top: 16px;">العودة للوحة التحكم</a>
+        </div>
+      <% } %>
+    </div>
+  </section>
+
+  <%- include('partials/footer') %>
+
+  <script>
+    function confirmOrder(orderId) {
+      if (!confirm('هل تريد تأكيد هذا الطلب؟')) return;
+
+      fetch('/account/orders/' + orderId + '/status', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'confirmed' })
+      })
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        if (data.success) {
+          showToast('تم تأكيد الطلب بنجاح', 'success');
+          setTimeout(function() { window.location.reload(); }, 1000);
+        } else {
+          showToast(data.error || 'حدث خطأ', 'error');
+        }
+      })
+      .catch(function() {
+        showToast('حدث خطأ في الاتصال', 'error');
+      });
+    }
+  </script>
+  <script src="/js/main.js"></script>
+</body>
+</html>

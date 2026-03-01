@@ -589,6 +589,11 @@ function initFeedbackForm() {
       submitData.append('image', feedbackImage.files[0]);
     }
 
+    // Add voice recording if available
+    if (window._voiceBlob) {
+      submitData.append('audio', window._voiceBlob, 'voice-recording.webm');
+    }
+
     try {
       const response = await fetch(endpoint, { method: 'POST', body: submitData });
       const result = await response.json();
@@ -818,7 +823,26 @@ function initVoiceRecorders() {
 
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        mediaRecorder = new MediaRecorder(stream);
+        // Use the best supported MIME type
+        var mimeType = 'audio/webm';
+        if (typeof MediaRecorder !== 'undefined') {
+          if (MediaRecorder.isTypeSupported('audio/webm;codecs=opus')) {
+            mimeType = 'audio/webm;codecs=opus';
+          } else if (MediaRecorder.isTypeSupported('audio/webm')) {
+            mimeType = 'audio/webm';
+          } else if (MediaRecorder.isTypeSupported('audio/mp4')) {
+            mimeType = 'audio/mp4';
+          } else if (MediaRecorder.isTypeSupported('audio/ogg')) {
+            mimeType = 'audio/ogg';
+          } else if (MediaRecorder.isTypeSupported('audio/wav')) {
+            mimeType = 'audio/wav';
+          }
+        }
+        try {
+          mediaRecorder = new MediaRecorder(stream, { mimeType: mimeType });
+        } catch(e2) {
+          mediaRecorder = new MediaRecorder(stream);
+        }
         audioChunks = [];
 
         mediaRecorder.ondataavailable = (e) => {
@@ -826,7 +850,7 @@ function initVoiceRecorders() {
         };
 
         mediaRecorder.onstop = () => {
-          const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+          const audioBlob = new Blob(audioChunks, { type: mediaRecorder.mimeType || 'audio/webm' });
           const audioUrl = URL.createObjectURL(audioBlob);
           audioEl.src = audioUrl;
           playerEl.classList.add('visible');
@@ -836,7 +860,8 @@ function initVoiceRecorders() {
           // Stop all tracks
           stream.getTracks().forEach(track => track.stop());
 
-          // Store blob for form submission
+          // Store blob globally for form submission
+          window._voiceBlob = audioBlob;
           btn.closest('.voice-recorder').dataset.hasAudio = 'true';
         };
 
@@ -866,7 +891,15 @@ function initVoiceRecorders() {
 
       } catch (err) {
         console.warn('Microphone access denied:', err);
-        showToast('يرجى السماح بالوصول إلى الميكروفون', 'error');
+        if (err.name === 'NotAllowedError') {
+          showToast('يرجى السماح بالوصول إلى الميكروفون من إعدادات المتصفح', 'error');
+        } else if (err.name === 'NotFoundError') {
+          showToast('لم يتم العثور على ميكروفون', 'error');
+        } else if (typeof MediaRecorder === 'undefined') {
+          showToast('المتصفح لا يدعم التسجيل الصوتي. جرب Chrome أو Safari', 'error');
+        } else {
+          showToast('حدث خطأ في التسجيل. جرب متصفح آخر', 'error');
+        }
       }
     });
 
@@ -875,6 +908,7 @@ function initVoiceRecorders() {
         audioEl.src = '';
         playerEl.classList.remove('visible');
         btn.style.display = '';
+        window._voiceBlob = null;
         btn.closest('.voice-recorder').dataset.hasAudio = 'false';
       });
     }

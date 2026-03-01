@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
   <%- include('partials/head') %>
-  <title>متجرنا — منتجاتنا</title>
+  <title><%= typeof siteName !== 'undefined' ? siteName : 'متجرنا' %> — منتجاتنا</title>
 </head>
 <body>
   <div class="pattern-overlay"></div>
@@ -13,12 +13,12 @@
       <div class="navbar__inner">
         <div class="navbar__brand">
           <a href="/" style="display: flex; align-items: center; gap: 10px;">
-            <div class="navbar__logo">م</div>
-            <span class="navbar__name">متجرنا</span>
+            <div class="navbar__logo"><%= typeof siteName !== 'undefined' ? siteName.charAt(0) : 'م' %></div>
+            <span class="navbar__name"><%= typeof siteName !== 'undefined' ? siteName : 'متجرنا' %></span>
           </a>
         </div>
         <div style="display: flex; align-items: center; gap: 12px;">
-          <a href="/cart" style="position: relative; font-size: 22px; color: var(--color-text); text-decoration: none;">🛒</a>
+          <a href="/cart" style="position: relative; font-size: 22px; color: var(--color-text); text-decoration: none;">🛒<% if (typeof cartCount !== 'undefined' && cartCount > 0) { %><span id="cartBadge" style="position: absolute; top: -8px; right: -8px; background: var(--color-error); color: white; font-size: 11px; font-weight: 700; min-width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center;"><%= cartCount %></span><% } %></a>
           <a href="/login" class="navbar__cta" style="font-size: 13px; padding: 8px 16px;">تسجيل الدخول</a>
         </div>
       </div>
@@ -59,9 +59,9 @@
   <% } %>
 
   <!-- Products Section -->
-  <section class="hero" style="padding-bottom: 80px;">
+  <section class="hero" style="padding-top: 30px; padding-bottom: 60px;">
     <div class="container">
-      <div class="section-header" style="margin-top: 20px;">
+      <div class="section-header" style="margin-top: 0;">
         <span class="section-header__label">تسوق الآن</span>
         <h1 class="section-header__title">منتجاتنا</h1>
         <div class="section-header__divider"></div>

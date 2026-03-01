@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <title><%= product.title %> — متجرنا</title>
+  <title><%= product.title %> — <%= typeof siteName !== 'undefined' ? siteName : 'متجرنا' %></title>
   <%- include('partials/head') %>
 </head>
 <body>
@@ -107,7 +107,7 @@
               <span class="hero__price-old"><%= product.old_price %> درهم</span>
             <% } %>
             <% if (product.discount) { %>
-              <span class="hero__price-badge"><%= product.discount %></span>
+              <span class="hero__price-badge">-<%= product.discount %>%</span>
             <% } %>
           </div>
           <div class="hero__actions" style="display: flex; gap: 12px; flex-wrap: wrap;">
@@ -259,9 +259,9 @@
                 </div>
               <% } %>
               <% if (review.audio_filename) { %>
-                <div style="margin-bottom: 16px; text-align: center;">
-                  <audio controls style="width: 100%;">
-                    <source src="/uploads/reviews/<%= review.audio_filename %>" type="audio/webm">
+                <div style="margin-bottom: 16px; background: linear-gradient(135deg, #f5f0eb 0%, #ede6dd 100%); border-radius: 12px; padding: 12px 16px; display: flex; align-items: center; gap: 12px;">
+                  <span style="font-size: 24px;">🎤</span>
+                  <audio controls src="/uploads/reviews/<%= review.audio_filename %>" style="flex: 1; height: 36px; border-radius: 18px;">
                     المتصفح لا يدعم تشغيل الصوت
                   </audio>
                 </div>

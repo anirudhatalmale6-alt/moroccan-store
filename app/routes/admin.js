@@ -210,10 +210,13 @@ router.post('/products/:id', requireAdmin, productFields, (req, res) => {
   }
   const descriptionImagesJson = JSON.stringify(existingDescImages);
 
+  // Robust is_active handling: checkbox sends '1' or 'on' when checked, nothing when unchecked
+  const activeVal = (is_active === '1' || is_active === 'on' || is_active === 1) ? 1 : 0;
+
   db.prepare(`
     UPDATE products SET title=?, description=?, price=?, old_price=?, discount=?, slug=?, deposit_amount=?, video_filename=?, features=?, is_active=?, main_image=?, show_gallery=?, description_images=?, whatsapp_number=?, delivery_fee=?, weight=?, audio_filename=?, audio_autoplay=?, cod_enabled=?, bank_full_enabled=?, bank_deposit_enabled=?, updated_at=datetime('now')
     WHERE id=?
-  `).run(title, description || '', parseFloat(price) || 200, parseFloat(old_price) || 0, discount || '', slug, parseFloat(deposit_amount) || 50, videoFilename, features || '[]', is_active === 'on' || is_active === '1' ? 1 : 0, mainImageFilename, show_gallery === 'on' || show_gallery === '1' ? 1 : 0, descriptionImagesJson, whatsapp_number || '', parseFloat(delivery_fee) || 50, parseFloat(weight) || 0, audioFilename, audio_autoplay === '1' ? 1 : 0, cod_enabled === '1' ? 1 : 0, bank_full_enabled === '1' ? 1 : 0, bank_deposit_enabled === '1' ? 1 : 0, req.params.id);
+  `).run(title, description || '', parseFloat(price) || 200, parseFloat(old_price) || 0, discount || '', slug, parseFloat(deposit_amount) || 50, videoFilename, features || '[]', activeVal, mainImageFilename, show_gallery === 'on' || show_gallery === '1' ? 1 : 0, descriptionImagesJson, whatsapp_number || '', parseFloat(delivery_fee) || 50, parseFloat(weight) || 0, audioFilename, audio_autoplay === '1' ? 1 : 0, cod_enabled === '1' ? 1 : 0, bank_full_enabled === '1' ? 1 : 0, bank_deposit_enabled === '1' ? 1 : 0, req.params.id);
 
   // Insert new gallery images into product_images table
   if (req.files && req.files.gallery_images) {
@@ -373,6 +376,24 @@ router.get('/orders/:id', requireAdmin, (req, res) => {
 router.post('/orders/:id/status', requireAdmin, (req, res) => {
   const { status } = req.body;
   db.prepare('UPDATE orders SET status = ? WHERE id = ?').run(status, req.params.id);
+
+  // Update referral commissions when order is delivered
+  if (status === 'delivered') {
+    db.prepare("UPDATE referral_commissions SET status = 'confirmed' WHERE order_id = ?").run(req.params.id);
+  }
+  // If order is cancelled, cancel commissions and reverse affiliate balance
+  if (status === 'cancelled') {
+    try {
+      const commissions = db.prepare("SELECT * FROM referral_commissions WHERE order_id = ? AND status = 'pending'").all(req.params.id);
+      commissions.forEach(c => {
+        db.prepare('UPDATE users SET total_earned = total_earned - ?, available_balance = available_balance - ? WHERE id = ?').run(c.commission_amount, c.commission_amount, c.user_id);
+      });
+    } catch(e) {
+      console.error('Commission reversal error:', e);
+    }
+    db.prepare("UPDATE referral_commissions SET status = 'cancelled' WHERE order_id = ?").run(req.params.id);
+  }
+
   res.redirect('/admin/orders/' + req.params.id);
 });
 
@@ -761,6 +782,25 @@ router.post('/settings/profile', requireAdmin, (req, res) => {
   }
 
   res.redirect('/admin/settings?success=تم تحديث البيانات بنجاح');
+});
+
+router.post('/settings/typography', requireAdmin, (req, res) => {
+  const { font_family, custom_font_url } = req.body;
+  // Upsert font_family
+  const existingFont = db.prepare("SELECT * FROM admin_settings WHERE setting_key = 'font_family'").get();
+  if (existingFont) {
+    db.prepare("UPDATE admin_settings SET setting_value = ?, updated_at = datetime('now') WHERE setting_key = 'font_family'").run(font_family || 'Cairo');
+  } else {
+    db.prepare("INSERT INTO admin_settings (setting_key, setting_value) VALUES ('font_family', ?)").run(font_family || 'Cairo');
+  }
+  // Upsert custom_font_url
+  const existingUrl = db.prepare("SELECT * FROM admin_settings WHERE setting_key = 'custom_font_url'").get();
+  if (existingUrl) {
+    db.prepare("UPDATE admin_settings SET setting_value = ?, updated_at = datetime('now') WHERE setting_key = 'custom_font_url'").run(custom_font_url || '');
+  } else {
+    db.prepare("INSERT INTO admin_settings (setting_key, setting_value) VALUES ('custom_font_url', ?)").run(custom_font_url || '');
+  }
+  res.redirect('/admin/settings?success=تم تحديث اعدادات الخط');
 });
 
 router.post('/settings/site', requireAdmin, (req, res) => {

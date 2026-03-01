@@ -117,6 +117,7 @@
                                     </td>
                                     <td>
                                         <div class="actions-cell">
+                                            <a href="/p/<%= page.slug %>" target="_blank" class="btn btn-sm" style="background: #e8f5e9; color: #2e7d32;">👁 عرض</a>
                                             <a href="/admin/landing-pages/<%= page.id %>/edit" class="btn btn-edit btn-sm">تعديل</a>
                                             <form method="POST" action="/admin/landing-pages/<%= page.id %>/delete" style="display:inline;" onclick="return confirm('هل أنت متأكد من حذف هذه الصفحة؟')">
                                                 <button type="submit" class="btn btn-delete btn-sm">حذف</button>

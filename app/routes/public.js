@@ -789,6 +789,67 @@ router.get('/logout', (req, res) => {
 
 
 // ============================================================
+// AFFILIATE ORDER MANAGEMENT
+// ============================================================
+
+// GET /account/orders — list orders referred by this affiliate
+router.get('/account/orders', requireUser, (req, res) => {
+  try {
+    const user = db.prepare('SELECT * FROM users WHERE id = ?').get(req.session.user.id);
+    if (!user) {
+      req.session.user = null;
+      return res.redirect('/login');
+    }
+
+    const orders = db.prepare(`
+      SELECT o.*, p.title as product_title
+      FROM orders o
+      LEFT JOIN products p ON o.product_id = p.id
+      WHERE o.referral_code = ?
+      ORDER BY o.created_at DESC
+    `).all(user.referral_code);
+
+    res.render('affiliate-orders', { user, orders });
+  } catch (err) {
+    console.error('Affiliate orders error:', err);
+    res.status(500).render('404');
+  }
+});
+
+// POST /account/orders/:id/status — affiliate can confirm new orders
+router.post('/account/orders/:id/status', requireUser, (req, res) => {
+  try {
+    const user = db.prepare('SELECT * FROM users WHERE id = ?').get(req.session.user.id);
+    if (!user) return res.status(401).json({ error: 'غير مصرح' });
+
+    const { status } = req.body;
+
+    // Affiliate can only change: new/pending -> confirmed
+    if (status !== 'confirmed') {
+      return res.status(400).json({ error: 'لا يمكنك تغيير الحالة إلى هذه القيمة' });
+    }
+
+    // Verify the order belongs to this affiliate's referral code
+    const order = db.prepare('SELECT * FROM orders WHERE id = ? AND referral_code = ?').get(req.params.id, user.referral_code);
+    if (!order) {
+      return res.status(404).json({ error: 'الطلب غير موجود' });
+    }
+
+    // Only allow changing from pending/new to confirmed
+    if (order.status !== 'pending' && order.status !== 'new') {
+      return res.status(400).json({ error: 'لا يمكن تأكيد هذا الطلب في حالته الحالية' });
+    }
+
+    db.prepare('UPDATE orders SET status = ? WHERE id = ?').run('confirmed', req.params.id);
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Affiliate order status error:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// ============================================================
 // REFERRAL TRACKING
 // ============================================================
 // Capture /:username as referral (must be last route to avoid conflicts)

@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
   <%- include('partials/head') %>
-  <title>حسابي — متجرنا</title>
+  <title>حسابي — <%= typeof siteName !== 'undefined' ? siteName : 'متجرنا' %></title>
 </head>
 <body>
   <div class="pattern-overlay"></div>
@@ -13,11 +13,12 @@
       <div class="navbar__inner">
         <div class="navbar__brand">
           <a href="/" style="display: flex; align-items: center; gap: 10px;">
-            <div class="navbar__logo">م</div>
-            <span class="navbar__name">متجرنا</span>
+            <div class="navbar__logo"><%= typeof siteName !== 'undefined' ? siteName.charAt(0) : 'م' %></div>
+            <span class="navbar__name"><%= typeof siteName !== 'undefined' ? siteName : 'متجرنا' %></span>
           </a>
         </div>
         <div style="display: flex; align-items: center; gap: 12px;">
+          <a href="/account/orders" style="color: var(--color-text); font-size: 14px; text-decoration: none;">طلباتي</a>
           <a href="/account/settings" style="color: var(--color-text); font-size: 14px; text-decoration: none;">الإعدادات</a>
           <a href="/logout" class="navbar__cta" style="font-size: 13px; padding: 8px 16px; background: var(--color-error);">تسجيل الخروج</a>
         </div>

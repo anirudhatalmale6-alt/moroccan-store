@@ -27,6 +27,33 @@ app.use(session({
 app.use((req, res, next) => {
   res.locals.admin = req.session.admin || null;
   res.locals.user = req.session.user || null;
+
+  // Site name from admin_settings
+  try {
+    const { db } = require('./database');
+    const siteNameRow = db.prepare("SELECT setting_value FROM admin_settings WHERE setting_key = 'site_name'").get();
+    res.locals.siteName = siteNameRow ? siteNameRow.setting_value : 'متجرنا';
+
+    // Font settings
+    const fontRow = db.prepare("SELECT setting_value FROM admin_settings WHERE setting_key = 'font_family'").get();
+    res.locals.fontFamily = fontRow ? fontRow.setting_value : 'Cairo';
+    const fontUrlRow = db.prepare("SELECT setting_value FROM admin_settings WHERE setting_key = 'custom_font_url'").get();
+    res.locals.customFontUrl = fontUrlRow ? fontUrlRow.setting_value : '';
+  } catch(e) {
+    res.locals.siteName = 'متجرنا';
+    res.locals.fontFamily = 'Cairo';
+    res.locals.customFontUrl = '';
+  }
+
+  // Cart count for badge
+  try {
+    const { db } = require('./database');
+    const countRow = db.prepare('SELECT SUM(quantity) as total FROM cart_items WHERE session_id = ?').get(req.sessionID);
+    res.locals.cartCount = countRow && countRow.total ? countRow.total : 0;
+  } catch(e) {
+    res.locals.cartCount = 0;
+  }
+
   next();
 });
 

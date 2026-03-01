@@ -311,7 +311,26 @@
 
                     <div class="form-group">
                         <label>الصورة الرئيسية</label>
-                        <input type="file" name="main_image" accept="image/*">
+                        <div id="mainImageDropZone" style="
+                            border: 3px dashed #d4c8b8; border-radius: 14px; padding: 32px 20px;
+                            text-align: center; cursor: pointer; transition: all 0.3s;
+                            background: #fdfcfa; position: relative;
+                        " onclick="document.getElementById('mainImageInput').click();"
+                           ondragover="event.preventDefault(); this.style.borderColor='#8B6F47'; this.style.background='#f5efe8';"
+                           ondragleave="this.style.borderColor='#d4c8b8'; this.style.background='#fdfcfa';"
+                           ondrop="event.preventDefault(); this.style.borderColor='#d4c8b8'; this.style.background='#fdfcfa'; var input=document.getElementById('mainImageInput'); input.files=event.dataTransfer.files; handleMainImagePreview(input);">
+                            <div id="mainImageDropContent">
+                                <div style="font-size: 48px; margin-bottom: 12px; opacity: 0.5;">📸</div>
+                                <div style="font-size: 16px; font-weight: 700; color: #6B5335; margin-bottom: 6px;">اسحب الصورة هنا أو اضغط للاختيار</div>
+                                <div style="font-size: 13px; color: #aaa;">JPG, PNG, WebP — يُنصح بصورة 800x800 بكسل</div>
+                            </div>
+                            <div id="mainImagePreview" style="display: none;">
+                                <img id="mainImagePreviewImg" src="" alt="معاينة" style="max-width: 280px; max-height: 220px; border-radius: 10px; object-fit: cover; box-shadow: 0 2px 12px rgba(0,0,0,0.1);">
+                                <div id="mainImagePreviewName" style="font-size: 13px; color: #2e7d32; margin-top: 10px; font-weight: 600;"></div>
+                                <button type="button" onclick="event.stopPropagation(); clearMainImagePreview();" style="margin-top: 8px; background: #ffebee; color: #c62828; border: none; border-radius: 8px; padding: 6px 16px; font-size: 13px; font-weight: 700; cursor: pointer; font-family: inherit;">✕ إزالة</button>
+                            </div>
+                        </div>
+                        <input type="file" name="main_image" id="mainImageInput" accept="image/*" style="display: none;" onchange="handleMainImagePreview(this);">
                         <% if (product && product.main_image) { %>
                             <div class="current-image">
                                 <img src="/uploads/products/<%= product.main_image %>" alt="الصورة الرئيسية">
@@ -568,6 +587,7 @@
 
                     <div class="form-group">
                         <div class="checkbox-group">
+                            <input type="hidden" name="is_active" value="0">
                             <input type="checkbox" name="is_active" id="is_active" value="1" <%= product && product.is_active ? 'checked' : (!product ? 'checked' : '') %>>
                             <label for="is_active">منتج نشط (يظهر في المتجر)</label>
                         </div>
@@ -581,5 +601,35 @@
             </div>
         </main>
     </div>
+    <script>
+        function handleMainImagePreview(input) {
+            var file = input.files && input.files[0];
+            if (!file) return;
+            var dropContent = document.getElementById('mainImageDropContent');
+            var preview = document.getElementById('mainImagePreview');
+            var previewImg = document.getElementById('mainImagePreviewImg');
+            var previewName = document.getElementById('mainImagePreviewName');
+
+            if (file.type.startsWith('image/')) {
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    previewImg.src = e.target.result;
+                    previewName.textContent = file.name;
+                    dropContent.style.display = 'none';
+                    preview.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function clearMainImagePreview() {
+            var input = document.getElementById('mainImageInput');
+            var dropContent = document.getElementById('mainImageDropContent');
+            var preview = document.getElementById('mainImagePreview');
+            input.value = '';
+            dropContent.style.display = '';
+            preview.style.display = 'none';
+        }
+    </script>
 </body>
 </html>

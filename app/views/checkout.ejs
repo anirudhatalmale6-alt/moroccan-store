@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
   <%- include('partials/head') %>
-  <title>إتمام الطلب — <%= typeof product !== 'undefined' && product ? product.title : 'متجرنا' %></title>
+  <title>إتمام الطلب — <%= typeof product !== 'undefined' && product ? product.title : (typeof siteName !== 'undefined' ? siteName : 'متجرنا') %></title>
 </head>
 <body>
   <div class="pattern-overlay"></div>
@@ -13,8 +13,8 @@
       <div class="navbar__inner">
         <div class="navbar__brand">
           <a href="/" style="display: flex; align-items: center; gap: 10px;">
-            <div class="navbar__logo">م</div>
-            <span class="navbar__name">متجرنا</span>
+            <div class="navbar__logo"><%= typeof siteName !== 'undefined' ? siteName.charAt(0) : 'م' %></div>
+            <span class="navbar__name"><%= typeof siteName !== 'undefined' ? siteName : 'متجرنا' %></span>
           </a>
         </div>
         <div class="checkout-header__steps">
@@ -78,8 +78,8 @@
                 <div class="form-error" id="phoneError"></div>
               </div>
 
-              <!-- COD-specific fields (city + address) -->
-              <div id="codAddressFields" style="display: none;">
+              <!-- Delivery fields (city + address) — shown for all payment types -->
+              <div id="codAddressFields">
                 <div class="form-group">
                   <label class="form-label" for="city">
                     <span class="required">*</span>
@@ -605,7 +605,7 @@
         // Show/hide COD vs bank sections
         if (bankDetailsSection) bankDetailsSection.style.display = isCod ? 'none' : '';
         if (receiptSection) receiptSection.style.display = isCod ? 'none' : '';
-        if (codAddressFields) codAddressFields.style.display = isCod ? '' : 'none';
+        // codAddressFields always visible — delivery fields shown for all payment types
 
         // Quantity
         if (qtyPriceEl) qtyPriceEl.textContent = totalProductPrice + ' درهم';
@@ -803,10 +803,13 @@
             if (!/^\d{9,15}$/.test(phoneClean)) { showFieldErr(phone, 'رقم الهاتف غير صالح'); isValid = false; }
           }
 
-          if (isCod) {
-            if (cityEl && !cityEl.value.trim()) { showFieldErr(cityEl, 'يرجى إدخال المدينة'); isValid = false; }
-            if (addressEl && !addressEl.value.trim()) { showFieldErr(addressEl, 'يرجى إدخال العنوان'); isValid = false; }
-          } else {
+          // Always validate city
+          if (cityEl && !cityEl.value.trim()) { showFieldErr(cityEl, 'يرجى إدخال المدينة'); isValid = false; }
+          // Address required for COD, optional for bank
+          if (isCod && addressEl && !addressEl.value.trim()) { showFieldErr(addressEl, 'يرجى إدخال العنوان'); isValid = false; }
+
+          // Receipt required for bank transfer (not COD)
+          if (!isCod) {
             if (!receiptFile || !receiptFile.files || !receiptFile.files.length) {
               if (uploadZone) uploadZone.classList.add('upload-zone--error');
               var rErr = document.getElementById('receiptError');
@@ -832,10 +835,12 @@
           formData.append('quantity', qty);
           formData.append('payment_type', paymentType);
 
-          if (isCod) {
-            formData.append('city', cityEl ? cityEl.value.trim() : '');
-            formData.append('address', addressEl ? addressEl.value.trim() : '');
-          } else {
+          // Always send city and address for all payment types
+          formData.append('city', cityEl ? cityEl.value.trim() : '');
+          formData.append('address', addressEl ? addressEl.value.trim() : '');
+
+          // Send receipt for bank transfer (not COD)
+          if (!isCod) {
             if (receiptFile && receiptFile.files[0]) {
               formData.append('receipt', receiptFile.files[0]);
             }

@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
   <%- include('partials/head') %>
-  <title><%= landingPage.title %> — متجرنا</title>
+  <title><%= landingPage.title %> — <%= typeof siteName !== 'undefined' ? siteName : 'متجرنا' %></title>
 </head>
 <body>
   <div class="pattern-overlay"></div>
@@ -13,8 +13,8 @@
       <div class="navbar__inner">
         <div class="navbar__brand">
           <a href="/" style="display: flex; align-items: center; gap: 10px;">
-            <div class="navbar__logo">م</div>
-            <span class="navbar__name">متجرنا</span>
+            <div class="navbar__logo"><%= typeof siteName !== 'undefined' ? siteName.charAt(0) : 'م' %></div>
+            <span class="navbar__name"><%= typeof siteName !== 'undefined' ? siteName : 'متجرنا' %></span>
           </a>
         </div>
         <a href="#landingCheckout" class="navbar__cta">🛒 اطلب الآن</a>
@@ -305,18 +305,15 @@
           var address = document.getElementById('lpAddress');
           if (city && !city.value.trim()) { showFieldError(city, 'يرجى إدخال المدينة'); isValid = false; }
           if (address && !address.value.trim()) { showFieldError(address, 'يرجى إدخال العنوان'); isValid = false; }
-        } else {
-          var receipt = document.getElementById('lpReceipt');
-          if (!receipt || !receipt.files || !receipt.files.length) {
-            var zone = document.getElementById('lpUploadZone');
-            if (zone) zone.classList.add('upload-zone--error');
-            var rErr = document.getElementById('lpReceiptError');
-            if (rErr) rErr.classList.add('visible');
-            isValid = false;
-          }
         }
 
         if (!isValid) { showToast('يرجى تعبئة جميع الحقول المطلوبة', 'error'); return; }
+
+        // For bank payment type, redirect to full checkout page
+        if (LP_PAYMENT_TYPE !== 'cod') {
+          window.location.href = '/product/' + LP_PRODUCT_SLUG + '/checkout';
+          return;
+        }
 
         isSubmitting = true;
         var submitBtn = document.getElementById('lpSubmitBtn');
@@ -328,15 +325,10 @@
         formData.append('fullName', fullName.value.trim());
         formData.append('phone', phone.value.trim());
         formData.append('quantity', qty);
-        formData.append('payment_type', LP_PAYMENT_TYPE === 'cod' ? 'cod' : 'bank_full');
+        formData.append('payment_type', 'cod');
 
-        if (LP_PAYMENT_TYPE === 'cod') {
-          formData.append('city', document.getElementById('lpCity').value.trim());
-          formData.append('address', document.getElementById('lpAddress').value.trim());
-        } else {
-          var receipt = document.getElementById('lpReceipt');
-          if (receipt && receipt.files[0]) formData.append('receipt', receipt.files[0]);
-        }
+        formData.append('city', document.getElementById('lpCity').value.trim());
+        formData.append('address', document.getElementById('lpAddress').value.trim());
 
         fetch('/product/' + LP_PRODUCT_SLUG + '/order', { method: 'POST', body: formData })
         .then(function(r) { return r.json(); })
@@ -361,11 +353,21 @@
     });
   </script>
 
+  <!-- Sticky Buy Button -->
+  <% if (typeof product !== 'undefined' && product) { %>
+  <div id="stickyBuyBtn" style="position: fixed; bottom: 0; left: 0; right: 0; background: white; padding: 12px 16px; box-shadow: 0 -4px 20px rgba(0,0,0,0.1); z-index: 999; display: flex; align-items: center; justify-content: center; gap: 12px;">
+    <span style="font-size: 20px; font-weight: 800; color: var(--color-primary);"><%= product.price %> درهم</span>
+    <a href="#landingCheckout" class="btn btn--primary" style="padding: 12px 32px; font-size: 16px; font-weight: 700;">اطلب الآن 🛒</a>
+  </div>
+  <% } %>
+
   <style>
     @keyframes spin {
       from { transform: rotate(0deg); }
       to { transform: rotate(360deg); }
     }
+    /* Add bottom padding to body so content isn't hidden behind sticky button */
+    body { padding-bottom: 70px; }
   </style>
   <script src="/js/main.js"></script>
 </body>

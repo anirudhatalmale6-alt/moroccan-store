@@ -1,4 +1,19 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<%
+  var ff = typeof fontFamily !== 'undefined' ? fontFamily : 'Cairo';
+  var cfu = typeof customFontUrl !== 'undefined' ? customFontUrl : '';
+  var defaultFonts = ['Cairo', 'Tajawal', 'Amiri', 'Roboto', 'Poppins', 'Open Sans', 'Noto Sans Arabic'];
+%>
+<% if (cfu) { %>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="<%= cfu %>" rel="stylesheet">
+<% } else if (defaultFonts.indexOf(ff) !== -1 && ff !== 'Arial') { %>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=<%= encodeURIComponent(ff) %>:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<% } %>
+<style>:root { --font-body: '<%= ff %>', 'Segoe UI', sans-serif; }</style>
 <link rel="stylesheet" href="/css/style.css">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛍️</text></svg>">

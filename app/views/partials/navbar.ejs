@@ -3,12 +3,12 @@
     <div class="navbar__inner">
       <div class="navbar__brand">
         <a href="/" style="display: flex; align-items: center; gap: 10px;">
-          <div class="navbar__logo">م</div>
-          <span class="navbar__name">متجرنا</span>
+          <div class="navbar__logo"><%= typeof siteName !== 'undefined' ? siteName.charAt(0) : 'م' %></div>
+          <span class="navbar__name"><%= typeof siteName !== 'undefined' ? siteName : 'متجرنا' %></span>
         </a>
       </div>
       <div style="display: flex; align-items: center; gap: 12px;">
-        <a href="/cart" style="position: relative; font-size: 20px; color: inherit; text-decoration: none; opacity: 0.8;" title="السلة">🛒</a>
+        <a href="/cart" style="position: relative; font-size: 20px; color: inherit; text-decoration: none; opacity: 0.8;" title="السلة">🛒<% if (typeof cartCount !== 'undefined' && cartCount > 0) { %><span id="cartBadge" style="position: absolute; top: -8px; right: -8px; background: var(--color-error); color: white; font-size: 11px; font-weight: 700; min-width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center;"><%= cartCount %></span><% } %></a>
         <% if (typeof product !== 'undefined' && product) { %>
           <a href="/product/<%= product.slug %>/checkout" class="navbar__cta">🛒 اطلب الآن</a>
         <% } else { %>

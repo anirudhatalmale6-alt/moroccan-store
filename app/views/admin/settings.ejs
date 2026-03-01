@@ -100,6 +100,33 @@
                 </form>
             </div>
 
+            <!-- Typography Settings -->
+            <div class="form-card">
+                <h3>الخطوط</h3>
+                <form method="POST" action="/admin/settings/typography">
+                    <div class="form-group">
+                        <label>نوع الخط</label>
+                        <select name="font_family" style="width: 100%; padding: 12px 16px; border: 2px solid #e8e0d8; border-radius: 10px; font-family: 'Cairo', sans-serif; font-size: 14px; color: #333; background: #fff; cursor: pointer;">
+                            <% var currentFont = (typeof settings !== 'undefined' && settings.font_family) ? settings.font_family : 'Cairo'; %>
+                            <option value="Cairo" <%= currentFont === 'Cairo' ? 'selected' : '' %>>Cairo</option>
+                            <option value="Tajawal" <%= currentFont === 'Tajawal' ? 'selected' : '' %>>Tajawal</option>
+                            <option value="Amiri" <%= currentFont === 'Amiri' ? 'selected' : '' %>>Amiri</option>
+                            <option value="Roboto" <%= currentFont === 'Roboto' ? 'selected' : '' %>>Roboto</option>
+                            <option value="Poppins" <%= currentFont === 'Poppins' ? 'selected' : '' %>>Poppins</option>
+                            <option value="Open Sans" <%= currentFont === 'Open Sans' ? 'selected' : '' %>>Open Sans</option>
+                            <option value="Arial" <%= currentFont === 'Arial' ? 'selected' : '' %>>Arial</option>
+                            <option value="Noto Sans Arabic" <%= currentFont === 'Noto Sans Arabic' ? 'selected' : '' %>>Noto Sans Arabic</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>رابط خط مخصص من Google Fonts (اختياري)</label>
+                        <input type="text" name="custom_font_url" value="<%= (typeof settings !== 'undefined' && settings.custom_font_url) ? settings.custom_font_url : '' %>" placeholder="https://fonts.googleapis.com/css2?family=..." dir="ltr" style="text-align:left;">
+                        <div class="hint">إذا أدخلت رابط خط مخصص سيتم استخدامه بدل الخط المحدد أعلاه</div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">حفظ الخط</button>
+                </form>
+            </div>
+
             <!-- Profile Settings -->
             <div class="form-card">
                 <h3>بيانات المدير</h3>
