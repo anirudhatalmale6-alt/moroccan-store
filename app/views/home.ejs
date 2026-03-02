@@ -362,7 +362,7 @@
   <% } %>
 
   <!-- Customer Feedback Section (single column card design) -->
-  <% if (typeof latestReviews !== 'undefined' && latestReviews && latestReviews.length > 0) { %>
+  <% if (typeof latestReviews !== 'undefined' && latestReviews && latestReviews.length > 0 && (typeof showFeedbackSection === 'undefined' || showFeedbackSection !== false)) { %>
   <section style="padding: 40px 0 50px; background: var(--color-bg-warm);">
     <div class="container container--narrow">
       <div class="section-header" style="margin-top: 0;">

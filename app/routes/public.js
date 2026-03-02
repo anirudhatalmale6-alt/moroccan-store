@@ -195,10 +195,17 @@ router.get('/', (req, res) => {
   // Load latest reviews for feedback section
   let latestReviews = [];
   let homeReviewCount = 0;
+  let showFeedbackSection = true;
   try {
+    let feedbackLimit = 6;
+    const fbLimitRow = db.prepare("SELECT setting_value FROM admin_settings WHERE setting_key = 'homepage_feedback_count'").get();
+    if (fbLimitRow) feedbackLimit = parseInt(fbLimitRow.setting_value) || 6;
+    const fbShowRow = db.prepare("SELECT setting_value FROM admin_settings WHERE setting_key = 'show_feedback_section'").get();
+    if (fbShowRow && fbShowRow.setting_value === '0') showFeedbackSection = false;
+
     latestReviews = db.prepare(
-      'SELECT r.name, r.rating, r.message, r.image_filename, r.audio_filename, p.title as product_title FROM reviews r LEFT JOIN products p ON r.product_id = p.id WHERE r.status = ? AND r.image_filename IS NOT NULL AND r.image_filename != \'\' ORDER BY r.created_at DESC LIMIT 6'
-    ).all('approved');
+      'SELECT r.name, r.rating, r.message, r.image_filename, r.audio_filename, p.title as product_title FROM reviews r LEFT JOIN products p ON r.product_id = p.id WHERE r.status = ? ORDER BY r.created_at DESC LIMIT ?'
+    ).all('approved', feedbackLimit);
     const rc = db.prepare('SELECT COUNT(*) as count FROM reviews WHERE status = ?').get('approved');
     homeReviewCount = rc ? rc.count : 0;
   } catch (e) {}
@@ -231,7 +238,7 @@ router.get('/', (req, res) => {
 
   const useCollections = collections.length > 0;
 
-  res.render('home', { products, sliders, categories, banners, bannerInterval, latestReviews, homeReviewCount, collections, useCollections });
+  res.render('home', { products, sliders, categories, banners, bannerInterval, latestReviews, homeReviewCount, showFeedbackSection, collections, useCollections });
 });
 
 

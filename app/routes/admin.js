@@ -973,6 +973,28 @@ router.post('/settings/typography', requireAdmin, (req, res) => {
   res.redirect('/admin/settings?success=تم تحديث اعدادات الخط');
 });
 
+// Feedback homepage settings
+router.post('/settings/feedback', requireAdmin, (req, res) => {
+  const feedbackCount = req.body.homepage_feedback_count || '6';
+  const showSection = req.body.show_feedback_section ? '1' : '0';
+
+  const keys = [
+    ['homepage_feedback_count', feedbackCount],
+    ['show_feedback_section', showSection]
+  ];
+
+  keys.forEach(([key, val]) => {
+    const existing = db.prepare('SELECT * FROM admin_settings WHERE setting_key = ?').get(key);
+    if (existing) {
+      db.prepare("UPDATE admin_settings SET setting_value = ?, updated_at = datetime('now') WHERE setting_key = ?").run(val, key);
+    } else {
+      db.prepare('INSERT INTO admin_settings (setting_key, setting_value) VALUES (?, ?)').run(key, val);
+    }
+  });
+
+  res.redirect('/admin/settings?success=تم تحديث اعدادات Feedback');
+});
+
 router.post('/settings/theme', requireAdmin, (req, res) => {
   const colorKeys = [
     ['primary_color', req.body.primary_color || req.body.primary_color_text || '#000000'],
