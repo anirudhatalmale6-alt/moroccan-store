@@ -1061,10 +1061,18 @@ router.get('/feedback', (req, res) => {
     'SELECT AVG(rating) as avg, COUNT(*) as count FROM reviews WHERE status = ?'
   ).get('approved');
 
+  // Rating distribution for summary bars
+  const ratingDist = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
+  const distRows = db.prepare(
+    'SELECT rating, COUNT(*) as cnt FROM reviews WHERE status = ? GROUP BY rating'
+  ).all('approved');
+  distRows.forEach(r => { if (r.rating >= 1 && r.rating <= 5) ratingDist[r.rating] = r.cnt; });
+
   res.render('feedback', {
     reviews,
     avgRating: avgRow && avgRow.avg ? avgRow.avg.toFixed(1) : '5.0',
-    reviewCount: avgRow ? avgRow.count : 0
+    reviewCount: avgRow ? avgRow.count : 0,
+    ratingDist
   });
 });
 

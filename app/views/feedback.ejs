@@ -3,6 +3,277 @@
 <head>
   <%- include('partials/head') %>
   <title><%= t('customer_feedback') %> — <%= typeof siteName !== 'undefined' ? siteName : 'متجرنا' %></title>
+  <style>
+    /* ---- Rating Summary ---- */
+    .rating-summary {
+      background: var(--color-card);
+      border-radius: var(--radius-lg);
+      padding: 20px 24px;
+      margin-bottom: 24px;
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--color-border-light);
+      display: flex;
+      align-items: center;
+      gap: 28px;
+    }
+    .rating-summary__left {
+      text-align: center;
+      min-width: 90px;
+    }
+    .rating-summary__big {
+      font-size: 42px;
+      font-weight: 800;
+      color: var(--color-text);
+      line-height: 1;
+    }
+    .rating-summary__stars {
+      color: var(--color-star, #F5A623);
+      font-size: 18px;
+      letter-spacing: 2px;
+      margin: 6px 0 4px;
+    }
+    .rating-summary__total {
+      font-size: 12px;
+      color: var(--color-text-muted);
+    }
+    .rating-summary__bars {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .rating-bar-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+    }
+    .rating-bar-row__label {
+      color: var(--color-text-muted);
+      min-width: 16px;
+      text-align: center;
+      font-weight: 600;
+    }
+    .rating-bar-row__star {
+      color: var(--color-star, #F5A623);
+      font-size: 12px;
+    }
+    .rating-bar-row__track {
+      flex: 1;
+      height: 8px;
+      background: var(--color-border-light, #eee);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .rating-bar-row__fill {
+      height: 100%;
+      background: var(--color-star, #F5A623);
+      border-radius: 4px;
+      transition: width 0.5s ease;
+    }
+    .rating-bar-row__count {
+      color: var(--color-text-muted);
+      font-size: 12px;
+      min-width: 24px;
+      text-align: end;
+    }
+
+    /* ---- Compact Hero ---- */
+    .fb-hero {
+      padding: 90px 0 20px;
+      text-align: center;
+    }
+    .fb-hero h1 {
+      font-family: var(--font-display);
+      font-size: clamp(22px, 3.5vw, 32px);
+      font-weight: 700;
+      color: var(--color-text);
+      margin: 0;
+    }
+
+    /* ---- Reviews List ---- */
+    .fb-list {
+      padding: 12px 0 60px;
+    }
+
+    /* ---- Compact Review Card ---- */
+    .fb-card {
+      background: var(--color-card);
+      border-radius: var(--radius-md, 12px);
+      padding: 14px 16px;
+      margin-bottom: 12px;
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--color-border-light);
+    }
+    .fb-card__header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+    .fb-card__avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--color-primary-light), var(--color-accent));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+    .fb-card__name {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--color-text);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .fb-card__badge {
+      background: var(--color-success, #2D8F5E);
+      color: #fff;
+      font-size: 9px;
+      font-weight: 700;
+      padding: 2px 5px;
+      border-radius: 3px;
+      white-space: nowrap;
+    }
+    .fb-card__stars {
+      color: var(--color-star, #F5A623);
+      font-size: 13px;
+      letter-spacing: 1px;
+    }
+    .fb-card__product {
+      font-size: 11px;
+      color: var(--color-text-muted);
+      margin-top: 1px;
+    }
+    .fb-card__text {
+      font-size: 13px;
+      line-height: 1.6;
+      color: var(--color-text-secondary);
+      margin-bottom: 6px;
+    }
+
+    /* ---- Image Slider with Arrows ---- */
+    .fb-slider {
+      position: relative;
+      border-radius: var(--radius-md, 8px);
+      overflow: hidden;
+      margin-top: 8px;
+      max-width: 280px;
+    }
+    .fb-slider__track {
+      display: flex;
+      transition: transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+    .fb-slider__slide {
+      flex: 0 0 100%;
+      min-width: 0;
+    }
+    .fb-slider__slide img {
+      width: 100%;
+      aspect-ratio: 4/3;
+      object-fit: cover;
+      display: block;
+      border-radius: var(--radius-md, 8px);
+    }
+    .fb-slider__arrow {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 28px;
+      height: 28px;
+      background: rgba(0,0,0,0.5);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2;
+      transition: background 0.2s;
+      padding: 0;
+      line-height: 1;
+    }
+    .fb-slider__arrow:hover {
+      background: rgba(0,0,0,0.7);
+    }
+    .fb-slider__arrow--prev {
+      left: 6px;
+    }
+    .fb-slider__arrow--next {
+      right: 6px;
+    }
+    [dir="rtl"] .fb-slider__arrow--prev {
+      left: auto;
+      right: 6px;
+    }
+    [dir="rtl"] .fb-slider__arrow--next {
+      right: auto;
+      left: 6px;
+    }
+    .fb-slider__dots {
+      display: flex;
+      justify-content: center;
+      gap: 5px;
+      padding: 6px 0 2px;
+    }
+    .fb-slider__dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--color-border);
+      cursor: pointer;
+      transition: background 0.2s;
+      border: none;
+      padding: 0;
+    }
+    .fb-slider__dot.active {
+      background: var(--color-primary);
+    }
+
+    /* ---- Single image ---- */
+    .fb-single-img {
+      margin-top: 8px;
+      max-width: 200px;
+    }
+    .fb-single-img img {
+      width: 100%;
+      aspect-ratio: 4/3;
+      object-fit: cover;
+      border-radius: var(--radius-md, 8px);
+      border: 1px solid var(--color-border-light);
+    }
+
+    /* ---- Audio Player ---- */
+    .fb-audio {
+      margin-top: 8px;
+    }
+
+    /* ---- Responsive ---- */
+    @media (max-width: 600px) {
+      .rating-summary {
+        flex-direction: column;
+        gap: 16px;
+        padding: 16px;
+      }
+      .rating-summary__left {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .rating-summary__stars { margin: 0; }
+      .fb-hero { padding: 80px 0 12px; }
+      .fb-card { padding: 12px 14px; }
+      .fb-slider { max-width: 220px; }
+      .fb-single-img { max-width: 160px; }
+    }
+  </style>
 </head>
 <body>
   <div class="pattern-overlay"></div>
@@ -31,94 +302,120 @@
     </div>
   </nav>
 
-  <!-- Reviews Hero -->
-  <section class="reviews-hero">
+  <!-- Compact Hero -->
+  <section class="fb-hero">
     <div class="container">
-      <div class="reviews-hero__inner">
-        <h1 class="reviews-hero__title"><%= t('customer_reviews') %></h1>
-        <div class="reviews-hero__rating">
-          <span class="reviews-hero__stars">
-            <% for (var i = 1; i <= 5; i++) { %>
-              <% if (i <= Math.round(parseFloat(avgRating))) { %>★<% } else { %>☆<% } %>
-            <% } %>
-          </span>
-          <span class="reviews-hero__score"><%= avgRating %></span>
-          <span class="reviews-hero__count"><%= reviewCount %> <%= t('reviews_count') %></span>
+      <h1><%= t('customer_reviews') %></h1>
+    </div>
+  </section>
+
+  <!-- Rating Summary -->
+  <section style="padding: 0 0 8px;">
+    <div class="container container--narrow">
+      <div class="rating-summary">
+        <div class="rating-summary__left">
+          <div class="rating-summary__big"><%= avgRating %></div>
+          <div>
+            <div class="rating-summary__stars">
+              <% for (var i = 1; i <= 5; i++) { %>
+                <% if (i <= Math.round(parseFloat(avgRating))) { %>★<% } else { %>☆<% } %>
+              <% } %>
+            </div>
+            <div class="rating-summary__total"><%= reviewCount %> <%= t('reviews_count') %></div>
+          </div>
+        </div>
+        <div class="rating-summary__bars">
+          <% for (var star = 5; star >= 1; star--) { %>
+            <% var cnt = (typeof ratingDist !== 'undefined' && ratingDist[star]) ? ratingDist[star] : 0; %>
+            <% var pct = reviewCount > 0 ? Math.round((cnt / reviewCount) * 100) : 0; %>
+            <div class="rating-bar-row">
+              <span class="rating-bar-row__label"><%= star %></span>
+              <span class="rating-bar-row__star">★</span>
+              <div class="rating-bar-row__track">
+                <div class="rating-bar-row__fill" style="width: <%= pct %>%"></div>
+              </div>
+              <span class="rating-bar-row__count"><%= cnt %></span>
+            </div>
+          <% } %>
         </div>
       </div>
     </div>
   </section>
 
   <!-- Reviews List -->
-  <section class="reviews-list">
+  <section class="fb-list">
     <div class="container container--narrow">
       <% if (reviews.length === 0) { %>
-        <div style="text-align: center; padding: 40px 20px; color: var(--color-text-muted);">
-          <p style="font-size: 48px; margin-bottom: 16px;">💬</p>
-          <p style="font-size: 18px; font-weight: 600; margin-bottom: 8px;"><%= t('no_reviews_yet') %></p>
-          <p style="font-size: 14px;"><%= t('be_first_reviewer') %></p>
+        <div style="text-align: center; padding: 30px 16px; color: var(--color-text-muted);">
+          <p style="font-size: 40px; margin-bottom: 12px;">💬</p>
+          <p style="font-size: 16px; font-weight: 600; margin-bottom: 6px;"><%= t('no_reviews_yet') %></p>
+          <p style="font-size: 13px;"><%= t('be_first_reviewer') %></p>
         </div>
       <% } else { %>
-        <% reviews.forEach(function(review) { %>
-          <div class="review-card animate-on-scroll">
-            <div class="review-card__header">
+        <% reviews.forEach(function(review, revIdx) { %>
+          <div class="fb-card animate-on-scroll">
+            <div class="fb-card__header">
               <% if (review.name) { %>
-                <div class="review-card__avatar" style="font-size: 24px; display: flex; align-items: center; justify-content: center;"><%= (function(n){ var e=['😊','😎','🤩','😇','🥰','😄','🤗','😺','🦊','🐻','🐶','🐱','🐸','🦁','🐼','🐯','🐨','🦋','🌸','⭐']; if(!n) return e[0]; var h=0; for(var i=0;i<n.length;i++) h=((h<<5)-h)+n.charCodeAt(i); return e[Math.abs(h)%e.length]; })(review.name) %></div>
+                <div class="fb-card__avatar"><%= (function(n){ var e=['😊','😎','🤩','😇','🥰','😄','🤗','😺','🦊','🐻','🐶','🐱','🐸','🦁','🐼','🐯','🐨','🦋','🌸','⭐']; if(!n) return e[0]; var h=0; for(var i=0;i<n.length;i++) h=((h<<5)-h)+n.charCodeAt(i); return e[Math.abs(h)%e.length]; })(review.name) %></div>
               <% } else { %>
-                <div class="review-card__avatar" style="font-size: 24px; display: flex; align-items: center; justify-content: center;">⭐</div>
+                <div class="fb-card__avatar">⭐</div>
               <% } %>
               <div>
-                <% if (review.name) { %>
-                  <div class="review-card__name" style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;"><%= review.name %> <span style="background: var(--color-success, #2D8F5E); color: #fff; font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px; white-space: nowrap;">✓ <%= t('verified') %></span></div>
-                <% } else { %>
-                  <div class="review-card__name" style="display: flex; align-items: center; gap: 6px;"><%= t('customer') %> <span style="background: var(--color-success, #2D8F5E); color: #fff; font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px; white-space: nowrap;">✓ <%= t('verified') %></span></div>
-                <% } %>
-                <div class="review-card__stars">
+                <div class="fb-card__name">
+                  <%= review.name || t('customer') %>
+                  <span class="fb-card__badge">✓ <%= t('verified') %></span>
+                </div>
+                <div class="fb-card__stars">
                   <% for (var j = 1; j <= 5; j++) { %>
                     <% if (j <= review.rating) { %>★<% } else { %>☆<% } %>
                   <% } %>
                 </div>
                 <% if (review.product_title) { %>
-                  <div style="font-size: 12px; color: var(--color-text-muted); margin-top: 2px;"><%= t('on_product') %>: <%= review.product_title %></div>
+                  <div class="fb-card__product"><%= t('on_product') %>: <%= review.product_title %></div>
                 <% } %>
               </div>
             </div>
 
             <% if (review.message) { %>
-              <div class="review-card__text"><%= review.message %></div>
+              <div class="fb-card__text"><%= review.message %></div>
             <% } %>
 
             <% if (review.image_filename) { %>
               <% var _fimgs = []; try { _fimgs = JSON.parse(review.image_filename); } catch(e) { _fimgs = [review.image_filename]; } %>
-              <% if (_fimgs.length === 1 && _fimgs[0]) { %>
-                <div style="margin-top: 16px; text-align: center;">
-                  <img src="/uploads/reviews/<%= _fimgs[0] %>" alt="صورة التقييم" style="max-width: 100%; max-height: 300px; border-radius: var(--radius-md); object-fit: cover; border: 1px solid var(--color-border-light);" loading="lazy">
+              <% _fimgs = _fimgs.filter(function(img) { return !!img; }); %>
+              <% if (_fimgs.length === 1) { %>
+                <div class="fb-single-img">
+                  <img src="/uploads/reviews/<%= _fimgs[0] %>" alt="" loading="lazy">
                 </div>
               <% } else if (_fimgs.length > 1) { %>
-                <div class="review-img-slider" style="margin-top: 16px; position: relative; overflow: hidden; border-radius: var(--radius-md);">
-                  <div class="review-img-track" style="display: flex; transition: transform 0.3s ease; touch-action: pan-y;">
-                    <% _fimgs.forEach(function(img) { if(img) { %>
-                      <div style="flex: 0 0 100%; min-width: 0;">
-                        <img src="/uploads/reviews/<%= img %>" alt="صورة التقييم" style="width: 100%; aspect-ratio: 4/3; object-fit: cover; display: block;" loading="lazy">
+                <div class="fb-slider" id="fbSlider<%= revIdx %>">
+                  <div class="fb-slider__track" data-index="0">
+                    <% _fimgs.forEach(function(img) { %>
+                      <div class="fb-slider__slide">
+                        <img src="/uploads/reviews/<%= img %>" alt="" loading="lazy">
                       </div>
-                    <% } }); %>
+                    <% }); %>
                   </div>
-                  <div style="display: flex; justify-content: center; gap: 6px; padding: 8px 0 4px;">
-                    <% _fimgs.forEach(function(img, idx) { if(img) { %>
-                      <span class="review-slider-dot" style="width: 8px; height: 8px; border-radius: 50%; background: <%= idx === 0 ? 'var(--color-primary)' : 'var(--color-border)' %>; cursor: pointer; transition: background 0.2s;"></span>
-                    <% } }); %>
+                  <button type="button" class="fb-slider__arrow fb-slider__arrow--prev" onclick="fbSlide('<%= revIdx %>', -1)">‹</button>
+                  <button type="button" class="fb-slider__arrow fb-slider__arrow--next" onclick="fbSlide('<%= revIdx %>', 1)">›</button>
+                  <div class="fb-slider__dots">
+                    <% _fimgs.forEach(function(img, idx) { %>
+                      <button type="button" class="fb-slider__dot<%= idx === 0 ? ' active' : '' %>" onclick="fbSlideTo('<%= revIdx %>', <%= idx %>)"></button>
+                    <% }); %>
                   </div>
                 </div>
               <% } %>
             <% } %>
 
             <% if (review.audio_filename) { %>
-              <div class="wa-audio-player" data-src="/uploads/reviews/<%= review.audio_filename %>" style="margin-top: 16px;">
-                <button type="button" class="wa-play-btn" onclick="toggleWaAudio(this)">▶</button>
-                <div class="wa-progress-wrap" onclick="seekWaAudio(event, this)">
-                  <div class="wa-waveform"></div>
+              <div class="fb-audio">
+                <div class="wa-audio-player" data-src="/uploads/reviews/<%= review.audio_filename %>">
+                  <button type="button" class="wa-play-btn" onclick="toggleWaAudio(this)">▶</button>
+                  <div class="wa-progress-wrap" onclick="seekWaAudio(event, this)">
+                    <div class="wa-waveform"></div>
+                  </div>
+                  <span class="wa-time">0:00</span>
                 </div>
-                <span class="wa-time">0:00</span>
               </div>
             <% } %>
           </div>
@@ -129,5 +426,34 @@
 
   <%- include('partials/footer') %>
   <script src="/js/main.js"></script>
+  <script>
+    function fbSlide(id, dir) {
+      var slider = document.getElementById('fbSlider' + id);
+      if (!slider) return;
+      var track = slider.querySelector('.fb-slider__track');
+      var total = track.children.length;
+      var idx = parseInt(track.dataset.index || '0');
+      var isRTL = document.documentElement.dir === 'rtl';
+      idx += dir;
+      if (idx < 0) idx = total - 1;
+      if (idx >= total) idx = 0;
+      track.dataset.index = idx;
+      var offset = idx * 100;
+      track.style.transform = isRTL ? 'translateX(' + offset + '%)' : 'translateX(-' + offset + '%)';
+      var dots = slider.querySelectorAll('.fb-slider__dot');
+      dots.forEach(function(d, i) { d.classList.toggle('active', i === idx); });
+    }
+    function fbSlideTo(id, target) {
+      var slider = document.getElementById('fbSlider' + id);
+      if (!slider) return;
+      var track = slider.querySelector('.fb-slider__track');
+      var isRTL = document.documentElement.dir === 'rtl';
+      track.dataset.index = target;
+      var offset = target * 100;
+      track.style.transform = isRTL ? 'translateX(' + offset + '%)' : 'translateX(-' + offset + '%)';
+      var dots = slider.querySelectorAll('.fb-slider__dot');
+      dots.forEach(function(d, i) { d.classList.toggle('active', i === target); });
+    }
+  </script>
 </body>
 </html>
