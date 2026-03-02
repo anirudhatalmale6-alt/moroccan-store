@@ -2,7 +2,92 @@
 <html lang="<%= typeof lang !== 'undefined' ? lang : 'ar' %>" dir="<%= typeof dir !== 'undefined' ? dir : 'rtl' %>">
 <head>
   <%- include('partials/head') %>
-  <title>تقييمات عملائنا — <%= product.title %></title>
+  <title><%= typeof t === 'function' ? t('customer_feedback') : 'تقييمات عملائنا' %> — <%= product.title %></title>
+  <style>
+    /* ---- Rating Summary ---- */
+    .rating-summary {
+      background: var(--color-card);
+      border-radius: var(--radius-lg);
+      padding: 20px 24px;
+      margin-bottom: 20px;
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--color-border-light);
+      display: flex;
+      align-items: center;
+      gap: 28px;
+      direction: ltr;
+    }
+    .rating-summary__left { text-align: center; min-width: 100px; }
+    .rating-summary__big { font-size: 44px; font-weight: 800; color: var(--color-text); line-height: 1; }
+    .rating-summary__stars { color: var(--color-star, #F5A623); font-size: 20px; letter-spacing: 2px; margin: 6px 0 4px; }
+    .rating-summary__total { font-size: 12px; color: var(--color-text-muted); }
+    .rating-summary__bars { flex: 1; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+    .rating-bar-row { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+    .rating-bar-row__label { color: var(--color-text-muted); min-width: 14px; text-align: center; font-weight: 600; }
+    .rating-bar-row__star { color: var(--color-star, #F5A623); font-size: 13px; }
+    .rating-bar-row__track { flex: 1; height: 10px; background: var(--color-border-light, #eee); border-radius: 5px; overflow: hidden; min-width: 0; }
+    .rating-bar-row__fill { height: 100%; background: var(--color-star, #F5A623); border-radius: 5px; transition: width 0.5s ease; min-width: 2px; }
+    .rating-bar-row__count { color: var(--color-text-muted); font-size: 12px; min-width: 20px; text-align: center; }
+
+    /* ---- Hero ---- */
+    .rv-hero { padding: 80px 0 16px; text-align: center; }
+    .rv-hero h1 { font-family: var(--font-display); font-size: clamp(22px, 3.5vw, 32px); font-weight: 700; color: var(--color-text); margin: 0 0 16px; }
+
+    /* ---- Review Card ---- */
+    .rv-card {
+      background: var(--color-card);
+      border-radius: 16px;
+      padding: 18px 20px;
+      margin-bottom: 14px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      border: 1px solid var(--color-border-light);
+    }
+    .rv-card[dir="ltr"] { direction: ltr; text-align: left; }
+    .rv-card[dir="rtl"] { direction: rtl; text-align: right; }
+    .rv-card__header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+    .rv-card__avatar {
+      width: 44px; height: 44px; border-radius: 50%;
+      background: var(--color-primary); color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px; font-weight: 700; flex-shrink: 0; text-transform: uppercase;
+    }
+    .rv-card__name-row { display: flex; align-items: center; gap: 6px; }
+    .rv-card__name { font-size: 15px; font-weight: 700; color: var(--color-text); }
+    .rv-card__verified { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; flex-shrink: 0; }
+    .rv-card__verified svg { width: 18px; height: 18px; }
+    .rv-card__body { min-height: 32px; margin-bottom: 10px; }
+    .rv-card__text { font-size: 14px; line-height: 1.7; color: var(--color-text-secondary); margin: 0; }
+    .rv-card__audio { margin-top: 2px; }
+    .rv-card__stars { color: var(--color-star, #F5A623); font-size: 18px; letter-spacing: 2px; }
+    .rv-card__images { display: flex; gap: 10px; margin-bottom: 12px; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+    .rv-card__images::-webkit-scrollbar { display: none; }
+    .rv-card__images img {
+      width: 110px; height: 110px; object-fit: cover; border-radius: 12px;
+      flex-shrink: 0; cursor: pointer; border: 1px solid var(--color-border-light); transition: transform 0.2s;
+    }
+    .rv-card__images img:hover { transform: scale(1.05); }
+
+    /* Lightbox */
+    .rv-lightbox { display: none; position: fixed; inset: 0; z-index: 9999; background: rgba(0,0,0,0.85); align-items: center; justify-content: center; }
+    .rv-lightbox.active { display: flex; }
+    .rv-lightbox img { max-width: 90vw; max-height: 85vh; object-fit: contain; border-radius: 8px; }
+    .rv-lightbox__close { position: absolute; top: 16px; right: 16px; width: 36px; height: 36px; background: rgba(255,255,255,0.2); color: #fff; border: none; border-radius: 50%; font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+
+    @media (max-width: 600px) {
+      .rating-summary { flex-direction: row; gap: 16px; padding: 16px; }
+      .rating-summary__left { min-width: 70px; }
+      .rating-summary__big { font-size: 36px; }
+      .rating-summary__stars { font-size: 16px; }
+      .rating-bar-row__track { height: 8px; }
+      .rv-hero { padding: 72px 0 12px; }
+      .rv-card { padding: 14px 16px; border-radius: 12px; }
+      .rv-card__avatar { width: 38px; height: 38px; font-size: 17px; }
+      .rv-card__name { font-size: 14px; }
+      .rv-card__text { font-size: 13px; }
+      .rv-card__stars { font-size: 16px; }
+      .rv-card__images img { width: 90px; height: 90px; }
+    }
+  </style>
 </head>
 <body>
   <div class="pattern-overlay"></div>
@@ -22,74 +107,114 @@
           </a>
         </div>
         <div style="display: flex; align-items: center; gap: 12px;">
-          <a href="/product/<%= product.slug %>/checkout" class="navbar__cta"><%= t('order_now') %></a>
+          <a href="/product/<%= product.slug %>/checkout" class="navbar__cta"><%= typeof t === 'function' ? t('order_now') : 'اطلب الآن' %></a>
           <% if (typeof sidebarCategories !== 'undefined' && sidebarCategories && sidebarCategories.length > 0) { %>
-          <button type="button" onclick="openSidebar()" style="background: none; border: none; font-size: 22px; cursor: pointer; color: var(--color-text); padding: 4px; line-height: 1; opacity: 0.8;" title="القائمة">☰</button>
+          <button type="button" onclick="openSidebar()" style="background: none; border: none; font-size: 22px; cursor: pointer; color: var(--color-text); padding: 4px; line-height: 1; opacity: 0.8;">☰</button>
           <% } %>
         </div>
       </div>
     </div>
   </nav>
 
-  <!-- Reviews Hero -->
-  <section class="reviews-hero">
+  <!-- Hero -->
+  <section class="rv-hero">
     <div class="container">
-      <div class="reviews-hero__inner">
-        <h1 class="reviews-hero__title">تقييمات عملائنا</h1>
-        <div class="reviews-hero__rating">
-          <span class="reviews-hero__stars">
-            <% for (let i = 1; i <= 5; i++) { %>
-              <% if (i <= Math.round(parseFloat(avgRating))) { %>★<% } else { %>☆<% } %>
-            <% } %>
-          </span>
-          <span class="reviews-hero__score"><%= avgRating %></span>
-          <span class="reviews-hero__count"><%= reviewCount %> تقييم</span>
+      <h1><%= typeof t === 'function' ? t('customer_reviews') : 'تقييمات عملائنا' %></h1>
+      <button type="button" class="btn btn--primary" id="heroWriteReviewBtn" onclick="toggleReviewForm(true)"><%= typeof t === 'function' ? t('write_review') : 'اكتب تقييمك' %></button>
+    </div>
+  </section>
+
+  <!-- Rating Summary -->
+  <section style="padding: 0 0 8px;">
+    <div class="container container--narrow">
+      <div class="rating-summary">
+        <div class="rating-summary__left">
+          <div class="rating-summary__big"><%= avgRating %></div>
+          <div class="rating-summary__stars">
+            <% for (var i = 1; i <= 5; i++) { %><% if (i <= Math.round(parseFloat(avgRating))) { %>★<% } else { %>☆<% } %><% } %>
+          </div>
+          <div class="rating-summary__total"><%= reviewCount %> <%= typeof t === 'function' ? t('reviews_count') : 'تقييم' %></div>
         </div>
-        <button type="button" class="btn btn--primary" id="heroWriteReviewBtn" onclick="toggleReviewForm(true)">اكتب تقييمك</button>
+        <div class="rating-summary__bars">
+          <% for (var star = 5; star >= 1; star--) { %>
+            <% var cnt = 0; %>
+            <% if (typeof ratingDist !== 'undefined' && ratingDist && ratingDist[star]) cnt = ratingDist[star]; %>
+            <% var pct = reviewCount > 0 ? Math.round((cnt / reviewCount) * 100) : 0; %>
+            <div class="rating-bar-row">
+              <span class="rating-bar-row__label"><%= star %></span>
+              <span class="rating-bar-row__star">★</span>
+              <div class="rating-bar-row__track">
+                <div class="rating-bar-row__fill" style="width: <%= pct %>%"></div>
+              </div>
+              <span class="rating-bar-row__count"><%= cnt %></span>
+            </div>
+          <% } %>
+        </div>
       </div>
     </div>
   </section>
 
-  <!-- Reviews List -->
-  <section class="reviews-list" id="reviewsList">
+  <!-- Reviews List (single column) -->
+  <section class="fb-list" id="reviewsList" style="padding: 8px 0 60px;">
     <div class="container container--narrow">
       <% if (reviews.length === 0) { %>
-        <div style="text-align: center; padding: 40px 20px; color: var(--color-text-muted);">
-          <p style="font-size: 48px; margin-bottom: 16px;">💬</p>
-          <p style="font-size: 18px; font-weight: 600; margin-bottom: 8px;">لا توجد تقييمات بعد</p>
-          <p style="font-size: 14px;">كن أول من يشارك تجربته!</p>
+        <div style="text-align: center; padding: 30px 16px; color: var(--color-text-muted);">
+          <p style="font-size: 40px; margin-bottom: 12px;">💬</p>
+          <p style="font-size: 16px; font-weight: 600; margin-bottom: 6px;"><%= typeof t === 'function' ? t('no_reviews_yet') : 'لا توجد تقييمات بعد' %></p>
+          <p style="font-size: 13px;"><%= typeof t === 'function' ? t('be_first_reviewer') : 'كن أول من يشارك تجربته!' %></p>
         </div>
       <% } else { %>
         <% reviews.forEach(function(review) { %>
-          <div class="review-card animate-on-scroll">
-            <div class="review-card__header">
-              <div class="review-card__avatar" style="font-size: 24px; display: flex; align-items: center; justify-content: center;"><%= (function(n){ var e=['😊','😎','🤩','😇','🥰','😄','🤗','😺','🦊','🐻','🐶','🐱','🐸','🦁','🐼','🐯','🐨','🦋','🌸','⭐']; var h=0; for(var i=0;i<n.length;i++) h=((h<<5)-h)+n.charCodeAt(i); return e[Math.abs(h)%e.length]; })(review.name) %></div>
+          <%
+            var _imgs = [];
+            if (review.image_filename) {
+              try { _imgs = JSON.parse(review.image_filename); } catch(e) { _imgs = [review.image_filename]; }
+              _imgs = _imgs.filter(function(img) { return !!img; });
+            }
+            var _init = (review.name || '?').charAt(0).toUpperCase();
+            var _textCheck = (review.name || '') + ' ' + (review.message || '');
+            var _isArabic = /[\u0600-\u06FF]/.test(_textCheck);
+            var _dir = _isArabic ? 'rtl' : 'ltr';
+          %>
+          <div class="rv-card animate-on-scroll" dir="<%= _dir %>">
+            <div class="rv-card__header">
+              <div class="rv-card__avatar"><%= _init %></div>
               <div>
-                <div class="review-card__name" style="display: flex; align-items: center; gap: 6px;"><%= review.name %> <span style="background: var(--color-success, #2D8F5E); color: #fff; font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px; white-space: nowrap;">✓ موثّق</span></div>
-                <div class="review-card__stars">
-                  <% for (let i = 1; i <= 5; i++) { %>
-                    <% if (i <= review.rating) { %>★<% } else { %>☆<% } %>
-                  <% } %>
+                <div class="rv-card__name-row">
+                  <span class="rv-card__name"><%= review.name || (typeof t === 'function' ? t('customer') : 'عميل') %></span>
+                  <span class="rv-card__verified"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#1DA1F2"/><path d="M9 12l2 2 4-4" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
                 </div>
               </div>
             </div>
-            <div class="review-card__text"><%= review.message %></div>
 
-            <% if (review.image_filename) { %>
-              <div style="margin-top: 16px; text-align: center;">
-                <img src="/uploads/reviews/<%= review.image_filename %>" alt="صورة التقييم" style="max-width: 100%; max-height: 300px; border-radius: var(--radius-md); object-fit: cover; border: 1px solid var(--color-border-light);" loading="lazy">
-              </div>
-            <% } %>
-
-            <% if (review.audio_filename) { %>
-              <div class="wa-audio-player" data-src="/uploads/reviews/<%= review.audio_filename %>" style="margin-top: 16px;">
-                <button type="button" class="wa-play-btn" onclick="toggleWaAudio(this)">▶</button>
-                <div class="wa-progress-wrap" onclick="seekWaAudio(event, this)">
-                  <div class="wa-waveform"></div>
+            <div class="rv-card__body">
+              <% if (review.message) { %>
+                <p class="rv-card__text"><%= review.message %></p>
+              <% } %>
+              <% if (review.audio_filename && review.audio_filename.length > 0) { %>
+                <div class="rv-card__audio">
+                  <div class="wa-audio-player" data-src="/uploads/reviews/<%= review.audio_filename %>">
+                    <button type="button" class="wa-play-btn" onclick="toggleWaAudio(this)">▶</button>
+                    <div class="wa-progress-wrap" onclick="seekWaAudio(event, this)">
+                      <div class="wa-waveform"></div>
+                    </div>
+                    <span class="wa-time">0:00</span>
+                  </div>
                 </div>
-                <span class="wa-time">0:00</span>
+              <% } %>
+            </div>
+
+            <% if (_imgs.length > 0) { %>
+              <div class="rv-card__images">
+                <% _imgs.forEach(function(img) { %>
+                  <img src="/uploads/reviews/<%= img %>" alt="" loading="lazy" onclick="openLightbox('/uploads/reviews/<%= img %>')">
+                <% }); %>
               </div>
             <% } %>
+
+            <div class="rv-card__stars">
+              <% for (var j = 1; j <= 5; j++) { %><% if (j <= review.rating) { %>★<% } else { %>☆<% } %><% } %>
+            </div>
           </div>
         <% }); %>
       <% } %>
@@ -100,32 +225,24 @@
   <section class="write-review" id="writeReview" style="display: none;">
     <div class="container container--narrow">
       <div style="text-align: center; margin-bottom: 24px;">
-        <button type="button" class="btn btn--outline" onclick="toggleReviewForm(false)">العودة للتقييمات</button>
+        <button type="button" class="btn btn--outline" onclick="toggleReviewForm(false)"><%= typeof t === 'function' ? t('back_to_reviews') : 'العودة للتقييمات' %></button>
       </div>
       <div class="section-header">
-        <span class="section-header__label">شاركنا رأيك</span>
-        <h2 class="section-header__title">اكتب تقييمك</h2>
+        <span class="section-header__label"><%= typeof t === 'function' ? t('share_experience') : 'شاركنا رأيك' %></span>
+        <h2 class="section-header__title"><%= typeof t === 'function' ? t('write_review') : 'اكتب تقييمك' %></h2>
         <div class="section-header__divider"></div>
       </div>
 
       <div class="feedback-card">
         <form id="reviewForm" novalidate>
-
           <div class="feedback-form__row">
             <div class="form-group">
-              <label class="form-label" for="reviewName">
-                <span class="required">*</span>
-                الاسم
-              </label>
-              <input type="text" id="reviewName" name="name" class="form-input" placeholder="أدخل اسمك" required>
+              <label class="form-label" for="reviewName"><span class="required">*</span> <%= typeof t === 'function' ? t('your_name') : 'الاسم' %></label>
+              <input type="text" id="reviewName" name="name" class="form-input" placeholder="<%= typeof t === 'function' ? t('enter_name') : 'أدخل اسمك' %>" required>
               <div class="form-error"></div>
             </div>
-
             <div class="form-group">
-              <label class="form-label" for="reviewPhone">
-                <span class="required">*</span>
-                رقم الهاتف
-              </label>
+              <label class="form-label" for="reviewPhone"><span class="required">*</span> <%= typeof t === 'function' ? t('your_phone') : 'رقم الهاتف' %></label>
               <div class="form-input-phone-wrapper">
                 <div class="form-input-phone-prefix">+212</div>
                 <input type="tel" id="reviewPhone" name="phone" class="form-input" placeholder="6XXXXXXXX" required dir="ltr">
@@ -134,9 +251,8 @@
             </div>
           </div>
 
-          <!-- Star Rating -->
           <div class="form-group">
-            <label class="form-label">التقييم</label>
+            <label class="form-label"><%= typeof t === 'function' ? t('rating') : 'التقييم' %></label>
             <div class="feedback-stars" id="reviewStars">
               <span class="feedback-star" data-rating="1">☆</span>
               <span class="feedback-star" data-rating="2">☆</span>
@@ -147,63 +263,60 @@
             <input type="hidden" id="reviewRating" name="rating" value="5">
           </div>
 
-          <!-- Message -->
           <div class="form-group">
-            <label class="form-label" for="reviewMessage">
-              <span class="required">*</span>
-              تقييمك
-            </label>
-            <textarea id="reviewMessage" name="message" class="form-input form-textarea" placeholder="شاركنا تجربتك مع المنتج..." rows="4" required></textarea>
+            <label class="form-label" for="reviewMessage"><span class="required">*</span> <%= typeof t === 'function' ? t('your_review') : 'تقييمك' %></label>
+            <textarea id="reviewMessage" name="message" class="form-input form-textarea" placeholder="<%= typeof t === 'function' ? t('share_your_experience') : 'شاركنا تجربتك مع المنتج...' %>" rows="4" required></textarea>
             <div class="form-error"></div>
           </div>
 
-          <!-- Image Upload -->
+          <!-- Image Upload (up to 3) -->
           <div class="form-group">
-            <label class="form-label">صورة (اختياري)</label>
-            <div class="feedback-upload-zone">
+            <label class="form-label"><%= typeof t === 'function' ? t('photos') : 'صورة (اختياري)' %></label>
+            <div class="feedback-upload-zone" id="feedbackImageZone">
               <div class="feedback-upload-zone__icon">📷</div>
-              <div class="feedback-upload-zone__text">اضغط لإضافة صورة</div>
-              <div class="feedback-upload-zone__hint">JPG, PNG — الحد الأقصى 5MB</div>
-              <input type="file" id="reviewImage" name="image" accept="image/*">
+              <div class="feedback-upload-zone__text"><%= typeof t === 'function' ? t('photos') : 'اضغط لإضافة صورة' %></div>
+              <div class="feedback-upload-zone__hint">JPG, PNG — Max 10MB</div>
+              <input type="file" id="feedbackImage" name="images" accept="image/jpeg,image/png,image/webp,image/heic,image/heif,image/*" multiple onchange="previewFeedbackImages(this)">
             </div>
-            <div class="feedback-upload-preview">
-              <img class="feedback-upload-preview__img" src="" alt="معاينة">
-              <div class="feedback-upload-preview__name"></div>
-              <button type="button" class="feedback-upload-preview__remove">✕</button>
-            </div>
+            <div id="feedbackImagePreviews" style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px;"></div>
           </div>
 
-          <!-- Voice Recorder -->
+          <!-- Voice Recording -->
           <div class="form-group">
-            <label class="form-label">تسجيل صوتي (اختياري)</label>
-            <div class="voice-recorder" id="reviewVoiceRecorder">
-              <button type="button" class="voice-recorder__btn" id="reviewVoiceRecordBtn">
+            <label class="form-label"><%= typeof t === 'function' ? t('voice_note') : 'تسجيل صوتي (اختياري)' %></label>
+            <div class="voice-recorder" id="voiceRecorder">
+              <button type="button" class="voice-recorder__btn" id="voiceRecordBtn">
                 <span class="voice-recorder__icon">🎙️</span>
-                <span class="voice-recorder__label">اضغط للتسجيل</span>
+                <span class="voice-recorder__label"><%= typeof t === 'function' ? t('voice_note') : 'اضغط للتسجيل' %></span>
               </button>
-              <div class="voice-recorder__status" id="reviewVoiceStatus"></div>
-              <div class="voice-recorder__player" id="reviewVoicePlayer">
-                <audio id="reviewVoiceAudio" controls></audio>
-                <button type="button" class="voice-recorder__remove" id="reviewVoiceRemoveBtn">حذف</button>
+              <div class="voice-recorder__status" id="voiceStatus"></div>
+              <div class="voice-recorder__player" id="voicePlayer">
+                <audio id="voiceAudio" controls></audio>
+                <button type="button" class="voice-recorder__remove" id="voiceRemoveBtn"><%= typeof t === 'function' ? t('delete_recording') : 'حذف' %></button>
               </div>
             </div>
           </div>
 
-          <button type="submit" class="btn btn--primary btn--lg btn--full">إرسال التقييم</button>
-
-          <p class="feedback-form__note">سيتم مراجعة تقييمك قبل النشر</p>
+          <button type="submit" class="btn btn--primary btn--lg btn--full"><%= typeof t === 'function' ? t('submit_review') : 'إرسال التقييم' %></button>
+          <p class="feedback-form__note"><%= typeof t === 'function' ? t('review_moderation_note') : 'سيتم مراجعة تقييمك قبل النشر' %></p>
         </form>
 
         <!-- Success State -->
         <div class="feedback-success" id="reviewSuccess">
           <div class="feedback-success__icon">🎉</div>
-          <h3 class="feedback-success__title">شكراً لك!</h3>
-          <p class="feedback-success__text">تم إرسال تقييمك بنجاح. سيتم نشره بعد المراجعة.</p>
-          <a href="/product/<%= product.slug %>" class="btn btn--primary">العودة للمنتج</a>
+          <h3 class="feedback-success__title"><%= typeof t === 'function' ? t('thanks_for_review') : 'شكراً لك!' %></h3>
+          <p class="feedback-success__text"><%= typeof t === 'function' ? t('review_submitted') : 'تم إرسال تقييمك بنجاح. سيتم نشره بعد المراجعة.' %></p>
+          <a href="/product/<%= product.slug %>" class="btn btn--primary"><%= typeof t === 'function' ? t('back_to_product') : 'العودة للمنتج' %></a>
         </div>
       </div>
     </div>
   </section>
+
+  <!-- Lightbox -->
+  <div class="rv-lightbox" id="rvLightbox" onclick="closeLightbox()">
+    <button type="button" class="rv-lightbox__close" onclick="closeLightbox()">✕</button>
+    <img id="rvLightboxImg" src="" alt="">
+  </div>
 
   <%- include('partials/footer') %>
 
@@ -224,9 +337,17 @@
         reviewsList.scrollIntoView({ behavior: 'smooth' });
       }
     }
+    function openLightbox(src) {
+      document.getElementById('rvLightboxImg').src = src;
+      document.getElementById('rvLightbox').classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeLightbox() {
+      document.getElementById('rvLightbox').classList.remove('active');
+      document.body.style.overflow = '';
+    }
   </script>
   <script>
-    // Override review form to submit via fetch with FormData
     document.addEventListener('DOMContentLoaded', () => {
       const form = document.getElementById('reviewForm');
       if (!form) return;
@@ -234,39 +355,19 @@
       form.addEventListener('submit', async (e) => {
         e.preventDefault();
         e.stopImmediatePropagation();
-
-        // Clear previous errors
         clearErrors();
 
         const name = document.getElementById('reviewName');
         const phone = document.getElementById('reviewPhone');
         const message = document.getElementById('reviewMessage');
         const rating = document.getElementById('reviewRating');
-
         let isValid = true;
 
-        if (!name.value.trim()) {
-          showFieldError(name, 'يرجى إدخال الاسم');
-          isValid = false;
-        }
-
-        if (!phone.value.trim()) {
-          showFieldError(phone, 'يرجى إدخال رقم الهاتف');
-          isValid = false;
-        } else if (!/^\d{9,10}$/.test(phone.value.trim().replace(/\s/g, ''))) {
-          showFieldError(phone, 'رقم الهاتف غير صالح');
-          isValid = false;
-        }
-
-        if (!message.value.trim()) {
-          showFieldError(message, 'يرجى كتابة تقييمك');
-          isValid = false;
-        }
-
-        if (!isValid) {
-          showToast('يرجى تعبئة الحقول المطلوبة', 'error');
-          return;
-        }
+        if (!name.value.trim()) { showFieldError(name, 'يرجى إدخال الاسم'); isValid = false; }
+        if (!phone.value.trim()) { showFieldError(phone, 'يرجى إدخال رقم الهاتف'); isValid = false; }
+        else if (!/^\d{9,10}$/.test(phone.value.trim().replace(/\s/g, ''))) { showFieldError(phone, 'رقم الهاتف غير صالح'); isValid = false; }
+        if (!message.value.trim()) { showFieldError(message, 'يرجى كتابة تقييمك'); isValid = false; }
+        if (!isValid) { showToast('يرجى تعبئة الحقول المطلوبة', 'error'); return; }
 
         const formData = new FormData();
         formData.append('name', name.value.trim());
@@ -274,36 +375,28 @@
         formData.append('rating', rating.value);
         formData.append('message', message.value.trim());
 
-        // Append image if selected
-        const imageInput = document.getElementById('reviewImage');
-        if (imageInput && imageInput.files && imageInput.files.length > 0) {
-          formData.append('image', imageInput.files[0]);
+        const imageInput = document.getElementById('feedbackImage');
+        if (imageInput && imageInput.files) {
+          for (var fi = 0; fi < imageInput.files.length; fi++) {
+            formData.append('images', imageInput.files[fi]);
+          }
         }
 
-        // Append audio if recorded
-        const audioEl = document.getElementById('reviewVoiceAudio');
+        const audioEl = document.getElementById('voiceAudio');
         if (audioEl && audioEl.src && audioEl.src.startsWith('blob:')) {
           try {
             const audioResp = await fetch(audioEl.src);
             const audioBlob = await audioResp.blob();
             formData.append('audio', audioBlob, 'voice-review.webm');
-          } catch (err) {
-            console.warn('Could not attach audio:', err);
-          }
+          } catch (err) { console.warn('Could not attach audio:', err); }
         }
 
         try {
-          const response = await fetch('/product/<%= product.slug %>/review', {
-            method: 'POST',
-            body: formData
-          });
-
+          const response = await fetch('/product/<%= product.slug %>/review', { method: 'POST', body: formData });
           const data = await response.json();
-
           if (data.success) {
             form.style.display = 'none';
-            const success = document.getElementById('reviewSuccess');
-            success.classList.add('visible');
+            document.getElementById('reviewSuccess').classList.add('visible');
             showToast('شكراً! تم إرسال تقييمك بنجاح', 'success');
           } else {
             showToast(data.error || 'حدث خطأ، يرجى المحاولة مرة أخرى', 'error');

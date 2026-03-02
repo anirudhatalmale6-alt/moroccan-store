@@ -332,11 +332,18 @@ router.get('/product/:slug/reviews', (req, res) => {
     'SELECT AVG(rating) as avg, COUNT(*) as count FROM reviews WHERE product_id = ? AND status = ?'
   ).get(product.id, 'approved');
 
+  const ratingDist = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
+  const distRows = db.prepare(
+    'SELECT rating, COUNT(*) as cnt FROM reviews WHERE product_id = ? AND status = ? GROUP BY rating'
+  ).all(product.id, 'approved');
+  distRows.forEach(r => { if (r.rating >= 1 && r.rating <= 5) ratingDist[r.rating] = r.cnt; });
+
   res.render('reviews', {
     product,
     reviews,
     avgRating: avgRating.avg ? avgRating.avg.toFixed(1) : '5.0',
-    reviewCount: avgRating.count || 0
+    reviewCount: avgRating.count || 0,
+    ratingDist
   });
 });
 
