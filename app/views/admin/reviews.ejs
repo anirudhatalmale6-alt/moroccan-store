@@ -318,13 +318,21 @@
                                 <div class="review-message"><%= review.message %></div>
                             <% } %>
 
-                            <% if (review.image_filename || review.audio_filename) { %>
+                            <%
+                              var _adminImgs = [];
+                              if (review.image_filename) {
+                                try { _adminImgs = JSON.parse(review.image_filename); } catch(e) { _adminImgs = [review.image_filename]; }
+                                if (!Array.isArray(_adminImgs)) _adminImgs = [_adminImgs];
+                                _adminImgs = _adminImgs.filter(function(img) { return !!img; });
+                              }
+                            %>
+                            <% if (_adminImgs.length > 0 || review.audio_filename) { %>
                                 <div class="review-media">
-                                    <% if (review.image_filename) { %>
-                                        <a href="/uploads/reviews/<%= review.image_filename %>" target="_blank">
-                                            <img src="/uploads/reviews/<%= review.image_filename %>" alt="صورة التعليق" class="review-thumb">
+                                    <% _adminImgs.forEach(function(imgFile) { %>
+                                        <a href="/uploads/reviews/<%= imgFile %>" target="_blank">
+                                            <img src="/uploads/reviews/<%= imgFile %>" alt="صورة التعليق" class="review-thumb">
                                         </a>
-                                    <% } %>
+                                    <% }); %>
                                     <% if (review.audio_filename) { %>
                                         <div class="review-audio">
                                             <audio controls preload="none">

@@ -268,7 +268,8 @@
     .lp-rv-card__txt { font-size: 14px; line-height: 1.7; color: var(--color-text-secondary); margin: 0; }
     .lp-rv-card__imgs { display: flex; gap: 10px; margin-bottom: 12px; overflow-x: auto; scrollbar-width: none; }
     .lp-rv-card__imgs::-webkit-scrollbar { display: none; }
-    .lp-rv-card__imgs img { width: 110px; height: 110px; object-fit: cover; border-radius: 12px; flex-shrink: 0; border: 1px solid var(--color-border-light); }
+    .lp-rv-card__imgs img { width: 110px; height: 110px; object-fit: cover; border-radius: 12px; flex-shrink: 0; border: 1px solid var(--color-border-light); cursor: pointer; transition: transform 0.2s; }
+    .lp-rv-card__imgs img:hover { transform: scale(1.05); }
     .lp-rv-card__stars { color: var(--color-star, #F5A623); font-size: 18px; letter-spacing: 2px; }
     @media (max-width: 600px) {
       .lp-rv-card { padding: 14px 16px; border-radius: 12px; }

@@ -385,7 +385,8 @@
         .hrv-card__txt { font-size: 13px; line-height: 1.6; color: var(--color-text-secondary); margin: 0; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
         .hrv-card__imgs { display: flex; gap: 8px; margin-bottom: 8px; overflow-x: auto; scrollbar-width: none; }
         .hrv-card__imgs::-webkit-scrollbar { display: none; }
-        .hrv-card__imgs img { width: 90px; height: 90px; object-fit: cover; border-radius: 10px; flex-shrink: 0; border: 1px solid var(--color-border-light); }
+        .hrv-card__imgs img { width: 90px; height: 90px; object-fit: cover; border-radius: 10px; flex-shrink: 0; border: 1px solid var(--color-border-light); cursor: pointer; transition: transform 0.2s; }
+        .hrv-card__imgs img:hover { transform: scale(1.05); }
         .hrv-card__stars { color: var(--color-star); font-size: 15px; letter-spacing: 2px; }
         @media (max-width: 600px) {
           .hrv-card__imgs img { width: 80px; height: 80px; }
