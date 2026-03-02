@@ -341,6 +341,22 @@ async function initDatabase() {
       is_active INTEGER DEFAULT 1,
       created_at DATETIME DEFAULT (datetime('now'))
     );
+
+    CREATE TABLE IF NOT EXISTS collections (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL,
+      category_id INTEGER DEFAULT NULL,
+      display_mode TEXT DEFAULT 'grid',
+      grid_columns INTEGER DEFAULT 2,
+      grid_product_count INTEGER DEFAULT 6,
+      slider_product_count INTEGER DEFAULT 10,
+      slider_autoplay INTEGER DEFAULT 1,
+      sort_order INTEGER DEFAULT 0,
+      is_active INTEGER DEFAULT 1,
+      show_title INTEGER DEFAULT 1,
+      created_at TEXT DEFAULT (datetime('now')),
+      FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL
+    );
   `);
 
   // ====== MIGRATIONS: Add columns to existing tables ======

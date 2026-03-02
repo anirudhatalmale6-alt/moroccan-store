@@ -211,6 +211,10 @@ const translations = {
     sold_out: 'نفذت الكمية!',
     only_left_prefix: 'باقي',
     only_left_suffix: 'قطع فقط!',
+
+    // Collections
+    collections: 'المجموعات',
+    view_all: 'عرض الكل',
   },
 
   fr: {
@@ -422,6 +426,10 @@ const translations = {
     sold_out: '\u00c9puis\u00e9 !',
     only_left_prefix: 'Plus que',
     only_left_suffix: 'pi\u00e8ces restantes !',
+
+    // Collections
+    collections: 'Collections',
+    view_all: 'Voir tout',
   }
 };
 

@@ -1183,4 +1183,76 @@ router.post('/categories/:id/delete', requireAdmin, (req, res) => {
   res.redirect('/admin/categories');
 });
 
+// ============================================================
+// COLLECTIONS MANAGEMENT
+// ============================================================
+
+router.get('/collections', requireAdmin, (req, res) => {
+  const collections = db.prepare(`
+    SELECT c.*, cat.name as category_name
+    FROM collections c
+    LEFT JOIN categories cat ON c.category_id = cat.id
+    ORDER BY c.sort_order
+  `).all();
+  const categories = db.prepare('SELECT * FROM categories WHERE is_active = 1 ORDER BY sort_order').all();
+  res.render('admin/collections', { collections, categories });
+});
+
+router.post('/collections', requireAdmin, (req, res) => {
+  const { name, category_id, display_mode, grid_columns, grid_product_count, slider_product_count, slider_autoplay, show_title } = req.body;
+  if (!name) return res.redirect('/admin/collections');
+  const maxOrder = db.prepare('SELECT COALESCE(MAX(sort_order), -1) as max_order FROM collections').get();
+  db.prepare(`
+    INSERT INTO collections (name, category_id, display_mode, grid_columns, grid_product_count, slider_product_count, slider_autoplay, show_title, sort_order)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `).run(
+    name,
+    category_id || null,
+    display_mode || 'grid',
+    parseInt(grid_columns) || 2,
+    parseInt(grid_product_count) || 6,
+    parseInt(slider_product_count) || 10,
+    slider_autoplay === 'on' || slider_autoplay === '1' ? 1 : 0,
+    show_title === 'on' || show_title === '1' ? 1 : 0,
+    maxOrder.max_order + 1
+  );
+  res.redirect('/admin/collections');
+});
+
+router.post('/collections/:id/update', requireAdmin, (req, res) => {
+  const { name, category_id, display_mode, grid_columns, grid_product_count, slider_product_count, slider_autoplay, is_active, show_title, sort_order } = req.body;
+  db.prepare(`
+    UPDATE collections SET name = ?, category_id = ?, display_mode = ?, grid_columns = ?, grid_product_count = ?, slider_product_count = ?, slider_autoplay = ?, is_active = ?, show_title = ?, sort_order = ?
+    WHERE id = ?
+  `).run(
+    name,
+    category_id || null,
+    display_mode || 'grid',
+    parseInt(grid_columns) || 2,
+    parseInt(grid_product_count) || 6,
+    parseInt(slider_product_count) || 10,
+    slider_autoplay === 'on' || slider_autoplay === '1' ? 1 : 0,
+    is_active === 'on' || is_active === '1' ? 1 : 0,
+    show_title === 'on' || show_title === '1' ? 1 : 0,
+    parseInt(sort_order) || 0,
+    req.params.id
+  );
+  res.redirect('/admin/collections');
+});
+
+router.post('/collections/:id/delete', requireAdmin, (req, res) => {
+  db.prepare('DELETE FROM collections WHERE id = ?').run(req.params.id);
+  res.redirect('/admin/collections');
+});
+
+router.post('/collections/reorder', requireAdmin, (req, res) => {
+  const { order } = req.body; // array of IDs
+  if (Array.isArray(order)) {
+    order.forEach((id, idx) => {
+      db.prepare('UPDATE collections SET sort_order = ? WHERE id = ?').run(idx, id);
+    });
+  }
+  res.json({ success: true });
+});
+
 module.exports = router;
