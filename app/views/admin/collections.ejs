@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>المجموعات — لوحة التحكم</title>
+    <title>Design — Storefront</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Cairo', sans-serif; background: #f5f1ed; direction: rtl; text-align: right; min-height: 100vh; }
+        body { font-family: 'Cairo', sans-serif; background: #f8f8f8; direction: rtl; text-align: right; min-height: 100vh; }
         .admin-wrapper { display: flex; min-height: 100vh; }
         .sidebar { width: 260px; background: #6B5335; color: #fff; position: fixed; top: 0; right: 0; bottom: 0; z-index: 100; display: flex; flex-direction: column; transition: transform 0.3s; overflow-y: auto; }
         .sidebar-header { padding: 28px 24px 20px; border-bottom: 1px solid rgba(255,255,255,0.1); }
@@ -23,46 +23,109 @@
         .sidebar-footer a { display: flex; align-items: center; gap: 12px; color: rgba(255,255,255,0.6); text-decoration: none; font-size: 14px; font-weight: 600; transition: color 0.2s; }
         .sidebar-footer a:hover { color: #fff; }
         .sidebar-footer a svg { width: 20px; height: 20px; fill: currentColor; }
-        .main-content { flex: 1; margin-right: 260px; padding: 32px; }
-        .page-title { font-size: 26px; font-weight: 700; color: #6B5335; margin-bottom: 28px; }
-        .btn { display: inline-block; padding: 10px 24px; border: none; border-radius: 10px; font-family: 'Cairo', sans-serif; font-size: 14px; font-weight: 700; cursor: pointer; text-decoration: none; transition: opacity 0.2s; }
-        .btn:hover { opacity: 0.85; }
-        .btn-primary { background: #8B6F47; color: #fff; }
-        .btn-danger { background: #ffebee; color: #c62828; }
-        .btn-sm { padding: 6px 14px; font-size: 13px; }
-        .form-card { background: #fff; border-radius: 14px; box-shadow: 0 2px 12px rgba(0,0,0,0.04); padding: 32px; margin-bottom: 28px; }
-        .form-card h3 { font-size: 18px; color: #6B5335; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid #f0ebe5; }
+        .main-content { flex: 1; margin-right: 260px; padding: 32px; max-width: 820px; }
+
+        /* Design Panel Header */
+        .design-header { margin-bottom: 8px; }
+        .design-header h1 { font-size: 24px; font-weight: 700; color: #1a1a1a; }
+        .design-tabs { display: flex; gap: 0; border-bottom: 1px solid #e0e0e0; margin-bottom: 28px; }
+        .design-tab { padding: 12px 20px; font-size: 14px; font-weight: 600; color: #888; text-decoration: none; border-bottom: 2px solid transparent; transition: all 0.2s; }
+        .design-tab:hover { color: #333; }
+        .design-tab.active { color: #1a1a1a; border-bottom-color: #1a1a1a; }
+
+        /* Add Card Button */
+        .add-card-btn { display: block; width: 100%; padding: 14px; background: #2E2E2E; color: #fff; border: none; border-radius: 10px; font-family: 'Cairo', sans-serif; font-size: 15px; font-weight: 700; cursor: pointer; transition: background 0.2s; margin-bottom: 20px; }
+        .add-card-btn:hover { background: #444; }
+
+        /* Section Cards */
+        .section-card { background: #fff; border: 1px solid #e8e8e8; border-radius: 12px; margin-bottom: 16px; overflow: hidden; transition: box-shadow 0.2s; }
+        .section-card:hover { box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+        .section-card.dragging { opacity: 0.5; box-shadow: 0 4px 20px rgba(0,0,0,0.15); }
+
+        /* Card Header — drag handle + type icon + title */
+        .card-header { display: flex; align-items: center; padding: 16px 20px; gap: 12px; cursor: pointer; user-select: none; }
+        .drag-handle { cursor: grab; color: #ccc; font-size: 20px; line-height: 1; display: flex; flex-direction: column; gap: 2px; }
+        .drag-handle span { display: block; width: 14px; height: 2px; background: #ccc; border-radius: 1px; }
+        .card-type-icon { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: 6px; font-size: 14px; flex-shrink: 0; }
+        .card-type-icon.products { background: #f0f0f0; color: #555; }
+        .card-type-icon.banner { background: #f0f0f0; color: #555; }
+        .card-type-label { font-size: 14px; font-weight: 600; color: #555; }
+        .card-title { font-size: 15px; font-weight: 700; color: #1a1a1a; flex: 1; }
+        .card-actions { display: flex; gap: 8px; align-items: center; margin-right: auto; }
+        .card-action-btn { width: 32px; height: 32px; border: none; background: none; cursor: pointer; color: #999; display: flex; align-items: center; justify-content: center; border-radius: 6px; transition: all 0.15s; }
+        .card-action-btn:hover { background: #f5f5f5; color: #333; }
+        .card-action-btn.danger:hover { background: #ffebee; color: #c62828; }
+        .card-action-btn svg { width: 18px; height: 18px; fill: currentColor; }
+
+        /* Card Body — collapsible */
+        .card-body { display: none; padding: 0 20px 20px; border-top: 1px solid #f0f0f0; }
+        .card-body.open { display: block; padding-top: 20px; }
+
+        /* Form elements */
         .form-group { margin-bottom: 16px; }
-        .form-group label { display: block; font-size: 14px; font-weight: 700; color: #555; margin-bottom: 6px; }
-        .form-group input[type="text"], .form-group input[type="number"], .form-group select {
-            width: 100%; padding: 10px 14px; border: 2px solid #e8e0d8; border-radius: 10px;
+        .form-group label { display: block; font-size: 13px; font-weight: 700; color: #555; margin-bottom: 6px; }
+        .form-group input[type="text"], .form-group input[type="number"], .form-group select, .form-group input[type="url"] {
+            width: 100%; padding: 10px 14px; border: 1px solid #e0e0e0; border-radius: 8px;
             font-family: 'Cairo', sans-serif; font-size: 14px; color: #333; transition: border-color 0.2s; background: #fff;
         }
-        .form-group input:focus, .form-group select:focus { outline: none; border-color: #8B6F47; }
-        .form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; }
-        .section { background: #fff; border-radius: 14px; box-shadow: 0 2px 12px rgba(0,0,0,0.04); margin-bottom: 28px; overflow: hidden; }
-        .section-header { padding: 20px 24px; border-bottom: 1px solid #f0ebe5; }
-        .section-header h3 { font-size: 17px; font-weight: 700; color: #333; }
-        .collection-item { padding: 20px 24px; border-bottom: 1px solid #f5f0eb; }
-        .collection-item:last-child { border-bottom: none; }
-        .collection-top { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
-        .collection-handle { cursor: grab; color: #ccc; font-size: 18px; flex-shrink: 0; }
-        .collection-name { font-size: 16px; font-weight: 700; color: #333; flex: 1; }
-        .collection-badge { display: inline-block; padding: 2px 10px; border-radius: 6px; font-size: 12px; font-weight: 700; }
-        .badge-grid { background: #e3f2fd; color: #1565c0; }
-        .badge-slider { background: #fce4ec; color: #c62828; }
-        .badge-both { background: #e8f5e9; color: #2e7d32; }
-        .badge-active { background: #e8f5e9; color: #2e7d32; }
-        .badge-inactive { background: #ffebee; color: #c62828; }
-        .collection-details { display: none; padding-top: 16px; border-top: 1px solid #f0ebe5; }
-        .collection-details.open { display: block; }
-        .toggle-btn { background: none; border: 1px solid #e0d8d0; border-radius: 8px; padding: 4px 12px; font-family: 'Cairo', sans-serif; font-size: 12px; color: #888; cursor: pointer; transition: all 0.2s; }
-        .toggle-btn:hover { border-color: #8B6F47; color: #8B6F47; }
-        .actions { display: flex; gap: 8px; align-items: center; }
-        .checkbox-group { display: flex; align-items: center; gap: 8px; }
-        .checkbox-group input[type="checkbox"] { width: 18px; height: 18px; accent-color: #8B6F47; }
-        .empty-state { padding: 40px; text-align: center; color: #bbb; font-size: 14px; }
-        .info-text { font-size: 12px; color: #999; margin-top: 4px; }
+        .form-group input:focus, .form-group select:focus { outline: none; border-color: #2E2E2E; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .info-text { font-size: 12px; color: #aaa; margin-top: 4px; }
+
+        /* Display mode toggle (List / Grid) */
+        .mode-toggle { display: flex; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden; margin-bottom: 16px; }
+        .mode-toggle-btn { flex: 1; padding: 10px; font-family: 'Cairo', sans-serif; font-size: 13px; font-weight: 600; border: none; background: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; color: #999; transition: all 0.15s; }
+        .mode-toggle-btn:not(:last-child) { border-left: 1px solid #e0e0e0; }
+        .mode-toggle-btn.active { background: #f5f5f5; color: #1a1a1a; }
+        .mode-toggle-btn svg { width: 16px; height: 16px; fill: currentColor; }
+
+        /* Feature count checkbox */
+        .feature-count { display: flex; align-items: center; gap: 10px; padding: 12px 16px; background: #fafafa; border-radius: 8px; margin-bottom: 16px; }
+        .feature-count input[type="checkbox"] { width: 18px; height: 18px; accent-color: #2E2E2E; }
+        .feature-count label { font-size: 14px; font-weight: 600; color: #333; cursor: pointer; }
+        .feature-count select { padding: 4px 8px; border: 1px solid #ddd; border-radius: 6px; font-family: 'Cairo', sans-serif; font-size: 13px; width: auto; }
+
+        /* Image upload zone */
+        .upload-zone { border: 2px dashed #ddd; border-radius: 10px; padding: 28px; text-align: center; cursor: pointer; transition: all 0.2s; background: #fafafa; position: relative; }
+        .upload-zone:hover { border-color: #aaa; background: #f5f5f5; }
+        .upload-zone input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+        .upload-zone-icon { font-size: 24px; color: #ccc; margin-bottom: 8px; }
+        .upload-zone-text { font-size: 14px; color: #666; }
+        .upload-zone-text span { color: #2E7D32; font-weight: 600; cursor: pointer; }
+        .upload-zone-info { font-size: 12px; color: #aaa; margin-top: 4px; }
+
+        /* Banner preview thumbnail */
+        .banner-thumb { display: inline-block; position: relative; margin-top: 10px; }
+        .banner-thumb img { max-width: 200px; max-height: 80px; border-radius: 8px; border: 1px solid #e0e0e0; }
+        .banner-thumb-remove { position: absolute; top: -6px; right: -6px; width: 20px; height: 20px; background: #c62828; color: #fff; border: none; border-radius: 50%; font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+
+        /* Checkbox */
+        .checkbox-inline { display: flex; align-items: center; gap: 8px; }
+        .checkbox-inline input[type="checkbox"] { width: 18px; height: 18px; accent-color: #2E2E2E; }
+        .checkbox-inline label { font-size: 13px; color: #666; font-weight: 600; cursor: pointer; }
+
+        /* Save button */
+        .btn-save { display: inline-block; padding: 10px 28px; background: #2E2E2E; color: #fff; border: none; border-radius: 8px; font-family: 'Cairo', sans-serif; font-size: 14px; font-weight: 700; cursor: pointer; transition: background 0.2s; }
+        .btn-save:hover { background: #444; }
+
+        /* Add card dialog */
+        .add-dialog { display: none; background: #fff; border: 1px solid #e0e0e0; border-radius: 12px; margin-bottom: 16px; overflow: hidden; }
+        .add-dialog.open { display: block; }
+        .add-dialog-header { padding: 16px 20px; border-bottom: 1px solid #f0f0f0; font-size: 16px; font-weight: 700; color: #1a1a1a; display: flex; align-items: center; justify-content: space-between; }
+        .add-dialog-body { padding: 20px; }
+        .add-dialog-options { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+        .add-option { padding: 20px; border: 2px solid #e0e0e0; border-radius: 10px; cursor: pointer; text-align: center; transition: all 0.15s; }
+        .add-option:hover { border-color: #aaa; }
+        .add-option.selected { border-color: #2E2E2E; background: #fafafa; }
+        .add-option-icon { font-size: 28px; margin-bottom: 8px; }
+        .add-option-label { font-size: 14px; font-weight: 700; color: #333; }
+        .add-option-desc { font-size: 12px; color: #999; margin-top: 4px; }
+
+        /* Empty state */
+        .empty-state { padding: 60px 40px; text-align: center; background: #fff; border: 1px solid #e8e8e8; border-radius: 12px; margin-bottom: 16px; }
+        .empty-state-icon { font-size: 48px; margin-bottom: 16px; opacity: 0.4; }
+        .empty-state p { color: #999; font-size: 14px; }
+
         .mobile-toggle { display: none; position: fixed; top: 16px; right: 16px; z-index: 200; background: #6B5335; color: #fff; border: none; border-radius: 10px; width: 44px; height: 44px; font-size: 20px; cursor: pointer; }
         .sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 90; }
         @media (max-width: 768px) {
@@ -70,8 +133,9 @@
             .sidebar { transform: translateX(100%); }
             .sidebar.open { transform: translateX(0); }
             .sidebar-overlay.open { display: block; }
-            .main-content { margin-right: 0; padding: 24px 16px; padding-top: 72px; }
+            .main-content { margin-right: 0; padding: 24px 16px; padding-top: 72px; max-width: 100%; }
             .form-row { grid-template-columns: 1fr; }
+            .add-dialog-options { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -89,7 +153,7 @@
                 <li><a href="/admin/reviews"><svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/></svg>التعليقات</a></li>
                 <div class="sidebar-divider"></div>
                 <li><a href="/admin/categories"><svg viewBox="0 0 24 24"><path d="M12 2l-5.5 9h11L12 2zm0 3.84L13.93 9h-3.87L12 5.84zM17.5 13c-2.49 0-4.5 2.01-4.5 4.5s2.01 4.5 4.5 4.5 4.5-2.01 4.5-4.5-2.01-4.5-4.5-4.5zm0 7c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5zM3 21.5h8v-8H3v8zm2-6h4v4H5v-4z"/></svg>التصنيفات</a></li>
-                <li><a href="/admin/collections" class="active"><svg viewBox="0 0 24 24"><path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H8V4h12v12zM10 9h8v2h-8zm0 3h4v2h-4zm0-6h8v2h-8z"/></svg>المجموعات</a></li>
+                <li><a href="/admin/collections" class="active"><svg viewBox="0 0 24 24"><path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H8V4h12v12zM10 9h8v2h-8zm0 3h4v2h-4zm0-6h8v2h-8z"/></svg>Design</a></li>
                 <li><a href="/admin/landing-pages"><svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zM7 10h2v7H7zm4-3h2v10h-2zm4 6h2v4h-2z"/></svg>صفحات الهبوط</a></li>
                 <li><a href="/admin/sliders"><svg viewBox="0 0 24 24"><path d="M22 16V4c0-1.1-.9-2-2-2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2zm-11-4l2.03 2.71L16 11l4 5H8l3-4zM2 6v14c0 1.1.9 2 2 2h14v-2H4V6H2z"/></svg>سلايدر الرئيسية</a></li>
                 <li><a href="/admin/banners"><svg viewBox="0 0 24 24"><path d="M19 5H5c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 12H5V7h14v10zM6 13h2v2H6zm0-4h12v2H6zm4 4h8v2h-8z"/></svg>البانرات</a></li>
@@ -105,298 +169,384 @@
         </aside>
 
         <main class="main-content">
-            <h1 class="page-title">المجموعات — التحكم بالصفحة الرئيسية</h1>
+            <div class="design-header">
+                <h1>Design</h1>
+            </div>
+            <div class="design-tabs">
+                <a href="/admin/collections" class="design-tab active">Storefront</a>
+                <a href="/admin/settings" class="design-tab">Appearance</a>
+            </div>
 
-            <!-- Add Collection Form -->
-            <div class="form-card">
-                <h3>اضافة عنصر جديد</h3>
-                <form method="POST" action="/admin/collections" enctype="multipart/form-data">
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>نوع العنصر</label>
-                            <select name="section_type" id="newSectionType" onchange="toggleNewSectionType()">
-                                <option value="products">مجموعة منتجات</option>
-                                <option value="banner">بانر (صورة)</option>
-                            </select>
+            <!-- Add Card Button -->
+            <button type="button" class="add-card-btn" onclick="toggleAddDialog()">+ Add card</button>
+
+            <!-- Add Card Dialog -->
+            <div class="add-dialog" id="addDialog">
+                <div class="add-dialog-header">
+                    <span>اضافة عنصر جديد</span>
+                    <button type="button" style="background:none;border:none;font-size:20px;cursor:pointer;color:#999;" onclick="toggleAddDialog()">×</button>
+                </div>
+                <div class="add-dialog-body">
+                    <div class="add-dialog-options">
+                        <div class="add-option" id="opt-products" onclick="selectAddType('products')">
+                            <div class="add-option-icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="#555"><path d="M12 2l-5.5 9h11L12 2zm0 3.84L13.93 9h-3.87L12 5.84zM17.5 13c-2.49 0-4.5 2.01-4.5 4.5s2.01 4.5 4.5 4.5 4.5-2.01 4.5-4.5-2.01-4.5-4.5-4.5zm0 7c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5zM3 21.5h8v-8H3v8zm2-6h4v4H5v-4z"/></svg></div>
+                            <div class="add-option-label">Product category</div>
+                            <div class="add-option-desc">عرض منتجات من تصنيف معين</div>
                         </div>
-                        <div class="form-group">
-                            <label>الاسم</label>
-                            <input type="text" name="name" placeholder="مثل: أحدث المنتجات، بانر عرض خاص..." required>
+                        <div class="add-option" id="opt-banner" onclick="selectAddType('banner')">
+                            <div class="add-option-icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="#555"><path d="M22 16V4c0-1.1-.9-2-2-2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2zm-11-4l2.03 2.71L16 11l4 5H8l3-4zM2 6v14c0 1.1.9 2 2 2h14v-2H4V6H2z"/></svg></div>
+                            <div class="add-option-label">Image</div>
+                            <div class="add-option-desc">بانر صورة مع رابط اختياري</div>
                         </div>
                     </div>
-                    <!-- Products fields -->
-                    <div id="newProductsFields">
-                    <div class="form-row">
+
+                    <!-- Product form (hidden by default) -->
+                    <form method="POST" action="/admin/collections" id="addProductForm" style="display:none;">
+                        <input type="hidden" name="section_type" value="products">
                         <div class="form-group">
-                            <label>التصنيف (اختياري)</label>
-                            <select name="category_id">
+                            <label>Product category</label>
+                            <select name="category_id" style="margin-bottom: 4px;">
                                 <option value="">كل المنتجات</option>
                                 <% categories.forEach(function(cat) { %>
                                     <option value="<%= cat.id %>"><%= cat.name %></option>
                                 <% }); %>
                             </select>
-                            <div class="info-text">اختر تصنيف لعرض منتجاته فقط، أو اتركه فارغاً لعرض الكل</div>
                         </div>
-                        <div class="form-group">
-                            <label>طريقة العرض</label>
-                            <select name="display_mode" id="newDisplayMode" onchange="toggleNewFields()">
-                                <option value="grid">شبكة (Grid)</option>
-                                <option value="slider">سلايدر (Slider)</option>
-                                <option value="both">شبكة + سلايدر (Both)</option>
+                        <div class="mode-toggle" id="newModeToggle">
+                            <button type="button" class="mode-toggle-btn" data-mode="list" onclick="setNewMode('list')">
+                                <svg viewBox="0 0 24 24"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"/></svg>
+                                List
+                            </button>
+                            <button type="button" class="mode-toggle-btn active" data-mode="grid" onclick="setNewMode('grid')">
+                                <svg viewBox="0 0 24 24"><path d="M4 11h5V5H4v6zm0 7h5v-6H4v6zm6 0h5v-6h-5v6zm6 0h5v-6h-5v6zm-6-7h5V5h-5v6zm6-6v6h5V5h-5z"/></svg>
+                                Grid
+                            </button>
+                        </div>
+                        <input type="hidden" name="display_mode" id="newModeVal" value="grid">
+                        <input type="hidden" name="name" id="newProductName" value="">
+                        <div class="feature-count">
+                            <input type="checkbox" id="newFeatureToggle" checked>
+                            <label for="newFeatureToggle">Feature up to</label>
+                            <select name="grid_product_count" id="newProductCount">
+                                <option value="2">2</option>
+                                <option value="4" selected>4</option>
+                                <option value="6">6</option>
+                                <option value="8">8</option>
+                                <option value="10">10</option>
+                                <option value="12">12</option>
                             </select>
+                            <label for="newProductCount">products</label>
                         </div>
-                    </div>
-                    <div class="form-row" id="newGridFields">
+                        <input type="hidden" name="grid_columns" value="2">
+                        <input type="hidden" name="slider_product_count" value="10">
+                        <input type="hidden" name="show_title" value="on">
+                        <button type="submit" class="btn-save" style="width: 100%;">Add section</button>
+                    </form>
+
+                    <!-- Banner form (hidden by default) -->
+                    <form method="POST" action="/admin/collections" enctype="multipart/form-data" id="addBannerForm" style="display:none;">
+                        <input type="hidden" name="section_type" value="banner">
                         <div class="form-group">
-                            <label>عدد الأعمدة</label>
-                            <select name="grid_columns">
-                                <option value="2">2 أعمدة</option>
-                                <option value="3">3 أعمدة</option>
-                                <option value="4">4 أعمدة</option>
-                            </select>
+                            <label>Title</label>
+                            <input type="text" name="name" placeholder="Title" value="">
+                        </div>
+                        <div class="upload-zone" id="newUploadZone">
+                            <input type="file" name="banner_desktop_image" accept="image/*" onchange="previewUpload(this, 'newUploadPreview', 'newUploadZone')">
+                            <div class="upload-zone-icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="#ccc"><path d="M22 16V4c0-1.1-.9-2-2-2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2zm-11-4l2.03 2.71L16 11l4 5H8l3-4zM2 6v14c0 1.1.9 2 2 2h14v-2H4V6H2z"/></svg></div>
+                            <div class="upload-zone-text">Drag a file here or <span>click to select one</span></div>
+                            <div class="upload-zone-info">File should not exceed 10mb. Recommended ratio is 16:9.</div>
+                        </div>
+                        <div id="newUploadPreview" style="margin: 10px 0; display: none;"></div>
+                        <div class="form-group" style="margin-top: 12px;">
+                            <label>صورة البانر (موبايل) — اختياري</label>
+                            <input type="file" name="banner_mobile_image" accept="image/*" style="padding: 8px; border: 1px solid #e0e0e0; border-radius: 8px; width: 100%;">
                         </div>
                         <div class="form-group">
-                            <label>عدد المنتجات (شبكة)</label>
-                            <input type="number" name="grid_product_count" value="6" min="1" max="50">
+                            <label>Link</label>
+                            <input type="text" name="banner_link_url" placeholder="https://">
+                            <div class="info-text">Optional</div>
                         </div>
-                    </div>
-                    <div class="form-row" id="newSliderFields" style="display: none;">
-                        <div class="form-group">
-                            <label>عدد المنتجات (سلايدر)</label>
-                            <input type="number" name="slider_product_count" value="10" min="1" max="50">
-                        </div>
-                        <div class="form-group">
-                            <label style="margin-bottom: 10px;">تشغيل تلقائي</label>
-                            <div class="checkbox-group">
-                                <input type="checkbox" name="slider_autoplay" id="newAutoplay" checked>
-                                <label for="newAutoplay" style="font-weight: 400; color: #666;">تشغيل تلقائي للسلايدر</label>
-                            </div>
-                        </div>
-                    </div>
-                    </div>
-                    <!-- Banner fields -->
-                    <div id="newBannerFields" style="display: none;">
-                    <div class="form-group">
-                        <label>صورة البانر (سطح المكتب) *</label>
-                        <input type="file" name="banner_desktop_image" accept="image/*" style="padding: 8px;">
-                        <div class="info-text">الصورة الرئيسية للبانر — العرض الكامل</div>
-                    </div>
-                    <div class="form-group">
-                        <label>صورة البانر (موبايل) — اختياري</label>
-                        <input type="file" name="banner_mobile_image" accept="image/*" style="padding: 8px;">
-                        <div class="info-text">صورة مخصصة للموبايل (إذا تركت فارغة ستُعرض صورة سطح المكتب)</div>
-                    </div>
-                    <div class="form-group">
-                        <label>رابط البانر (اختياري)</label>
-                        <input type="text" name="banner_link_url" placeholder="https://...">
-                        <div class="info-text">عند الضغط على البانر سيتم التوجيه لهذا الرابط</div>
-                    </div>
-                    </div>
-                    <div class="form-group">
-                        <div class="checkbox-group">
-                            <input type="checkbox" name="show_title" id="newShowTitle" checked>
-                            <label for="newShowTitle" style="font-weight: 400; color: #666;">عرض عنوان المجموعة</label>
-                        </div>
-                    </div>
-                    <button type="submit" class="btn btn-primary">اضافة عنصر</button>
-                </form>
+                        <input type="hidden" name="show_title" value="on">
+                        <button type="submit" class="btn-save" style="width: 100%;">Add section</button>
+                    </form>
+                </div>
             </div>
 
-            <!-- Collections List -->
-            <div class="section">
-                <div class="section-header">
-                    <h3>المجموعات الحالية (<%= collections.length %>)</h3>
-                </div>
+            <!-- Sections List -->
+            <div id="sectionsContainer">
                 <% if (collections.length > 0) { %>
                     <% collections.forEach(function(col, idx) { %>
-                        <div class="collection-item" data-id="<%= col.id %>">
-                            <div class="collection-top">
-                                <span class="collection-handle" title="اسحب لتغيير الترتيب">⠿</span>
-                                <span class="collection-name"><%= col.name %></span>
+                        <div class="section-card" data-id="<%= col.id %>" draggable="true">
+                            <div class="card-header" onclick="toggleCard(this)">
+                                <div class="drag-handle" onclick="event.stopPropagation();" title="Drag to change order">
+                                    <span></span><span></span><span></span><span></span><span></span><span></span>
+                                </div>
                                 <% if (col.section_type === 'banner') { %>
-                                    <span class="collection-badge" style="background: #fff3e0; color: #e65100;">بانر</span>
+                                    <div class="card-type-icon banner"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M22 16V4c0-1.1-.9-2-2-2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2zm-11-4l2.03 2.71L16 11l4 5H8l3-4zM2 6v14c0 1.1.9 2 2 2h14v-2H4V6H2z"/></svg></div>
+                                    <span class="card-type-label">Image</span>
                                 <% } else { %>
-                                    <% if (col.category_name) { %>
-                                        <span style="font-size: 12px; color: #888; background: #f5f0eb; padding: 2px 10px; border-radius: 6px;"><%= col.category_name %></span>
-                                    <% } else { %>
-                                        <span style="font-size: 12px; color: #888; background: #f5f0eb; padding: 2px 10px; border-radius: 6px;">كل المنتجات</span>
-                                    <% } %>
-                                    <span class="collection-badge <%= col.display_mode === 'grid' ? 'badge-grid' : (col.display_mode === 'slider' ? 'badge-slider' : 'badge-both') %>">
-                                        <%= col.display_mode === 'grid' ? 'شبكة' : (col.display_mode === 'slider' ? 'سلايدر' : 'شبكة + سلايدر') %>
-                                    </span>
+                                    <div class="card-type-icon products"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l-5.5 9h11L12 2zm0 3.84L13.93 9h-3.87L12 5.84zM17.5 13c-2.49 0-4.5 2.01-4.5 4.5s2.01 4.5 4.5 4.5 4.5-2.01 4.5-4.5-2.01-4.5-4.5-4.5zm0 7c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5zM3 21.5h8v-8H3v8zm2-6h4v4H5v-4z"/></svg></div>
+                                    <span class="card-type-label">Product category</span>
                                 <% } %>
-                                <span class="collection-badge <%= col.is_active ? 'badge-active' : 'badge-inactive' %>">
-                                    <%= col.is_active ? 'مفعّل' : 'معطّل' %>
-                                </span>
-                                <div class="actions">
-                                    <button type="button" class="toggle-btn" onclick="toggleDetails(this)">تعديل ▼</button>
-                                    <form method="POST" action="/admin/collections/<%= col.id %>/delete" onsubmit="return confirm('هل تريد حذف هذه المجموعة؟');" style="margin: 0;">
-                                        <button type="submit" class="btn btn-danger btn-sm">حذف</button>
+                                <span class="card-title"><%= col.name || '' %></span>
+                                <div class="card-actions" onclick="event.stopPropagation();">
+                                    <% if (!col.is_active) { %>
+                                        <span style="font-size:11px;color:#c62828;font-weight:600;background:#ffebee;padding:2px 8px;border-radius:4px;">Hidden</span>
+                                    <% } %>
+                                    <!-- Visibility toggle -->
+                                    <form method="POST" action="/admin/collections/<%= col.id %>/update" enctype="multipart/form-data" style="margin:0;display:inline;">
+                                        <input type="hidden" name="name" value="<%= col.name %>">
+                                        <input type="hidden" name="section_type" value="<%= col.section_type || 'products' %>">
+                                        <input type="hidden" name="display_mode" value="<%= col.display_mode %>">
+                                        <input type="hidden" name="category_id" value="<%= col.category_id || '' %>">
+                                        <input type="hidden" name="grid_columns" value="<%= col.grid_columns %>">
+                                        <input type="hidden" name="grid_product_count" value="<%= col.grid_product_count %>">
+                                        <input type="hidden" name="slider_product_count" value="<%= col.slider_product_count %>">
+                                        <input type="hidden" name="sort_order" value="<%= col.sort_order %>">
+                                        <input type="hidden" name="show_title" value="<%= col.show_title ? 'on' : '' %>">
+                                        <input type="hidden" name="banner_link_url" value="<%= col.banner_link_url || '' %>">
+                                        <% if (col.slider_autoplay) { %><input type="hidden" name="slider_autoplay" value="on"><% } %>
+                                        <% if (!col.is_active) { %><input type="hidden" name="is_active" value="on"><% } %>
+                                        <button type="submit" class="card-action-btn" title="<%= col.is_active ? 'إخفاء' : 'إظهار' %>">
+                                            <svg viewBox="0 0 24 24"><% if (col.is_active) { %><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/><% } else { %><path d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z"/><% } %></svg>
+                                        </button>
+                                    </form>
+                                    <!-- Delete -->
+                                    <form method="POST" action="/admin/collections/<%= col.id %>/delete" onsubmit="return confirm('حذف هذا العنصر؟');" style="margin:0;display:inline;">
+                                        <button type="submit" class="card-action-btn danger" title="حذف">
+                                            <svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+                                        </button>
                                     </form>
                                 </div>
                             </div>
-                            <div class="collection-details" id="details-<%= col.id %>">
+
+                            <div class="card-body" id="body-<%= col.id %>">
                                 <form method="POST" action="/admin/collections/<%= col.id %>/update" enctype="multipart/form-data">
-                                    <div class="form-row">
+                                    <input type="hidden" name="section_type" value="<%= col.section_type || 'products' %>">
+
+                                    <% if (col.section_type === 'banner') { %>
+                                        <!-- === BANNER CARD BODY === -->
                                         <div class="form-group">
-                                            <label>نوع العنصر</label>
-                                            <select name="section_type" onchange="toggleEditSectionType(this, '<%= col.id %>')">
-                                                <option value="products" <%= (!col.section_type || col.section_type === 'products') ? 'selected' : '' %>>مجموعة منتجات</option>
-                                                <option value="banner" <%= col.section_type === 'banner' ? 'selected' : '' %>>بانر (صورة)</option>
-                                            </select>
+                                            <label>Title</label>
+                                            <input type="text" name="name" value="<%= col.name %>" placeholder="Title">
+                                        </div>
+                                        <% if (col.banner_desktop_image) { %>
+                                            <div class="banner-thumb" style="margin-bottom: 12px;">
+                                                <img src="/uploads/banners/<%= col.banner_desktop_image %>" style="max-width: 100%; max-height: 120px; border-radius: 8px;">
+                                                <div class="info-text">Drag to change order</div>
+                                            </div>
+                                        <% } %>
+                                        <div class="upload-zone" id="uploadZone-<%= col.id %>">
+                                            <input type="file" name="banner_desktop_image" accept="image/*" onchange="previewUpload(this, 'uploadPreview-<%= col.id %>', 'uploadZone-<%= col.id %>')">
+                                            <div class="upload-zone-icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="#ccc"><path d="M22 16V4c0-1.1-.9-2-2-2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2zm-11-4l2.03 2.71L16 11l4 5H8l3-4zM2 6v14c0 1.1.9 2 2 2h14v-2H4V6H2z"/></svg></div>
+                                            <div class="upload-zone-text">Drag a file here or <span>click to select one</span></div>
+                                            <div class="upload-zone-info">File should not exceed 10mb. Recommended ratio is 1:1.</div>
+                                        </div>
+                                        <div id="uploadPreview-<%= col.id %>" style="margin: 10px 0; display: none;"></div>
+                                        <div class="form-group" style="margin-top: 12px;">
+                                            <label>صورة موبايل (اختياري)</label>
+                                            <input type="file" name="banner_mobile_image" accept="image/*" style="padding: 8px; border: 1px solid #e0e0e0; border-radius: 8px; width: 100%;">
+                                            <% if (col.banner_mobile_image) { %>
+                                                <div style="margin-top: 8px;"><img src="/uploads/banners/<%= col.banner_mobile_image %>" style="max-width: 150px; border-radius: 6px;"></div>
+                                            <% } %>
                                         </div>
                                         <div class="form-group">
-                                            <label>الاسم</label>
-                                            <input type="text" name="name" value="<%= col.name %>" required>
+                                            <label>Link</label>
+                                            <input type="text" name="banner_link_url" value="<%= col.banner_link_url || '' %>" placeholder="https://">
+                                            <div class="info-text">Optional</div>
                                         </div>
-                                    </div>
-                                    <!-- Products fields -->
-                                    <div id="editProductsFields-<%= col.id %>" style="<%= col.section_type === 'banner' ? 'display:none;' : '' %>">
-                                    <div class="form-row">
+                                        <input type="hidden" name="display_mode" value="grid">
+                                        <input type="hidden" name="grid_columns" value="2">
+                                        <input type="hidden" name="grid_product_count" value="4">
+                                        <input type="hidden" name="slider_product_count" value="10">
+
+                                    <% } else { %>
+                                        <!-- === PRODUCT CATEGORY CARD BODY === -->
+                                        <input type="hidden" name="name" value="<%= col.name %>" id="editName-<%= col.id %>">
                                         <div class="form-group">
-                                            <label>التصنيف</label>
-                                            <select name="category_id">
+                                            <label>Product category</label>
+                                            <select name="category_id" onchange="updateEditName(this, '<%= col.id %>')">
                                                 <option value="">كل المنتجات</option>
                                                 <% categories.forEach(function(cat) { %>
                                                     <option value="<%= cat.id %>" <%= col.category_id == cat.id ? 'selected' : '' %>><%= cat.name %></option>
                                                 <% }); %>
                                             </select>
                                         </div>
-                                        <div class="form-group">
-                                            <label>طريقة العرض</label>
-                                            <select name="display_mode" onchange="toggleEditFields(this, '<%= col.id %>')">
-                                                <option value="grid" <%= col.display_mode === 'grid' ? 'selected' : '' %>>شبكة (Grid)</option>
-                                                <option value="slider" <%= col.display_mode === 'slider' ? 'selected' : '' %>>سلايدر (Slider)</option>
-                                                <option value="both" <%= col.display_mode === 'both' ? 'selected' : '' %>>شبكة + سلايدر (Both)</option>
+                                        <div class="mode-toggle" id="modeToggle-<%= col.id %>">
+                                            <button type="button" class="mode-toggle-btn <%= col.display_mode === 'list' ? 'active' : '' %>" data-mode="list" onclick="setEditMode('<%= col.id %>', 'list')">
+                                                <svg viewBox="0 0 24 24"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"/></svg>
+                                                List
+                                            </button>
+                                            <button type="button" class="mode-toggle-btn <%= (col.display_mode === 'grid' || col.display_mode === 'slider' || col.display_mode === 'both' || !col.display_mode) ? 'active' : '' %>" data-mode="grid" onclick="setEditMode('<%= col.id %>', 'grid')">
+                                                <svg viewBox="0 0 24 24"><path d="M4 11h5V5H4v6zm0 7h5v-6H4v6zm6 0h5v-6h-5v6zm6 0h5v-6h-5v6zm-6-7h5V5h-5v6zm6-6v6h5V5h-5z"/></svg>
+                                                Grid
+                                            </button>
+                                        </div>
+                                        <input type="hidden" name="display_mode" id="editMode-<%= col.id %>" value="<%= col.display_mode || 'grid' %>">
+                                        <div class="feature-count">
+                                            <input type="checkbox" id="featureToggle-<%= col.id %>" checked>
+                                            <label for="featureToggle-<%= col.id %>">Feature up to</label>
+                                            <select name="grid_product_count">
+                                                <option value="2" <%= col.grid_product_count == 2 ? 'selected' : '' %>>2</option>
+                                                <option value="4" <%= col.grid_product_count == 4 ? 'selected' : '' %>>4</option>
+                                                <option value="6" <%= col.grid_product_count == 6 ? 'selected' : '' %>>6</option>
+                                                <option value="8" <%= col.grid_product_count == 8 ? 'selected' : '' %>>8</option>
+                                                <option value="10" <%= col.grid_product_count == 10 ? 'selected' : '' %>>10</option>
+                                                <option value="12" <%= col.grid_product_count == 12 ? 'selected' : '' %>>12</option>
                                             </select>
+                                            <label>products</label>
                                         </div>
-                                    </div>
-                                    <div class="form-row" id="gridFields-<%= col.id %>" style="<%= col.display_mode === 'slider' ? 'display:none;' : '' %>">
-                                        <div class="form-group">
-                                            <label>عدد الأعمدة</label>
-                                            <select name="grid_columns">
-                                                <option value="2" <%= col.grid_columns == 2 ? 'selected' : '' %>>2 أعمدة</option>
-                                                <option value="3" <%= col.grid_columns == 3 ? 'selected' : '' %>>3 أعمدة</option>
-                                                <option value="4" <%= col.grid_columns == 4 ? 'selected' : '' %>>4 أعمدة</option>
-                                            </select>
-                                        </div>
-                                        <div class="form-group">
-                                            <label>عدد المنتجات (شبكة)</label>
-                                            <input type="number" name="grid_product_count" value="<%= col.grid_product_count %>" min="1" max="50">
-                                        </div>
-                                    </div>
-                                    <div class="form-row" id="sliderFields-<%= col.id %>" style="<%= col.display_mode === 'grid' ? 'display:none;' : '' %>">
-                                        <div class="form-group">
-                                            <label>عدد المنتجات (سلايدر)</label>
-                                            <input type="number" name="slider_product_count" value="<%= col.slider_product_count %>" min="1" max="50">
-                                        </div>
-                                        <div class="form-group">
-                                            <label style="margin-bottom: 10px;">تشغيل تلقائي</label>
-                                            <div class="checkbox-group">
-                                                <input type="checkbox" name="slider_autoplay" id="autoplay-<%= col.id %>" <%= col.slider_autoplay ? 'checked' : '' %>>
-                                                <label for="autoplay-<%= col.id %>" style="font-weight: 400; color: #666;">تشغيل تلقائي</label>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    </div>
-                                    <!-- Banner fields -->
-                                    <div id="editBannerFields-<%= col.id %>" style="<%= col.section_type === 'banner' ? '' : 'display:none;' %>">
-                                    <div class="form-group">
-                                        <label>صورة البانر (سطح المكتب)</label>
-                                        <input type="file" name="banner_desktop_image" accept="image/*" style="padding: 8px;">
-                                        <% if (col.banner_desktop_image) { %>
-                                            <div style="margin-top: 8px;"><img src="/uploads/banners/<%= col.banner_desktop_image %>" style="max-width: 300px; max-height: 100px; border-radius: 8px; border: 1px solid #e8e0d8;"></div>
-                                        <% } %>
-                                    </div>
-                                    <div class="form-group">
-                                        <label>صورة البانر (موبايل) — اختياري</label>
-                                        <input type="file" name="banner_mobile_image" accept="image/*" style="padding: 8px;">
-                                        <% if (col.banner_mobile_image) { %>
-                                            <div style="margin-top: 8px;"><img src="/uploads/banners/<%= col.banner_mobile_image %>" style="max-width: 200px; max-height: 80px; border-radius: 8px; border: 1px solid #e8e0d8;"></div>
-                                        <% } %>
-                                    </div>
-                                    <div class="form-group">
-                                        <label>رابط البانر (اختياري)</label>
-                                        <input type="text" name="banner_link_url" value="<%= col.banner_link_url || '' %>" placeholder="https://...">
-                                    </div>
-                                    </div>
-                                    <div class="form-row">
+                                        <input type="hidden" name="grid_columns" value="<%= col.grid_columns || 2 %>">
+                                        <input type="hidden" name="slider_product_count" value="<%= col.slider_product_count || 10 %>">
+                                        <% if (col.slider_autoplay) { %><input type="hidden" name="slider_autoplay" value="on"><% } %>
+                                    <% } %>
+
+                                    <!-- Common fields -->
+                                    <div class="form-row" style="margin-top: 12px;">
                                         <div class="form-group">
                                             <label>الترتيب</label>
                                             <input type="number" name="sort_order" value="<%= col.sort_order %>" min="0">
                                         </div>
-                                        <div class="form-group">
-                                            <label style="margin-bottom: 10px;">الحالة</label>
-                                            <div class="checkbox-group">
-                                                <input type="checkbox" name="is_active" id="active-<%= col.id %>" <%= col.is_active ? 'checked' : '' %>>
-                                                <label for="active-<%= col.id %>" style="font-weight: 400; color: #666;">مفعّل</label>
+                                        <div class="form-group" style="display: flex; align-items: center; gap: 16px; padding-top: 22px;">
+                                            <div class="checkbox-inline">
+                                                <input type="checkbox" name="is_active" id="editActive-<%= col.id %>" <%= col.is_active ? 'checked' : '' %>>
+                                                <label for="editActive-<%= col.id %>">مفعّل</label>
+                                            </div>
+                                            <div class="checkbox-inline">
+                                                <input type="checkbox" name="show_title" id="editShowTitle-<%= col.id %>" <%= col.show_title ? 'checked' : '' %>>
+                                                <label for="editShowTitle-<%= col.id %>">عرض العنوان</label>
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="form-group">
-                                        <div class="checkbox-group">
-                                            <input type="checkbox" name="show_title" id="showTitle-<%= col.id %>" <%= col.show_title ? 'checked' : '' %>>
-                                            <label for="showTitle-<%= col.id %>" style="font-weight: 400; color: #666;">عرض عنوان المجموعة</label>
-                                        </div>
-                                    </div>
-                                    <button type="submit" class="btn btn-primary">حفظ التعديلات</button>
+                                    <button type="submit" class="btn-save">Save changes</button>
                                 </form>
                             </div>
                         </div>
                     <% }); %>
                 <% } else { %>
                     <div class="empty-state">
-                        <p style="font-size: 36px; margin-bottom: 12px;">📦</p>
-                        <p>لا توجد مجموعات حالياً</p>
-                        <p style="color: #aaa; margin-top: 8px;">أنشئ مجموعة جديدة للتحكم بالصفحة الرئيسية</p>
+                        <div class="empty-state-icon">📦</div>
+                        <p>No sections yet</p>
+                        <p style="margin-top: 8px;">Click "Add card" to start building your homepage</p>
                     </div>
                 <% } %>
-            </div>
-
-            <!-- Help Section -->
-            <div class="form-card" style="background: #faf8f5;">
-                <h3 style="border-bottom-color: #e8e0d8;">كيف يعمل منشئ الأقسام؟</h3>
-                <div style="font-size: 14px; color: #666; line-height: 2;">
-                    <p>🔹 <strong>مجموعة منتجات</strong> — عرض منتجات بشكل شبكة أو سلايدر أو كلاهما</p>
-                    <p>🔹 <strong>بانر (صورة)</strong> — صورة بعرض كامل مع رابط اختياري وصورة مخصصة للموبايل</p>
-                    <p>🔹 <strong>الترتيب</strong> — حدد ترتيب ظهور كل عنصر في الصفحة الرئيسية (مثلاً: مجموعة ← بانر ← مجموعة)</p>
-                    <p>🔹 <strong>التصنيف</strong> — اربط مجموعة المنتجات بتصنيف معين أو اتركها لعرض الكل</p>
-                    <p>🔹 <strong>شبكة / سلايدر / كلاهما</strong> — اختر طريقة عرض المنتجات</p>
-                </div>
             </div>
         </main>
     </div>
 
     <script>
-        function toggleDetails(btn) {
-            var item = btn.closest('.collection-item');
-            var details = item.querySelector('.collection-details');
-            details.classList.toggle('open');
-            btn.textContent = details.classList.contains('open') ? 'إغلاق ▲' : 'تعديل ▼';
+        // --- Add Dialog ---
+        function toggleAddDialog() {
+            var d = document.getElementById('addDialog');
+            d.classList.toggle('open');
+            // Reset
+            document.getElementById('addProductForm').style.display = 'none';
+            document.getElementById('addBannerForm').style.display = 'none';
+            document.querySelectorAll('.add-option').forEach(function(o) { o.classList.remove('selected'); });
         }
 
-        function toggleNewSectionType() {
-            var type = document.getElementById('newSectionType').value;
-            document.getElementById('newProductsFields').style.display = (type === 'banner') ? 'none' : '';
-            document.getElementById('newBannerFields').style.display = (type === 'banner') ? '' : 'none';
+        function selectAddType(type) {
+            document.querySelectorAll('.add-option').forEach(function(o) { o.classList.remove('selected'); });
+            document.getElementById('opt-' + type).classList.add('selected');
+            document.getElementById('addProductForm').style.display = (type === 'products') ? 'block' : 'none';
+            document.getElementById('addBannerForm').style.display = (type === 'banner') ? 'block' : 'none';
         }
 
-        function toggleEditSectionType(select, id) {
-            var type = select.value;
-            document.getElementById('editProductsFields-' + id).style.display = (type === 'banner') ? 'none' : '';
-            document.getElementById('editBannerFields-' + id).style.display = (type === 'banner') ? '' : 'none';
+        // Auto-set name from category for product sections
+        document.querySelector('#addProductForm select[name="category_id"]').addEventListener('change', function() {
+            var opt = this.options[this.selectedIndex];
+            document.getElementById('newProductName').value = opt.text;
+        });
+
+        // --- Mode Toggle (New) ---
+        function setNewMode(mode) {
+            document.getElementById('newModeVal').value = mode;
+            var btns = document.querySelectorAll('#newModeToggle .mode-toggle-btn');
+            btns.forEach(function(b) { b.classList.toggle('active', b.dataset.mode === mode); });
         }
 
-        function toggleNewFields() {
-            var mode = document.getElementById('newDisplayMode').value;
-            document.getElementById('newGridFields').style.display = (mode === 'slider') ? 'none' : '';
-            document.getElementById('newSliderFields').style.display = (mode === 'grid') ? 'none' : '';
+        // --- Mode Toggle (Edit) ---
+        function setEditMode(id, mode) {
+            document.getElementById('editMode-' + id).value = mode;
+            var btns = document.querySelectorAll('#modeToggle-' + id + ' .mode-toggle-btn');
+            btns.forEach(function(b) { b.classList.toggle('active', b.dataset.mode === mode); });
         }
 
-        function toggleEditFields(select, id) {
-            var mode = select.value;
-            document.getElementById('gridFields-' + id).style.display = (mode === 'slider') ? 'none' : '';
-            document.getElementById('sliderFields-' + id).style.display = (mode === 'grid') ? 'none' : '';
+        // Update name hidden field when category changes
+        function updateEditName(select, id) {
+            var opt = select.options[select.selectedIndex];
+            document.getElementById('editName-' + id).value = opt.text || 'كل المنتجات';
+        }
+
+        // --- Card Toggle ---
+        function toggleCard(header) {
+            var body = header.nextElementSibling;
+            body.classList.toggle('open');
+        }
+
+        // --- Upload Preview ---
+        function previewUpload(input, previewId, zoneId) {
+            var preview = document.getElementById(previewId);
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.innerHTML = '<img src="' + e.target.result + '" style="max-width: 200px; max-height: 100px; border-radius: 8px; border: 1px solid #e0e0e0;">';
+                    preview.style.display = 'block';
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        // --- Drag & Drop Reorder ---
+        var dragEl = null;
+        document.querySelectorAll('.section-card').forEach(function(card) {
+            card.addEventListener('dragstart', function(e) {
+                dragEl = this;
+                this.classList.add('dragging');
+                e.dataTransfer.effectAllowed = 'move';
+            });
+            card.addEventListener('dragend', function() {
+                this.classList.remove('dragging');
+                dragEl = null;
+                saveOrder();
+            });
+            card.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = 'move';
+                var container = document.getElementById('sectionsContainer');
+                var afterElement = getDragAfterElement(container, e.clientY);
+                if (afterElement == null) {
+                    container.appendChild(dragEl);
+                } else {
+                    container.insertBefore(dragEl, afterElement);
+                }
+            });
+        });
+
+        function getDragAfterElement(container, y) {
+            var elements = [].slice.call(container.querySelectorAll('.section-card:not(.dragging)'));
+            var closest = null;
+            var closestOffset = Number.NEGATIVE_INFINITY;
+            elements.forEach(function(child) {
+                var box = child.getBoundingClientRect();
+                var offset = y - box.top - box.height / 2;
+                if (offset < 0 && offset > closestOffset) {
+                    closestOffset = offset;
+                    closest = child;
+                }
+            });
+            return closest;
+        }
+
+        function saveOrder() {
+            var cards = document.querySelectorAll('.section-card');
+            var order = [];
+            cards.forEach(function(c) { order.push(parseInt(c.dataset.id)); });
+            fetch('/admin/collections/reorder', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ order: order })
+            });
         }
     </script>
 </body>
