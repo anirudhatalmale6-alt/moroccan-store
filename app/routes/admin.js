@@ -1015,6 +1015,12 @@ router.post('/settings/cart-mode', requireAdmin, (req, res) => {
   res.redirect('/admin/settings?success=تم تحديث وضع السلة');
 });
 
+router.post('/settings/checkout-description', requireAdmin, (req, res) => {
+  const { checkout_description } = req.body;
+  upsertSetting('checkout_description', checkout_description || '');
+  res.redirect('/admin/settings?success=تم+الحفظ');
+});
+
 // Helper to upsert admin_settings
 function upsertSetting(key, value) {
   const existing = db.prepare("SELECT 1 FROM admin_settings WHERE setting_key = ?").get(key);
@@ -1047,6 +1053,21 @@ router.post('/settings/favicon', requireAdmin, settingsUpload.single('favicon'),
     upsertSetting('favicon', req.file.filename);
   }
   res.redirect('/admin/settings?success=تم رفع أيقونة المتجر');
+});
+
+// Logo upload
+const logoUpload = multer({ storage: settingsStorage, limits: { fileSize: 10 * 1024 * 1024 } });
+router.post('/settings/logo', requireAdmin, logoUpload.fields([
+  { name: 'desktop_logo', maxCount: 1 },
+  { name: 'mobile_logo', maxCount: 1 }
+]), (req, res) => {
+  if (req.files && req.files.desktop_logo && req.files.desktop_logo[0]) {
+    upsertSetting('desktop_logo', req.files.desktop_logo[0].filename);
+  }
+  if (req.files && req.files.mobile_logo && req.files.mobile_logo[0]) {
+    upsertSetting('mobile_logo', req.files.mobile_logo[0].filename);
+  }
+  res.redirect('/admin/settings?success=تم رفع اللوجو بنجاح');
 });
 
 // Tracking Pixels (GA, FB, TikTok) + custom meta tags

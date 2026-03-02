@@ -55,6 +55,8 @@ app.use((req, res, next) => {
     res.locals.fbPixelId = allSettings.fb_pixel_id || '';
     res.locals.tiktokPixelId = allSettings.tiktok_pixel_id || '';
     res.locals.customMetaTags = allSettings.custom_meta_tags || '';
+    res.locals.desktopLogo = allSettings.desktop_logo || '';
+    res.locals.mobileLogo = allSettings.mobile_logo || '';
 
     // Language / i18n
     const siteLang = allSettings.site_language || 'ar';
@@ -77,6 +79,9 @@ app.use((req, res, next) => {
 
     // Cart mode
     res.locals.cartMode = allSettings.cart_mode || 'drawer';
+
+    // Checkout description
+    res.locals.checkoutDescription = allSettings.checkout_description || '';
   } catch(e) {
     res.locals.siteName = 'متجرنا';
     res.locals.fontFamily = 'Cairo';
@@ -90,11 +95,14 @@ app.use((req, res, next) => {
     res.locals.fbPixelId = '';
     res.locals.tiktokPixelId = '';
     res.locals.customMetaTags = '';
+    res.locals.desktopLogo = '';
+    res.locals.mobileLogo = '';
     res.locals.lang = 'ar';
     res.locals.dir = 'rtl';
     res.locals.siteLang = 'ar';
     res.locals.t = getTranslator('ar');
     res.locals.cartMode = 'drawer';
+    res.locals.checkoutDescription = '';
   }
 
   // Cart count for badge

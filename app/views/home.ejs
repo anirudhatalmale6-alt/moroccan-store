@@ -3,6 +3,12 @@
 <head>
   <%- include('partials/head') %>
   <title><%= (typeof metaTitle !== 'undefined' && metaTitle) ? metaTitle : ((typeof siteName !== 'undefined' ? siteName : 'متجرنا') + ' — ' + t('our_products')) %></title>
+  <style>
+    @media (min-width: 768px) { .products-grid { grid-template-columns: repeat(3, 1fr) !important; } }
+    @media (min-width: 1024px) { .products-grid { grid-template-columns: repeat(4, 1fr) !important; } }
+    @media (min-width: 768px) { .feedback-grid-home { grid-template-columns: repeat(3, 1fr) !important; } }
+    @media (min-width: 1024px) { .feedback-grid-home { grid-template-columns: repeat(4, 1fr) !important; } }
+  </style>
 </head>
 <body>
   <div class="pattern-overlay"></div>
@@ -13,8 +19,12 @@
       <div class="navbar__inner">
         <div class="navbar__brand">
           <a href="/" style="display: flex; align-items: center; gap: 10px;">
-            <div class="navbar__logo"><%= typeof siteName !== 'undefined' ? siteName.charAt(0) : 'م' %></div>
-            <span class="navbar__name"><%= typeof siteName !== 'undefined' ? siteName : 'متجرنا' %></span>
+            <% if (typeof desktopLogo !== 'undefined' && desktopLogo) { %>
+              <img src="/uploads/settings/<%= desktopLogo %>" alt="" style="height: 36px; width: auto;">
+            <% } else { %>
+              <div class="navbar__logo"><%= typeof siteName !== 'undefined' ? siteName.charAt(0) : 'م' %></div>
+              <span class="navbar__name"><%= typeof siteName !== 'undefined' ? siteName : 'متجرنا' %></span>
+            <% } %>
           </a>
         </div>
         <div style="display: flex; align-items: center; gap: 12px;">
@@ -29,7 +39,7 @@
 
   <!-- Image Slider -->
   <% if (typeof sliders !== 'undefined' && sliders && sliders.length > 0) { %>
-  <section class="home-slider" style="position: relative; overflow: hidden; margin-top: 0;">
+  <section class="home-slider" style="position: relative; overflow: hidden; margin-top: 60px;">
     <div class="slider-container" id="sliderContainer" style="display: flex; transition: transform 0.5s ease; width: <%= sliders.length * 100 %>%;">
       <% sliders.forEach(function(slide) { %>
         <div class="slider-slide" style="flex: 0 0 <%= 100 / sliders.length %>%; position: relative;">
@@ -66,15 +76,15 @@
     <div class="container">
       <div style="display: flex; overflow-x: auto; gap: 16px; padding: 4px 0; -webkit-overflow-scrolling: touch;">
         <% categories.forEach(function(cat) { %>
-          <a href="/category/<%= cat.slug %>" style="text-decoration: none; flex: 0 0 auto; text-align: center; width: 80px;">
-            <div style="width: 64px; height: 64px; border-radius: 50%; overflow: hidden; margin: 0 auto 8px; border: 2px solid var(--color-border); background: var(--color-bg-warm);">
+          <a href="/category/<%= cat.slug %>" style="text-decoration: none; flex: 0 0 auto; text-align: center; width: 100px;">
+            <div style="width: 80px; height: 80px; border-radius: 50%; overflow: hidden; margin: 0 auto 8px; border: 2px solid var(--color-border); background: var(--color-bg-warm);">
               <% if (cat.image_filename) { %>
                 <img src="/uploads/categories/<%= cat.image_filename %>" alt="<%= cat.name %>" style="width: 100%; height: 100%; object-fit: cover;" loading="lazy">
               <% } else { %>
                 <div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 28px;">&#x1F4E6;</div>
               <% } %>
             </div>
-            <span style="font-size: 12px; font-weight: 600; color: var(--color-text); display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"><%= cat.name %></span>
+            <span style="font-size: 13px; font-weight: 600; color: var(--color-text); display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"><%= cat.name %></span>
           </a>
         <% }); %>
       </div>
@@ -94,7 +104,7 @@
       <% var _banners = (typeof banners !== 'undefined' && banners) ? banners : []; %>
       <% var _bInterval = (typeof bannerInterval !== 'undefined') ? bannerInterval : 4; %>
       <% var _bIdx = 0; %>
-      <div class="products-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
+      <div class="products-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;" id="productsGrid">
         <% products.forEach(function(p, idx) { %>
           <%/* Insert banner after every N products */%>
           <% if (_banners.length > 0 && idx > 0 && idx % _bInterval === 0) { %>
@@ -159,7 +169,7 @@
         <div class="section-header__divider"></div>
       </div>
 
-      <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 24px;">
+      <div class="feedback-grid-home" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 24px;">
         <% latestReviews.forEach(function(rev) { %>
           <div style="background: #fff; border-radius: 12px; padding: 14px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); overflow: hidden;">
             <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
@@ -173,7 +183,7 @@
             </div>
             <% if (rev.image_filename) { %>
               <div style="margin-bottom: 8px; border-radius: 8px; overflow: hidden;">
-                <img src="/uploads/reviews/<%= rev.image_filename %>" alt="" style="width: 100%; height: 120px; object-fit: cover; display: block;" loading="lazy">
+                <img src="/uploads/reviews/<%= rev.image_filename %>" alt="" style="width: 100%; aspect-ratio: 4/3; object-fit: cover; display: block;" loading="lazy">
               </div>
             <% } %>
             <% if (rev.message) { %>

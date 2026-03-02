@@ -360,8 +360,8 @@
             <div class="feedback-upload-zone" id="feedbackImageZone">
               <div class="feedback-upload-zone__icon">📷</div>
               <div class="feedback-upload-zone__text">اضغط لرفع صور</div>
-              <div class="feedback-upload-zone__hint">JPG, PNG — الحد الأقصى 5MB لكل صورة</div>
-              <input type="file" id="feedbackImage" name="image" accept="image/*" multiple>
+              <div class="feedback-upload-zone__hint">JPG, PNG — الحد الأقصى 10MB لكل صورة</div>
+              <input type="file" id="feedbackImage" name="images" accept="image/jpeg,image/png,image/webp,image/heic,image/heif,image/*" multiple onchange="previewFeedbackImages(this)">
             </div>
             <div id="feedbackImagePreviews" style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px;"></div>
           </div>
@@ -571,6 +571,57 @@
         showBtn.style.display = '';
         feedbackSection.style.display = 'none';
         document.querySelector('.trust').scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+
+    function previewFeedbackImages(input) {
+      var previewContainer = document.getElementById('feedbackImagePreviews');
+      var zone = document.getElementById('feedbackImageZone');
+      var zoneText = zone ? zone.querySelector('.feedback-upload-zone__text') : null;
+      var zoneIcon = zone ? zone.querySelector('.feedback-upload-zone__icon') : null;
+      previewContainer.innerHTML = '';
+
+      if (!input.files || input.files.length === 0) {
+        if (zoneText) zoneText.textContent = 'اضغط لرفع صور';
+        if (zoneIcon) zoneIcon.textContent = '📷';
+        return;
+      }
+
+      if (input.files.length > 3) {
+        showToast('الحد الأقصى 3 صور', 'error');
+        input.value = '';
+        if (zoneText) zoneText.textContent = 'اضغط لرفع صور';
+        if (zoneIcon) zoneIcon.textContent = '📷';
+        return;
+      }
+
+      var validFiles = 0;
+      for (var i = 0; i < input.files.length; i++) {
+        var file = input.files[i];
+        if (!file.type.startsWith('image/')) {
+          showToast('يرجى اختيار صور فقط', 'error');
+          continue;
+        }
+        if (file.size > 10 * 1024 * 1024) {
+          showToast('حجم الصورة كبير جداً (الحد الأقصى 10 ميجابايت)', 'error');
+          continue;
+        }
+        validFiles++;
+        (function(f) {
+          var reader = new FileReader();
+          reader.onload = function(evt) {
+            var div = document.createElement('div');
+            div.style.cssText = 'position:relative; width:80px; height:80px; border-radius:8px; overflow:hidden; border:2px solid var(--color-border,#e8e0d8); flex-shrink:0;';
+            div.innerHTML = '<img src="' + evt.target.result + '" style="width:100%;height:100%;object-fit:cover;" alt="">';
+            previewContainer.appendChild(div);
+          };
+          reader.readAsDataURL(f);
+        })(file);
+      }
+
+      if (validFiles > 0) {
+        if (zoneText) zoneText.textContent = 'تم اختيار ' + validFiles + ' صورة — اضغط لتغيير';
+        if (zoneIcon) zoneIcon.textContent = '✅';
       }
     }
   </script>

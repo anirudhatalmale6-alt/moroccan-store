@@ -16,9 +16,9 @@ const reviewStorage = multer.diskStorage({
 });
 const reviewUpload = multer({
   storage: reviewStorage,
-  limits: { fileSize: 5 * 1024 * 1024 },
+  limits: { fileSize: 10 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
-    if (file.fieldname === 'image') {
+    if (file.fieldname === 'images' || file.fieldname === 'image') {
       cb(null, /^image\//.test(file.mimetype));
     } else if (file.fieldname === 'audio') {
       // Accept all audio types + video/webm (Chrome records as video/webm) + application/octet-stream (some mobile browsers)
@@ -413,6 +413,7 @@ router.post('/product/:slug/order', receiptUpload.single('receipt'), (req, res) 
 // ============================================================
 router.post('/product/:slug/review', reviewUpload.fields([
   { name: 'image', maxCount: 3 },
+  { name: 'images', maxCount: 3 },
   { name: 'audio', maxCount: 1 }
 ]), (req, res) => {
   try {
@@ -420,7 +421,9 @@ router.post('/product/:slug/review', reviewUpload.fields([
     if (!product) return res.status(404).json({ error: 'Product not found' });
 
     const { name, phone, rating, message } = req.body;
-    const hasImages = req.files && req.files.image && req.files.image.length > 0;
+    // Accept images from either 'image' or 'images' field name
+    const imageFiles = (req.files && req.files.image) || (req.files && req.files.images) || [];
+    const hasImages = imageFiles.length > 0;
     const hasAudio = req.files && req.files.audio && req.files.audio.length > 0;
     const hasMessage = message && message.trim();
 
@@ -432,10 +435,10 @@ router.post('/product/:slug/review', reviewUpload.fields([
     // Store all image filenames as JSON array if multiple, or single string for backward compat
     let imageFile = '';
     if (hasImages) {
-      if (req.files.image.length === 1) {
-        imageFile = req.files.image[0].filename;
+      if (imageFiles.length === 1) {
+        imageFile = imageFiles[0].filename;
       } else {
-        imageFile = JSON.stringify(req.files.image.map(f => f.filename));
+        imageFile = JSON.stringify(imageFiles.map(f => f.filename));
       }
     }
     const audioFile = hasAudio ? req.files.audio[0].filename : '';
@@ -550,7 +553,9 @@ router.post('/cart/update', (req, res) => {
       db.prepare('UPDATE cart_items SET quantity = ? WHERE id = ? AND session_id = ?').run(qty, item_id, sessionId);
     }
 
-    res.json({ success: true });
+    const countRow = db.prepare('SELECT SUM(quantity) as total FROM cart_items WHERE session_id = ?').get(sessionId);
+    const cartCount = countRow ? countRow.total : 0;
+    res.json({ success: true, cartCount });
   } catch (err) {
     console.error('Cart update error:', err);
     res.status(500).json({ error: 'Server error' });

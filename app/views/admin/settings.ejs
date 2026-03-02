@@ -90,6 +90,35 @@
                 <div class="alert alert-error"><%= error %></div>
             <% } %>
 
+            <!-- Logo Settings -->
+            <div class="form-card">
+                <h3>لوجو الموقع</h3>
+                <form method="POST" action="/admin/settings/logo" enctype="multipart/form-data">
+                    <div class="form-group">
+                        <label>لوجو سطح المكتب (مطلوب)</label>
+                        <input type="file" name="desktop_logo" accept="image/*" style="width: 100%; padding: 10px; border: 2px solid #e8e0d8; border-radius: 10px; font-size: 14px;" required>
+                        <% if (settings.desktop_logo) { %>
+                            <div style="margin-top: 12px;">
+                                <img src="/uploads/settings/<%= settings.desktop_logo %>" alt="Desktop Logo" style="max-width: 200px; max-height: 60px; border-radius: 8px; border: 1px solid #e8e0d8;">
+                                <div style="font-size: 12px; color: #2e7d32; margin-top: 6px;">اللوجو الحالي: <%= settings.desktop_logo %></div>
+                            </div>
+                        <% } %>
+                    </div>
+                    <div class="form-group">
+                        <label>لوجو الموبايل (اختياري)</label>
+                        <input type="file" name="mobile_logo" accept="image/*" style="width: 100%; padding: 10px; border: 2px solid #e8e0d8; border-radius: 10px; font-size: 14px;">
+                        <div class="hint">اختياري — يستخدم في الشاشات الصغيرة. إذا لم يُرفع يُستخدم لوجو سطح المكتب</div>
+                        <% if (settings.mobile_logo) { %>
+                            <div style="margin-top: 12px;">
+                                <img src="/uploads/settings/<%= settings.mobile_logo %>" alt="Mobile Logo" style="max-width: 120px; max-height: 40px; border-radius: 8px; border: 1px solid #e8e0d8;">
+                                <div style="font-size: 12px; color: #2e7d32; margin-top: 6px;">لوجو الموبايل الحالي: <%= settings.mobile_logo %></div>
+                            </div>
+                        <% } %>
+                    </div>
+                    <button type="submit" class="btn btn-primary">رفع اللوجو</button>
+                </form>
+            </div>
+
             <!-- Site Settings -->
             <div class="form-card">
                 <h3>اعدادات الموقع</h3>
@@ -133,6 +162,19 @@
                             <option value="disabled" <%= currentCartMode === 'disabled' ? 'selected' : '' %>>معطلة</option>
                         </select>
                         <div class="hint">Drawer: سلة جانبية تفتح كنافذة منبثقة — Redirect: ينتقل لصفحة السلة الكاملة</div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">حفظ</button>
+                </form>
+            </div>
+
+            <!-- Checkout Description -->
+            <div class="form-card">
+                <h3>وصف صفحة الدفع</h3>
+                <form method="POST" action="/admin/settings/checkout-description">
+                    <div class="form-group">
+                        <label>نص يظهر أعلى صفحة الدفع (يقبل HTML)</label>
+                        <textarea name="checkout_description" rows="4" style="width: 100%; padding: 12px 16px; border: 2px solid #e8e0d8; border-radius: 10px; font-family: 'Cairo', sans-serif; font-size: 14px; color: #333; resize: vertical;" placeholder="مثال: توصيل مجاني للطلبات فوق 300 درهم..." dir="auto"><%= settings.checkout_description || '' %></textarea>
+                        <div class="hint">يظهر في أعلى نموذج الدفع — اتركه فارغاً لإخفائه. يقبل HTML.</div>
                     </div>
                     <button type="submit" class="btn btn-primary">حفظ</button>
                 </form>

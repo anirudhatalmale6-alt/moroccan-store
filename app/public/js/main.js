@@ -587,7 +587,7 @@ function initFeedbackForm() {
       isValid = false;
     }
 
-    // Check at least one content type
+    // Check at least one content type — look for both possible IDs
     const feedbackImage = document.getElementById('feedbackImage');
     const hasImages = feedbackImage && feedbackImage.files && feedbackImage.files.length > 0;
     const hasAudio = !!window._voiceBlob;
@@ -622,7 +622,7 @@ function initFeedbackForm() {
     // Add images if uploaded (up to 3)
     if (hasImages) {
       for (var fi = 0; fi < feedbackImage.files.length && fi < 3; fi++) {
-        submitData.append('image', feedbackImage.files[fi]);
+        submitData.append('images', feedbackImage.files[fi]);
       }
     }
 
@@ -783,29 +783,41 @@ function initFeedbackUploads() {
 
   if (feedbackImageInput && feedbackImagePreviews) {
     feedbackImageInput.addEventListener('change', function() {
+      // If inline onchange handler (previewFeedbackImages) already handled this, skip
+      if (typeof previewFeedbackImages === 'function') return;
+
       feedbackImagePreviews.innerHTML = '';
+      var zone = document.getElementById('feedbackImageZone');
+      var zoneText = zone ? zone.querySelector('.feedback-upload-zone__text') : null;
+      var zoneIcon = zone ? zone.querySelector('.feedback-upload-zone__icon') : null;
       var files = feedbackImageInput.files;
       if (files.length > 3) {
         showToast('الحد الأقصى 3 صور', 'error');
         feedbackImageInput.value = '';
         return;
       }
+      var validCount = 0;
       for (var i = 0; i < files.length; i++) {
         if (!files[i].type.startsWith('image/')) continue;
-        if (files[i].size > 5 * 1024 * 1024) {
-          showToast('حجم الصورة كبير جداً (الحد الأقصى 5 ميجابايت)', 'error');
+        if (files[i].size > 10 * 1024 * 1024) {
+          showToast('حجم الصورة كبير جداً (الحد الأقصى 10 ميجابايت)', 'error');
           continue;
         }
+        validCount++;
         (function(file) {
           var reader = new FileReader();
           reader.onload = function(evt) {
             var div = document.createElement('div');
-            div.style.cssText = 'position:relative; width:80px; height:80px; border-radius:8px; overflow:hidden; border:2px solid var(--color-border,#e8e0d8);';
-            div.innerHTML = '<img src="' + evt.target.result + '" style="width:100%;height:100%;object-fit:cover;">';
+            div.style.cssText = 'position:relative; width:80px; height:80px; border-radius:8px; overflow:hidden; border:2px solid var(--color-border,#e8e0d8); flex-shrink:0;';
+            div.innerHTML = '<img src="' + evt.target.result + '" style="width:100%;height:100%;object-fit:cover;" alt="">';
             feedbackImagePreviews.appendChild(div);
           };
           reader.readAsDataURL(file);
         })(files[i]);
+      }
+      if (validCount > 0 && zoneText) {
+        zoneText.textContent = 'تم اختيار ' + validCount + ' صورة — اضغط لتغيير';
+        if (zoneIcon) zoneIcon.textContent = '✅';
       }
     });
   }

@@ -2,7 +2,7 @@
 <html lang="<%= typeof lang !== 'undefined' ? lang : 'ar' %>" dir="<%= typeof dir !== 'undefined' ? dir : 'rtl' %>">
 <head>
   <%- include('partials/head') %>
-  <title>إتمام الطلب — <%= typeof product !== 'undefined' && product ? product.title : (typeof siteName !== 'undefined' ? siteName : 'متجرنا') %></title>
+  <title><%= t('checkout') %> — <%= typeof product !== 'undefined' && product ? product.title : (typeof siteName !== 'undefined' ? siteName : 'متجرنا') %></title>
 </head>
 <body>
   <div class="pattern-overlay"></div>
@@ -20,17 +20,17 @@
         <div class="checkout-header__steps">
           <div class="checkout-header__step checkout-header__step--active">
             <span class="checkout-header__step-num">1</span>
-            <span>المعلومات</span>
+            <span><%= t('info') %></span>
           </div>
           <span class="checkout-header__step-arrow">←</span>
           <div class="checkout-header__step">
             <span class="checkout-header__step-num">2</span>
-            <span>الدفع</span>
+            <span><%= t('payment') %></span>
           </div>
           <span class="checkout-header__step-arrow">←</span>
           <div class="checkout-header__step">
             <span class="checkout-header__step-num">3</span>
-            <span>التأكيد</span>
+            <span><%= t('confirmation') %></span>
           </div>
         </div>
       </div>
@@ -53,47 +53,37 @@
               <input type="hidden" id="productId" value="<%= product.id %>">
             <% } %>
 
+            <% if (typeof checkoutDescription !== 'undefined' && checkoutDescription) { %>
+              <div style="background: var(--color-bg-warm); border-radius: 12px; padding: 16px; margin-bottom: 20px; font-size: 14px; line-height: 1.8; color: var(--color-text);">
+                <%- checkoutDescription %>
+              </div>
+            <% } %>
+
             <!-- Section 1: Contact & Delivery Info -->
             <div class="form-section">
               <h2 class="form-section__title">
                 <span class="form-section__title-icon">📋</span>
-                معلومات الاتصال والتوصيل
+                <%= t('contact_delivery_info') %>
               </h2>
 
               <div class="form-group">
-                <label class="form-label" for="fullName">
-                  <span class="required">*</span>
-                  الاسم الكامل
-                </label>
-                <input type="text" id="fullName" name="fullName" class="form-input" placeholder="أدخل اسمك الكامل" required>
+                <input type="text" id="fullName" name="fullName" class="form-input" placeholder="<%= t('full_name') %>" required>
                 <div class="form-error" id="nameError"></div>
               </div>
 
               <div class="form-group">
-                <label class="form-label" for="phone">
-                  <span class="required">*</span>
-                  رقم الهاتف
-                </label>
-                <input type="tel" id="phone" name="phone" class="form-input" placeholder="0612345678" required dir="ltr" style="text-align: left;">
+                <input type="tel" id="phone" name="phone" class="form-input" placeholder="<%= t('phone') %>" required dir="ltr" style="text-align: left;">
                 <div class="form-error" id="phoneError"></div>
               </div>
 
               <!-- Delivery fields (city + address) — shown for all payment types -->
               <div id="codAddressFields">
                 <div class="form-group">
-                  <label class="form-label" for="city">
-                    <span class="required">*</span>
-                    المدينة
-                  </label>
-                  <input type="text" id="city" name="city" class="form-input" placeholder="مثل: الدار البيضاء، الرباط...">
+                  <input type="text" id="city" name="city" class="form-input" placeholder="<%= t('city') %>">
                   <div class="form-error" id="cityError"></div>
                 </div>
                 <div class="form-group">
-                  <label class="form-label" for="address">
-                    <span class="required">*</span>
-                    العنوان
-                  </label>
-                  <textarea id="address" name="address" class="form-input form-textarea" placeholder="العنوان الكامل للتوصيل..." rows="2"></textarea>
+                  <textarea id="address" name="address" class="form-input form-textarea" placeholder="<%= t('address') %>" rows="2"></textarea>
                   <div class="form-error" id="addressError"></div>
                 </div>
               </div>
@@ -168,7 +158,7 @@
             <div class="form-section">
               <h2 class="form-section__title">
                 <span class="form-section__title-icon">📦</span>
-                الكمية
+                <%= t('quantity') %>
               </h2>
 
               <div class="form-group">
@@ -282,7 +272,7 @@
               </h2>
 
               <div class="bank-transfer-amount">
-                <span class="bank-transfer-amount__label">المبلغ المطلوب تحويله</span>
+                <span class="bank-transfer-amount__label"><%= t('amount_to_transfer') %></span>
                 <span class="bank-transfer-amount__value" id="bankAmount"><%= typeof product !== 'undefined' && product ? product.price : (typeof cartTotal !== 'undefined' ? cartTotal : 0) %> درهم</span>
               </div>
 
@@ -335,14 +325,10 @@
             <div class="form-section" id="receiptSection">
               <h2 class="form-section__title">
                 <span class="form-section__title-icon">📤</span>
-                إيصال الدفع
+                <%= t('upload_receipt') %>
               </h2>
 
               <div class="form-group">
-                <label class="form-label">
-                  <span class="required">*</span>
-                  ارفع صورة إيصال التحويل
-                </label>
                 <div class="upload-zone" id="uploadZone">
                   <div class="upload-zone__icon">📤</div>
                   <div class="upload-zone__text">اضغط لرفع صورة إيصال الدفع</div>
@@ -360,7 +346,7 @@
 
             <!-- Submit Button -->
             <button type="submit" class="btn btn--primary btn--lg btn--full" id="submitBtn">
-              تأكيد الطلب
+              <%= t('place_order') %>
             </button>
 
           </form>
@@ -368,7 +354,7 @@
 
         <!-- Order Summary Sidebar -->
         <div class="order-summary">
-          <h3 class="order-summary__title">ملخص الطلب</h3>
+          <h3 class="order-summary__title"><%= t('order_summary') %></h3>
 
           <% if (typeof checkoutMode !== 'undefined' && checkoutMode === 'cart' && typeof cartItems !== 'undefined') { %>
             <!-- Cart mode: show all items -->
@@ -389,12 +375,17 @@
             <% }); %>
 
             <% if (typeof giftProduct !== 'undefined' && giftProduct) { %>
-            <div class="order-summary__product" style="margin-bottom: 12px; padding: 8px; background: var(--color-success-light); border-radius: var(--radius-md);">
-              <div style="font-size: 24px; width: 40px; text-align: center;">🎁</div>
-              <div class="order-summary__product-info">
-                <div style="font-size: 13px; font-weight: 700; color: var(--color-success);"><%= giftProduct.name %></div>
-                <div style="font-size: 11px; color: var(--color-success);">هدية مجانية</div>
+            <div class="order-summary__product" style="margin-bottom: 12px; padding: 8px; background: var(--color-success-light, #e8f5e9); border-radius: var(--radius-md); display: flex; align-items: center; gap: 10px;">
+              <% if (giftProduct.image_filename) { %>
+                <img src="/uploads/gifts/<%= giftProduct.image_filename %>" alt="<%= giftProduct.name %>" style="width: 48px; height: 48px; object-fit: cover; border-radius: 8px; flex-shrink: 0;">
+              <% } else { %>
+                <div style="font-size: 24px; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; background: rgba(46,125,50,0.1); border-radius: 8px;">🎁</div>
+              <% } %>
+              <div class="order-summary__product-info" style="flex: 1;">
+                <div style="font-size: 13px; font-weight: 700; color: var(--color-success, #2e7d32);"><%= giftProduct.name %></div>
+                <div style="font-size: 11px; color: var(--color-success, #2e7d32);">هدية مجانية</div>
               </div>
+              <div style="font-size: 14px; font-weight: 800; color: var(--color-success, #2e7d32); flex-shrink: 0;">مجاناً</div>
             </div>
             <% } %>
           <% } else if (typeof product !== 'undefined' && product) { %>
