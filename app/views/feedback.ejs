@@ -16,271 +16,173 @@
       align-items: center;
       gap: 28px;
     }
-    .rating-summary__left {
-      text-align: center;
-      min-width: 90px;
-    }
-    .rating-summary__big {
-      font-size: 42px;
-      font-weight: 800;
-      color: var(--color-text);
-      line-height: 1;
-    }
-    .rating-summary__stars {
-      color: var(--color-star, #F5A623);
-      font-size: 18px;
-      letter-spacing: 2px;
-      margin: 6px 0 4px;
-    }
-    .rating-summary__total {
-      font-size: 12px;
-      color: var(--color-text-muted);
-    }
-    .rating-summary__bars {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      gap: 5px;
-    }
-    .rating-bar-row {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 13px;
-    }
-    .rating-bar-row__label {
-      color: var(--color-text-muted);
-      min-width: 16px;
-      text-align: center;
-      font-weight: 600;
-    }
-    .rating-bar-row__star {
-      color: var(--color-star, #F5A623);
-      font-size: 12px;
-    }
-    .rating-bar-row__track {
-      flex: 1;
-      height: 8px;
-      background: var(--color-border-light, #eee);
-      border-radius: 4px;
-      overflow: hidden;
-    }
-    .rating-bar-row__fill {
-      height: 100%;
-      background: var(--color-star, #F5A623);
-      border-radius: 4px;
-      transition: width 0.5s ease;
-    }
-    .rating-bar-row__count {
-      color: var(--color-text-muted);
-      font-size: 12px;
-      min-width: 24px;
-      text-align: end;
-    }
+    .rating-summary__left { text-align: center; min-width: 90px; }
+    .rating-summary__big { font-size: 42px; font-weight: 800; color: var(--color-text); line-height: 1; }
+    .rating-summary__stars { color: var(--color-star, #F5A623); font-size: 18px; letter-spacing: 2px; margin: 6px 0 4px; }
+    .rating-summary__total { font-size: 12px; color: var(--color-text-muted); }
+    .rating-summary__bars { flex: 1; display: flex; flex-direction: column; gap: 5px; }
+    .rating-bar-row { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+    .rating-bar-row__label { color: var(--color-text-muted); min-width: 16px; text-align: center; font-weight: 600; }
+    .rating-bar-row__star { color: var(--color-star, #F5A623); font-size: 12px; }
+    .rating-bar-row__track { flex: 1; height: 8px; background: var(--color-border-light, #eee); border-radius: 4px; overflow: hidden; }
+    .rating-bar-row__fill { height: 100%; background: var(--color-star, #F5A623); border-radius: 4px; transition: width 0.5s ease; }
+    .rating-bar-row__count { color: var(--color-text-muted); font-size: 12px; min-width: 24px; text-align: end; }
 
     /* ---- Compact Hero ---- */
-    .fb-hero {
-      padding: 80px 0 16px;
-      text-align: center;
-    }
-    .fb-hero h1 {
-      font-family: var(--font-display);
-      font-size: clamp(22px, 3.5vw, 32px);
-      font-weight: 700;
-      color: var(--color-text);
-      margin: 0;
-    }
+    .fb-hero { padding: 80px 0 16px; text-align: center; }
+    .fb-hero h1 { font-family: var(--font-display); font-size: clamp(22px, 3.5vw, 32px); font-weight: 700; color: var(--color-text); margin: 0; }
 
-    /* ---- Reviews Grid ---- */
-    .fb-grid {
-      padding: 8px 0 60px;
-    }
-    .fb-grid__inner {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 14px;
-    }
+    /* ---- Reviews List (single column) ---- */
+    .fb-list { padding: 8px 0 60px; }
 
-    /* ---- Vertical Feedback Card (matches reference) ---- */
-    .fbc {
+    /* ---- Feedback Card (new design) ---- */
+    .rv-card {
       background: var(--color-card);
       border-radius: 16px;
-      overflow: hidden;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      padding: 18px 20px;
+      margin-bottom: 14px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
       border: 1px solid var(--color-border-light);
-      display: flex;
-      flex-direction: column;
     }
-
-    /* Image area at top */
-    .fbc__img-wrap {
-      position: relative;
-      width: 100%;
-      aspect-ratio: 3/4;
-      overflow: hidden;
-      background: var(--color-bg-warm, #f8f5f0);
-    }
-    .fbc__img-wrap img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-    }
-    .fbc__img-placeholder {
-      width: 100%;
-      height: 100%;
+    /* Header: avatar + name + verified */
+    .rv-card__header {
       display: flex;
       align-items: center;
-      justify-content: center;
-      font-size: 48px;
-      background: linear-gradient(135deg, var(--color-bg-warm, #f8f5f0), var(--color-border-light, #eee));
+      gap: 12px;
+      margin-bottom: 12px;
     }
-
-    /* Slider arrows on image */
-    .fbc__arrow {
-      position: absolute;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 26px;
-      height: 26px;
-      background: rgba(0,0,0,0.45);
+    .rv-card__avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: var(--color-primary);
       color: #fff;
-      border: none;
-      border-radius: 50%;
-      cursor: pointer;
-      font-size: 14px;
       display: flex;
       align-items: center;
       justify-content: center;
-      z-index: 2;
-      padding: 0;
-      line-height: 1;
-      transition: background 0.2s;
+      font-size: 20px;
+      font-weight: 700;
+      flex-shrink: 0;
+      text-transform: uppercase;
     }
-    .fbc__arrow:hover { background: rgba(0,0,0,0.7); }
-    .fbc__arrow--prev { left: 6px; }
-    .fbc__arrow--next { right: 6px; }
-    [dir="rtl"] .fbc__arrow--prev { left: auto; right: 6px; }
-    [dir="rtl"] .fbc__arrow--next { right: auto; left: 6px; }
-
-    .fbc__dots {
-      position: absolute;
-      bottom: 8px;
-      left: 50%;
-      transform: translateX(-50%);
+    .rv-card__name-row {
       display: flex;
-      gap: 4px;
-    }
-    .fbc__dot {
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: rgba(255,255,255,0.5);
-      border: none;
-      padding: 0;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-    .fbc__dot.active {
-      background: #fff;
-    }
-
-    .fbc__slider-track {
-      display: flex;
-      transition: transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-      height: 100%;
-    }
-    .fbc__slider-slide {
-      flex: 0 0 100%;
-      min-width: 0;
-      height: 100%;
-    }
-    .fbc__slider-slide img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    /* Info section below image */
-    .fbc__info {
-      padding: 12px 14px 16px;
-      text-align: center;
-      display: flex;
-      flex-direction: column;
       align-items: center;
-      gap: 4px;
-      flex: 1;
+      gap: 6px;
     }
-    .fbc__name {
+    .rv-card__name {
       font-size: 15px;
       font-weight: 700;
       color: var(--color-text);
-      margin: 0;
     }
-    .fbc__stars {
-      color: var(--color-star, #F5A623);
-      font-size: 16px;
-      letter-spacing: 2px;
+    /* Blue verified badge (Instagram style) */
+    .rv-card__verified {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 18px;
+      height: 18px;
+      flex-shrink: 0;
     }
-    .fbc__product {
-      font-size: 11px;
-      color: var(--color-text-muted);
+    .rv-card__verified svg {
+      width: 18px;
+      height: 18px;
     }
-
-    /* Text/Audio content area (fixed min-height) */
-    .fbc__content {
-      padding: 0 14px 14px;
-      min-height: 40px;
+    /* Comment area */
+    .rv-card__body {
+      min-height: 32px;
+      margin-bottom: 10px;
     }
-    .fbc__text {
-      font-size: 12px;
-      line-height: 1.6;
+    .rv-card__text {
+      font-size: 14px;
+      line-height: 1.7;
       color: var(--color-text-secondary);
       margin: 0;
-      display: -webkit-box;
-      -webkit-line-clamp: 3;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
     }
-    .fbc__audio {
-      margin-top: 4px;
+    .rv-card__audio {
+      margin-top: 2px;
     }
-    .fbc__audio .wa-audio-player {
-      transform: scale(0.85);
-      transform-origin: center;
+    /* Stars at bottom */
+    .rv-card__stars {
+      color: var(--color-star, #F5A623);
+      font-size: 18px;
+      letter-spacing: 2px;
+    }
+    /* Image gallery within card */
+    .rv-card__images {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    .rv-card__images::-webkit-scrollbar { display: none; }
+    .rv-card__images img {
+      width: 80px;
+      height: 80px;
+      object-fit: cover;
+      border-radius: 10px;
+      flex-shrink: 0;
+      cursor: pointer;
+      border: 1px solid var(--color-border-light);
+      transition: transform 0.2s;
+    }
+    .rv-card__images img:hover { transform: scale(1.05); }
+
+    /* Product label */
+    .rv-card__product {
+      font-size: 12px;
+      color: var(--color-text-muted);
+      margin-top: 6px;
+    }
+
+    /* Lightbox */
+    .rv-lightbox {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      background: rgba(0,0,0,0.85);
+      align-items: center;
+      justify-content: center;
+    }
+    .rv-lightbox.active { display: flex; }
+    .rv-lightbox img {
+      max-width: 90vw;
+      max-height: 85vh;
+      object-fit: contain;
+      border-radius: 8px;
+    }
+    .rv-lightbox__close {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      width: 36px;
+      height: 36px;
+      background: rgba(255,255,255,0.2);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      font-size: 20px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
     /* ---- Responsive ---- */
     @media (max-width: 600px) {
-      .rating-summary {
-        flex-direction: column;
-        gap: 16px;
-        padding: 16px;
-      }
-      .rating-summary__left {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-      }
+      .rating-summary { flex-direction: column; gap: 16px; padding: 16px; }
+      .rating-summary__left { display: flex; align-items: center; gap: 12px; }
       .rating-summary__stars { margin: 0; }
       .fb-hero { padding: 72px 0 12px; }
-      .fb-grid__inner { gap: 10px; }
-      .fbc { border-radius: 12px; }
-      .fbc__info { padding: 10px 10px 12px; }
-      .fbc__name { font-size: 13px; }
-      .fbc__stars { font-size: 14px; }
-      .fbc__content { padding: 0 10px 10px; min-height: 32px; }
-      .fbc__text { font-size: 11px; }
-    }
-    @media (min-width: 768px) {
-      .fb-grid__inner {
-        grid-template-columns: repeat(3, 1fr);
-      }
-    }
-    @media (min-width: 1024px) {
-      .fb-grid__inner {
-        grid-template-columns: repeat(4, 1fr);
-      }
+      .rv-card { padding: 14px 16px; border-radius: 12px; }
+      .rv-card__avatar { width: 38px; height: 38px; font-size: 17px; }
+      .rv-card__name { font-size: 14px; }
+      .rv-card__text { font-size: 13px; }
+      .rv-card__stars { font-size: 16px; }
+      .rv-card__images img { width: 70px; height: 70px; }
     }
   </style>
 </head>
@@ -320,15 +222,13 @@
 
   <!-- Rating Summary -->
   <section style="padding: 0 0 8px;">
-    <div class="container">
+    <div class="container container--narrow">
       <div class="rating-summary">
         <div class="rating-summary__left">
           <div class="rating-summary__big"><%= avgRating %></div>
           <div>
             <div class="rating-summary__stars">
-              <% for (var i = 1; i <= 5; i++) { %>
-                <% if (i <= Math.round(parseFloat(avgRating))) { %>★<% } else { %>☆<% } %>
-              <% } %>
+              <% for (var i = 1; i <= 5; i++) { %><% if (i <= Math.round(parseFloat(avgRating))) { %>★<% } else { %>☆<% } %><% } %>
             </div>
             <div class="rating-summary__total"><%= reviewCount %> <%= t('reviews_count') %></div>
           </div>
@@ -351,9 +251,9 @@
     </div>
   </section>
 
-  <!-- Reviews Grid -->
-  <section class="fb-grid">
-    <div class="container">
+  <!-- Reviews List (single column) -->
+  <section class="fb-list">
+    <div class="container container--narrow">
       <% if (reviews.length === 0) { %>
         <div style="text-align: center; padding: 30px 16px; color: var(--color-text-muted);">
           <p style="font-size: 40px; margin-bottom: 12px;">💬</p>
@@ -361,109 +261,84 @@
           <p style="font-size: 13px;"><%= t('be_first_reviewer') %></p>
         </div>
       <% } else { %>
-        <div class="fb-grid__inner">
-          <% reviews.forEach(function(review, revIdx) { %>
-            <%
-              var _fimgs = [];
-              if (review.image_filename) {
-                try { _fimgs = JSON.parse(review.image_filename); } catch(e) { _fimgs = [review.image_filename]; }
-                _fimgs = _fimgs.filter(function(img) { return !!img; });
-              }
-            %>
-            <div class="fbc animate-on-scroll">
-              <!-- Image at top -->
-              <div class="fbc__img-wrap">
-                <% if (_fimgs.length === 0) { %>
-                  <div class="fbc__img-placeholder">
-                    <%= (function(n){ var e=['😊','😎','🤩','😇','🥰','😄','🤗','😺','🦊','🐻','🐶','🐱','🐸','🦁','🐼','🐯','🐨','🦋','🌸','⭐']; if(!n) return e[0]; var h=0; for(var i=0;i<n.length;i++) h=((h<<5)-h)+n.charCodeAt(i); return e[Math.abs(h)%e.length]; })(review.name || '') %>
-                  </div>
-                <% } else if (_fimgs.length === 1) { %>
-                  <img src="/uploads/reviews/<%= _fimgs[0] %>" alt="" loading="lazy">
-                <% } else { %>
-                  <div class="fbc__slider-track" id="fbTrack<%= revIdx %>" data-index="0" data-total="<%= _fimgs.length %>">
-                    <% _fimgs.forEach(function(img) { %>
-                      <div class="fbc__slider-slide">
-                        <img src="/uploads/reviews/<%= img %>" alt="" loading="lazy">
-                      </div>
-                    <% }); %>
-                  </div>
-                  <button type="button" class="fbc__arrow fbc__arrow--prev" onclick="fbcSlide(<%= revIdx %>, -1)">‹</button>
-                  <button type="button" class="fbc__arrow fbc__arrow--next" onclick="fbcSlide(<%= revIdx %>, 1)">›</button>
-                  <div class="fbc__dots">
-                    <% _fimgs.forEach(function(img, idx) { %>
-                      <button type="button" class="fbc__dot<%= idx === 0 ? ' active' : '' %>" onclick="fbcSlideTo(<%= revIdx %>, <%= idx %>)"></button>
-                    <% }); %>
-                  </div>
-                <% } %>
-              </div>
-
-              <!-- Name + Stars -->
-              <div class="fbc__info">
-                <p class="fbc__name"><%= review.name || t('customer') %></p>
-                <div class="fbc__stars">
-                  <% for (var j = 1; j <= 5; j++) { %>
-                    <% if (j <= review.rating) { %>★<% } else { %>☆<% } %>
-                  <% } %>
+        <% reviews.forEach(function(review, revIdx) { %>
+          <%
+            var _fimgs = [];
+            if (review.image_filename) {
+              try { _fimgs = JSON.parse(review.image_filename); } catch(e) { _fimgs = [review.image_filename]; }
+              _fimgs = _fimgs.filter(function(img) { return !!img; });
+            }
+            var _initial = (review.name || '?').charAt(0).toUpperCase();
+          %>
+          <div class="rv-card animate-on-scroll">
+            <!-- Header: avatar circle + name + verified badge -->
+            <div class="rv-card__header">
+              <div class="rv-card__avatar"><%= _initial %></div>
+              <div>
+                <div class="rv-card__name-row">
+                  <span class="rv-card__name"><%= review.name || t('customer') %></span>
+                  <span class="rv-card__verified"><svg viewBox="0 0 24 24" fill="none"><path d="M9 12l2 2 4-4" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="10" fill="#1DA1F2"/><path d="M9 12l2 2 4-4" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
                 </div>
                 <% if (review.product_title) { %>
-                  <div class="fbc__product"><%= review.product_title %></div>
-                <% } %>
-              </div>
-
-              <!-- Text / Audio content -->
-              <div class="fbc__content">
-                <% if (review.message) { %>
-                  <p class="fbc__text"><%= review.message %></p>
-                <% } %>
-                <% if (review.audio_filename) { %>
-                  <div class="fbc__audio">
-                    <div class="wa-audio-player" data-src="/uploads/reviews/<%= review.audio_filename %>">
-                      <button type="button" class="wa-play-btn" onclick="toggleWaAudio(this)" style="width: 28px; height: 28px; font-size: 11px;">▶</button>
-                      <div class="wa-progress-wrap" onclick="seekWaAudio(event, this)">
-                        <div class="wa-waveform"></div>
-                      </div>
-                      <span class="wa-time" style="font-size: 11px;">0:00</span>
-                    </div>
-                  </div>
+                  <div class="rv-card__product"><%= review.product_title %></div>
                 <% } %>
               </div>
             </div>
-          <% }); %>
-        </div>
+
+            <!-- Comment (text or audio) -->
+            <div class="rv-card__body">
+              <% if (review.message) { %>
+                <p class="rv-card__text"><%= review.message %></p>
+              <% } %>
+              <% if (review.audio_filename) { %>
+                <div class="rv-card__audio">
+                  <div class="wa-audio-player" data-src="/uploads/reviews/<%= review.audio_filename %>">
+                    <button type="button" class="wa-play-btn" onclick="toggleWaAudio(this)">▶</button>
+                    <div class="wa-progress-wrap" onclick="seekWaAudio(event, this)">
+                      <div class="wa-waveform"></div>
+                    </div>
+                    <span class="wa-time">0:00</span>
+                  </div>
+                </div>
+              <% } %>
+            </div>
+
+            <!-- Images (thumbnail row) -->
+            <% if (_fimgs.length > 0) { %>
+              <div class="rv-card__images">
+                <% _fimgs.forEach(function(img) { %>
+                  <img src="/uploads/reviews/<%= img %>" alt="" loading="lazy" onclick="openLightbox('/uploads/reviews/<%= img %>')">
+                <% }); %>
+              </div>
+            <% } %>
+
+            <!-- Stars at bottom -->
+            <div class="rv-card__stars">
+              <% for (var j = 1; j <= 5; j++) { %><% if (j <= review.rating) { %>★<% } else { %>☆<% } %><% } %>
+            </div>
+          </div>
+        <% }); %>
       <% } %>
     </div>
   </section>
 
+  <!-- Lightbox -->
+  <div class="rv-lightbox" id="rvLightbox" onclick="closeLightbox()">
+    <button type="button" class="rv-lightbox__close" onclick="closeLightbox()">✕</button>
+    <img id="rvLightboxImg" src="" alt="">
+  </div>
+
   <%- include('partials/footer') %>
   <script src="/js/main.js"></script>
   <script>
-    function fbcSlide(id, dir) {
-      var track = document.getElementById('fbTrack' + id);
-      if (!track) return;
-      var total = parseInt(track.dataset.total);
-      var idx = parseInt(track.dataset.index || '0');
-      var isRTL = document.documentElement.dir === 'rtl';
-      idx += dir;
-      if (idx < 0) idx = total - 1;
-      if (idx >= total) idx = 0;
-      track.dataset.index = idx;
-      var offset = idx * 100;
-      track.style.transform = isRTL ? 'translateX(' + offset + '%)' : 'translateX(-' + offset + '%)';
-      // Update dots
-      var wrap = track.parentElement;
-      var dots = wrap.querySelectorAll('.fbc__dot');
-      dots.forEach(function(d, i) { d.classList.toggle('active', i === idx); });
+    function openLightbox(src) {
+      document.getElementById('rvLightboxImg').src = src;
+      document.getElementById('rvLightbox').classList.add('active');
+      document.body.style.overflow = 'hidden';
     }
-    function fbcSlideTo(id, target) {
-      var track = document.getElementById('fbTrack' + id);
-      if (!track) return;
-      var isRTL = document.documentElement.dir === 'rtl';
-      track.dataset.index = target;
-      var offset = target * 100;
-      track.style.transform = isRTL ? 'translateX(' + offset + '%)' : 'translateX(-' + offset + '%)';
-      var wrap = track.parentElement;
-      var dots = wrap.querySelectorAll('.fbc__dot');
-      dots.forEach(function(d, i) { d.classList.toggle('active', i === target); });
+    function closeLightbox() {
+      document.getElementById('rvLightbox').classList.remove('active');
+      document.body.style.overflow = '';
     }
   </script>
 </body>

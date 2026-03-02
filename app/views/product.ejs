@@ -264,67 +264,48 @@
         <button type="button" class="btn btn--primary" id="showFeedbackFormBtn" onclick="toggleFeedbackView(true)"><%= t('write_review') %></button>
       </div>
       <style>
-        .prod-fbc-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
-        .prod-fbc { background: var(--color-card); border-radius: 16px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.06); border: 1px solid var(--color-border-light); display: flex; flex-direction: column; }
-        .prod-fbc__img { position: relative; width: 100%; aspect-ratio: 3/4; overflow: hidden; background: var(--color-bg-warm, #f8f5f0); }
-        .prod-fbc__img img { width: 100%; height: 100%; object-fit: cover; display: block; }
-        .prod-fbc__ph { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 48px; background: linear-gradient(135deg, var(--color-bg-warm, #f8f5f0), var(--color-border-light, #eee)); }
-        .prod-fbc__info { padding: 12px 14px 8px; text-align: center; }
-        .prod-fbc__name { font-size: 15px; font-weight: 700; color: var(--color-text); margin: 0 0 2px; }
-        .prod-fbc__stars { color: var(--color-star); font-size: 16px; letter-spacing: 2px; }
-        .prod-fbc__content { padding: 0 14px 14px; min-height: 40px; }
-        .prod-fbc__text { font-size: 13px; color: var(--color-text-secondary); line-height: 1.6; margin: 0; }
-        .prod-fbc__arrow { position: absolute; top: 50%; transform: translateY(-50%); width: 26px; height: 26px; background: rgba(0,0,0,0.45); color: #fff; border: none; border-radius: 50%; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; z-index: 2; padding: 0; line-height: 1; }
-        .prod-fbc__arrow--prev { left: 6px; }
-        .prod-fbc__arrow--next { right: 6px; }
-        [dir="rtl"] .prod-fbc__arrow--prev { left: auto; right: 6px; }
-        [dir="rtl"] .prod-fbc__arrow--next { right: auto; left: 6px; }
-        .prod-fbc__track { display: flex; transition: transform 0.35s ease; height: 100%; }
-        .prod-fbc__slide { flex: 0 0 100%; min-width: 0; height: 100%; }
-        .prod-fbc__slide img { width: 100%; height: 100%; object-fit: cover; }
-        .prod-fbc__dots { position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); display: flex; gap: 4px; }
-        .prod-fbc__dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.5); border: none; padding: 0; cursor: pointer; }
-        .prod-fbc__dot.active { background: #fff; }
-        @media (min-width: 768px) { .prod-fbc-grid { grid-template-columns: repeat(3, 1fr); } }
+        .prv-card { background: var(--color-card); border-radius: 16px; padding: 18px 20px; margin-bottom: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border: 1px solid var(--color-border-light); }
+        .prv-card__hdr { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+        .prv-card__av { width: 44px; height: 44px; border-radius: 50%; background: var(--color-primary); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 700; flex-shrink: 0; text-transform: uppercase; }
+        .prv-card__nm { font-size: 15px; font-weight: 700; color: var(--color-text); }
+        .prv-card__vf { display: inline-flex; width: 18px; height: 18px; flex-shrink: 0; margin-inline-start: 4px; vertical-align: middle; }
+        .prv-card__vf svg { width: 18px; height: 18px; }
+        .prv-card__body { min-height: 32px; margin-bottom: 10px; }
+        .prv-card__txt { font-size: 14px; line-height: 1.7; color: var(--color-text-secondary); margin: 0; }
+        .prv-card__imgs { display: flex; gap: 8px; margin-bottom: 10px; overflow-x: auto; scrollbar-width: none; }
+        .prv-card__imgs::-webkit-scrollbar { display: none; }
+        .prv-card__imgs img { width: 80px; height: 80px; object-fit: cover; border-radius: 10px; flex-shrink: 0; border: 1px solid var(--color-border-light); }
+        .prv-card__stars { color: var(--color-star); font-size: 18px; letter-spacing: 2px; }
+        @media (max-width: 600px) {
+          .prv-card { padding: 14px 16px; border-radius: 12px; }
+          .prv-card__av { width: 38px; height: 38px; font-size: 17px; }
+          .prv-card__nm { font-size: 14px; }
+          .prv-card__txt { font-size: 13px; }
+          .prv-card__imgs img { width: 70px; height: 70px; }
+        }
       </style>
       <div id="reviewsDisplay">
       <% if (reviews && reviews.length) { %>
-        <div class="prod-fbc-grid">
-          <% reviews.forEach(function(review, pIdx) { %>
+        <div>
+          <% reviews.forEach(function(review) { %>
             <%
               var _imgs = [];
               if (review.image_filename) {
                 try { _imgs = JSON.parse(review.image_filename); } catch(e) { _imgs = [review.image_filename]; }
                 _imgs = _imgs.filter(function(img) { return !!img; });
               }
+              var _pInit = (review.name || '?').charAt(0).toUpperCase();
             %>
-            <div class="prod-fbc animate-on-scroll">
-              <div class="prod-fbc__img">
-                <% if (_imgs.length === 0) { %>
-                  <div class="prod-fbc__ph"><%= (function(n){ var e=['😊','😎','🤩','😇','🥰','😄','🤗','😺','🦊','🐻','🐶','🐱','🐸','🦁','🐼','🐯','🐨','🦋','🌸','⭐']; if(!n) return e[0]; var h=0; for(var i=0;i<n.length;i++) h=((h<<5)-h)+n.charCodeAt(i); return e[Math.abs(h)%e.length]; })(review.name || '') %></div>
-                <% } else if (_imgs.length === 1) { %>
-                  <img src="/uploads/reviews/<%= _imgs[0] %>" alt="" loading="lazy">
-                <% } else { %>
-                  <div class="prod-fbc__track" id="pfbTrack<%= pIdx %>" data-index="0" data-total="<%= _imgs.length %>">
-                    <% _imgs.forEach(function(img) { %>
-                      <div class="prod-fbc__slide"><img src="/uploads/reviews/<%= img %>" alt="" loading="lazy"></div>
-                    <% }); %>
-                  </div>
-                  <button type="button" class="prod-fbc__arrow prod-fbc__arrow--prev" onclick="pfbSlide(<%= pIdx %>, -1)">‹</button>
-                  <button type="button" class="prod-fbc__arrow prod-fbc__arrow--next" onclick="pfbSlide(<%= pIdx %>, 1)">›</button>
-                  <div class="prod-fbc__dots">
-                    <% _imgs.forEach(function(img, idx) { %>
-                      <button type="button" class="prod-fbc__dot<%= idx === 0 ? ' active' : '' %>" onclick="pfbSlideTo(<%= pIdx %>, <%= idx %>)"></button>
-                    <% }); %>
-                  </div>
-                <% } %>
+            <div class="prv-card animate-on-scroll">
+              <div class="prv-card__hdr">
+                <div class="prv-card__av"><%= _pInit %></div>
+                <div>
+                  <span class="prv-card__nm"><%= review.name %></span>
+                  <span class="prv-card__vf"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#1DA1F2"/><path d="M9 12l2 2 4-4" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                </div>
               </div>
-              <div class="prod-fbc__info">
-                <p class="prod-fbc__name"><%= review.name %></p>
-                <div class="prod-fbc__stars"><% for (var i = 1; i <= 5; i++) { %><%= i <= review.rating ? '★' : '☆' %><% } %></div>
-              </div>
-              <div class="prod-fbc__content">
-                <% if (review.message) { %><p class="prod-fbc__text">"<%= review.message %>"</p><% } %>
+              <div class="prv-card__body">
+                <% if (review.message) { %><p class="prv-card__txt"><%= review.message %></p><% } %>
                 <% if (review.audio_filename && review.audio_filename.length > 0) { %>
                   <div class="wa-audio-player" data-src="/uploads/reviews/<%= review.audio_filename %>" style="margin-top: 6px;">
                     <button type="button" class="wa-play-btn" onclick="toggleWaAudio(this)">▶</button>
@@ -333,6 +314,12 @@
                   </div>
                 <% } %>
               </div>
+              <% if (_imgs.length > 0) { %>
+                <div class="prv-card__imgs">
+                  <% _imgs.forEach(function(img) { %><img src="/uploads/reviews/<%= img %>" alt="" loading="lazy"><% }); %>
+                </div>
+              <% } %>
+              <div class="prv-card__stars"><% for (var i = 1; i <= 5; i++) { %><%= i <= review.rating ? '★' : '☆' %><% } %></div>
             </div>
           <% }); %>
         </div>
@@ -343,31 +330,6 @@
         </div>
       <% } %>
       </div>
-      <script>
-        function pfbSlide(id, dir) {
-          var track = document.getElementById('pfbTrack' + id);
-          if (!track) return;
-          var total = parseInt(track.dataset.total);
-          var idx = parseInt(track.dataset.index || '0');
-          var isRTL = document.documentElement.dir === 'rtl';
-          idx += dir;
-          if (idx < 0) idx = total - 1;
-          if (idx >= total) idx = 0;
-          track.dataset.index = idx;
-          track.style.transform = isRTL ? 'translateX(' + (idx * 100) + '%)' : 'translateX(-' + (idx * 100) + '%)';
-          var dots = track.parentElement.querySelectorAll('.prod-fbc__dot');
-          dots.forEach(function(d, i) { d.classList.toggle('active', i === idx); });
-        }
-        function pfbSlideTo(id, target) {
-          var track = document.getElementById('pfbTrack' + id);
-          if (!track) return;
-          var isRTL = document.documentElement.dir === 'rtl';
-          track.dataset.index = target;
-          track.style.transform = isRTL ? 'translateX(' + (target * 100) + '%)' : 'translateX(-' + (target * 100) + '%)';
-          var dots = track.parentElement.querySelectorAll('.prod-fbc__dot');
-          dots.forEach(function(d, i) { d.classList.toggle('active', i === target); });
-        }
-      </script>
     </div>
   </section>
 

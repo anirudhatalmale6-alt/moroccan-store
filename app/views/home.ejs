@@ -361,10 +361,10 @@
     </section>
   <% } %>
 
-  <!-- Customer Feedback Section (vertical card design) -->
+  <!-- Customer Feedback Section (single column card design) -->
   <% if (typeof latestReviews !== 'undefined' && latestReviews && latestReviews.length > 0) { %>
   <section style="padding: 40px 0 50px; background: var(--color-bg-warm);">
-    <div class="container">
+    <div class="container container--narrow">
       <div class="section-header" style="margin-top: 0;">
         <span class="section-header__label"><%= t('what_customers_say') %></span>
         <h2 class="section-header__title"><%= t('customer_feedback') %></h2>
@@ -372,76 +372,54 @@
       </div>
 
       <style>
-        .home-fbc-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 24px; }
-        .home-fbc { background: var(--color-card); border-radius: 14px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.06); border: 1px solid var(--color-border-light); display: flex; flex-direction: column; }
-        .home-fbc__img { position: relative; width: 100%; aspect-ratio: 3/4; overflow: hidden; background: var(--color-bg-warm, #f8f5f0); }
-        .home-fbc__img img { width: 100%; height: 100%; object-fit: cover; display: block; }
-        .home-fbc__ph { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 40px; background: linear-gradient(135deg, var(--color-bg-warm, #f8f5f0), var(--color-border-light, #eee)); }
-        .home-fbc__info { padding: 10px 10px 8px; text-align: center; }
-        .home-fbc__name { font-size: 13px; font-weight: 700; color: var(--color-text); margin: 0 0 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .home-fbc__stars { color: var(--color-star); font-size: 13px; letter-spacing: 1px; }
-        .home-fbc__content { padding: 0 10px 10px; min-height: 28px; }
-        .home-fbc__text { font-size: 11px; color: var(--color-text-secondary); line-height: 1.5; margin: 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-        .home-fbc__arrow { position: absolute; top: 50%; transform: translateY(-50%); width: 22px; height: 22px; background: rgba(0,0,0,0.45); color: #fff; border: none; border-radius: 50%; cursor: pointer; font-size: 12px; display: flex; align-items: center; justify-content: center; z-index: 2; padding: 0; line-height: 1; }
-        .home-fbc__arrow--prev { left: 4px; }
-        .home-fbc__arrow--next { right: 4px; }
-        [dir="rtl"] .home-fbc__arrow--prev { left: auto; right: 4px; }
-        [dir="rtl"] .home-fbc__arrow--next { right: auto; left: 4px; }
-        .home-fbc__track { display: flex; transition: transform 0.3s ease; height: 100%; }
-        .home-fbc__slide { flex: 0 0 100%; min-width: 0; height: 100%; }
-        .home-fbc__slide img { width: 100%; height: 100%; object-fit: cover; }
-        .home-fbc__dots { position: absolute; bottom: 6px; left: 50%; transform: translateX(-50%); display: flex; gap: 3px; }
-        .home-fbc__dot { width: 5px; height: 5px; border-radius: 50%; background: rgba(255,255,255,0.5); border: none; padding: 0; cursor: pointer; }
-        .home-fbc__dot.active { background: #fff; }
-        @media (min-width: 768px) { .home-fbc-grid { grid-template-columns: repeat(3, 1fr); } }
+        .hrv-card { background: var(--color-card); border-radius: 16px; padding: 16px 18px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border: 1px solid var(--color-border-light); }
+        .hrv-card__hdr { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+        .hrv-card__av { width: 40px; height: 40px; border-radius: 50%; background: var(--color-primary); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 700; flex-shrink: 0; text-transform: uppercase; }
+        .hrv-card__nm { font-size: 14px; font-weight: 700; color: var(--color-text); }
+        .hrv-card__vf { display: inline-flex; width: 16px; height: 16px; flex-shrink: 0; margin-inline-start: 4px; vertical-align: middle; }
+        .hrv-card__vf svg { width: 16px; height: 16px; }
+        .hrv-card__body { min-height: 24px; margin-bottom: 8px; }
+        .hrv-card__txt { font-size: 13px; line-height: 1.6; color: var(--color-text-secondary); margin: 0; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+        .hrv-card__imgs { display: flex; gap: 6px; margin-bottom: 8px; overflow-x: auto; scrollbar-width: none; }
+        .hrv-card__imgs::-webkit-scrollbar { display: none; }
+        .hrv-card__imgs img { width: 60px; height: 60px; object-fit: cover; border-radius: 8px; flex-shrink: 0; border: 1px solid var(--color-border-light); }
+        .hrv-card__stars { color: var(--color-star); font-size: 15px; letter-spacing: 2px; }
       </style>
 
-      <div class="home-fbc-grid">
-        <% latestReviews.forEach(function(rev, hIdx) { %>
+      <div style="margin-bottom: 24px;">
+        <% latestReviews.forEach(function(rev) { %>
           <%
             var _himgs = [];
             if (rev.image_filename) {
               try { _himgs = JSON.parse(rev.image_filename); } catch(e) { _himgs = [rev.image_filename]; }
               _himgs = _himgs.filter(function(img) { return !!img; });
             }
+            var _hInit = (rev.name || '?').charAt(0).toUpperCase();
           %>
-          <div class="home-fbc">
-            <div class="home-fbc__img">
-              <% if (_himgs.length === 0) { %>
-                <div class="home-fbc__ph"><%= (function(n){ var e=['😊','😎','🤩','😇','🥰','😄','🤗','😺','🦊','🐻','🐶','🐱','🐸','🦁','🐼','🐯','🐨','🦋','🌸','⭐']; if(!n) return e[0]; var h=0; for(var i=0;i<n.length;i++) h=((h<<5)-h)+n.charCodeAt(i); return e[Math.abs(h)%e.length]; })(rev.name || '') %></div>
-              <% } else if (_himgs.length === 1) { %>
-                <img src="/uploads/reviews/<%= _himgs[0] %>" alt="" loading="lazy">
-              <% } else { %>
-                <div class="home-fbc__track" id="hfbTrack<%= hIdx %>" data-index="0" data-total="<%= _himgs.length %>">
-                  <% _himgs.forEach(function(img) { %>
-                    <div class="home-fbc__slide"><img src="/uploads/reviews/<%= img %>" alt="" loading="lazy"></div>
-                  <% }); %>
-                </div>
-                <button type="button" class="home-fbc__arrow home-fbc__arrow--prev" onclick="hfbSlide(<%= hIdx %>, -1)">‹</button>
-                <button type="button" class="home-fbc__arrow home-fbc__arrow--next" onclick="hfbSlide(<%= hIdx %>, 1)">›</button>
-                <div class="home-fbc__dots">
-                  <% _himgs.forEach(function(img, idx) { %>
-                    <button type="button" class="home-fbc__dot<%= idx === 0 ? ' active' : '' %>" onclick="hfbSlideTo(<%= hIdx %>, <%= idx %>)"></button>
-                  <% }); %>
-                </div>
-              <% } %>
+          <div class="hrv-card">
+            <div class="hrv-card__hdr">
+              <div class="hrv-card__av"><%= _hInit %></div>
+              <div>
+                <span class="hrv-card__nm"><%= rev.name || t('customer') %></span>
+                <span class="hrv-card__vf"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#1DA1F2"/><path d="M9 12l2 2 4-4" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+              </div>
             </div>
-            <div class="home-fbc__info">
-              <p class="home-fbc__name"><%= rev.name || t('customer') %></p>
-              <div class="home-fbc__stars"><% for (var i = 1; i <= 5; i++) { %><%= i <= rev.rating ? '★' : '☆' %><% } %></div>
-            </div>
-            <div class="home-fbc__content">
-              <% if (rev.message) { %>
-                <p class="home-fbc__text"><%= rev.message %></p>
-              <% } %>
+            <div class="hrv-card__body">
+              <% if (rev.message) { %><p class="hrv-card__txt"><%= rev.message %></p><% } %>
               <% if (rev.audio_filename) { %>
-                <div class="wa-audio-player" data-src="/uploads/reviews/<%= rev.audio_filename %>" style="margin-top: 4px; transform: scale(0.85); transform-origin: right center;">
-                  <button type="button" class="wa-play-btn" onclick="toggleWaAudio(this)" style="width: 26px; height: 26px; font-size: 10px;">▶</button>
+                <div class="wa-audio-player" data-src="/uploads/reviews/<%= rev.audio_filename %>" style="margin-top: 4px;">
+                  <button type="button" class="wa-play-btn" onclick="toggleWaAudio(this)" style="width: 28px; height: 28px; font-size: 11px;">▶</button>
                   <div class="wa-progress-wrap" onclick="seekWaAudio(event, this)"><div class="wa-waveform"></div></div>
-                  <span class="wa-time" style="font-size: 10px;">0:00</span>
+                  <span class="wa-time" style="font-size: 11px;">0:00</span>
                 </div>
               <% } %>
             </div>
+            <% if (_himgs.length > 0) { %>
+              <div class="hrv-card__imgs">
+                <% _himgs.forEach(function(img) { %><img src="/uploads/reviews/<%= img %>" alt="" loading="lazy"><% }); %>
+              </div>
+            <% } %>
+            <div class="hrv-card__stars"><% for (var i = 1; i <= 5; i++) { %><%= i <= rev.rating ? '★' : '☆' %><% } %></div>
           </div>
         <% }); %>
       </div>
@@ -453,31 +431,6 @@
       </div>
     </div>
   </section>
-  <script>
-    function hfbSlide(id, dir) {
-      var track = document.getElementById('hfbTrack' + id);
-      if (!track) return;
-      var total = parseInt(track.dataset.total);
-      var idx = parseInt(track.dataset.index || '0');
-      var isRTL = document.documentElement.dir === 'rtl';
-      idx += dir;
-      if (idx < 0) idx = total - 1;
-      if (idx >= total) idx = 0;
-      track.dataset.index = idx;
-      track.style.transform = isRTL ? 'translateX(' + (idx * 100) + '%)' : 'translateX(-' + (idx * 100) + '%)';
-      var dots = track.parentElement.querySelectorAll('.home-fbc__dot');
-      dots.forEach(function(d, i) { d.classList.toggle('active', i === idx); });
-    }
-    function hfbSlideTo(id, target) {
-      var track = document.getElementById('hfbTrack' + id);
-      if (!track) return;
-      var isRTL = document.documentElement.dir === 'rtl';
-      track.dataset.index = target;
-      track.style.transform = isRTL ? 'translateX(' + (target * 100) + '%)' : 'translateX(-' + (target * 100) + '%)';
-      var dots = track.parentElement.querySelectorAll('.home-fbc__dot');
-      dots.forEach(function(d, i) { d.classList.toggle('active', i === target); });
-    }
-  </script>
   <% } %>
 
   <%- include('partials/footer') %>

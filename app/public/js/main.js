@@ -606,6 +606,12 @@ function initFeedbackForm() {
       return;
     }
 
+    // Cannot have both text and voice at the same time
+    if (hasMessage && hasAudio) {
+      showToast('لا يمكن وضع feedback نصي وصوتي في نفس الوقت، الرجاء اختيار واحد فقط.', 'error');
+      return;
+    }
+
     // Validate max 3 images
     if (hasImages && feedbackImage.files.length > 3) {
       showToast('الحد الأقصى 3 صور', 'error');
