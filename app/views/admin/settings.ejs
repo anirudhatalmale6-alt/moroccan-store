@@ -290,20 +290,142 @@
                 </form>
             </div>
 
-            <!-- Theme Color Settings -->
-            <div class="form-card">
-                <h3>لون المتجر</h3>
+            <!-- Theme / Design Settings -->
+            <div class="form-card" style="max-width: 700px;">
+                <h3>🎨 تصميم الموقع — Theme / Design Settings</h3>
                 <form method="POST" action="/admin/settings/theme">
-                    <div class="form-group">
-                        <label>اللون الأساسي</label>
-                        <div style="display: flex; gap: 12px; align-items: center;">
-                            <input type="color" name="primary_color" value="<%= typeof primaryColor !== 'undefined' ? primaryColor : '#8B6F47' %>" style="width: 60px; height: 40px; border: 2px solid #e8e0d8; border-radius: 8px; cursor: pointer;">
-                            <input type="text" name="primary_color_text" value="<%= typeof primaryColor !== 'undefined' ? primaryColor : '#8B6F47' %>" class="form-input" style="width: 120px; font-size: 14px; direction: ltr; text-align: left;" placeholder="#8B6F47">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                        <!-- Primary Color -->
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label>اللون الأساسي (Primary)</label>
+                            <div style="display: flex; gap: 10px; align-items: center;">
+                                <input type="color" name="primary_color" id="tc_primary" value="<%= settings.primary_color || '#000000' %>" style="width: 50px; height: 38px; border: 2px solid #e8e0d8; border-radius: 8px; cursor: pointer;" onchange="document.getElementById('tt_primary').value=this.value; updatePreview()">
+                                <input type="text" id="tt_primary" name="primary_color_text" value="<%= settings.primary_color || '#000000' %>" style="width: 90px; padding: 8px; border: 2px solid #e8e0d8; border-radius: 8px; font-size: 13px; direction: ltr; text-align: center; font-family: monospace;" onchange="document.getElementById('tc_primary').value=this.value; updatePreview()">
+                            </div>
+                            <div class="hint">أزرار، روابط، عناصر مميزة</div>
+                        </div>
+                        <!-- Secondary Color -->
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label>اللون الثانوي (Secondary)</label>
+                            <div style="display: flex; gap: 10px; align-items: center;">
+                                <input type="color" name="secondary_color" id="tc_secondary" value="<%= settings.secondary_color || '#333333' %>" style="width: 50px; height: 38px; border: 2px solid #e8e0d8; border-radius: 8px; cursor: pointer;" onchange="document.getElementById('tt_secondary').value=this.value; updatePreview()">
+                                <input type="text" id="tt_secondary" value="<%= settings.secondary_color || '#333333' %>" style="width: 90px; padding: 8px; border: 2px solid #e8e0d8; border-radius: 8px; font-size: 13px; direction: ltr; text-align: center; font-family: monospace;" onchange="document.getElementById('tc_secondary').value=this.value; updatePreview()">
+                            </div>
+                            <div class="hint">عناصر ثانوية، ظلال</div>
+                        </div>
+                        <!-- Button Color -->
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label>لون الأزرار (Buttons)</label>
+                            <div style="display: flex; gap: 10px; align-items: center;">
+                                <input type="color" name="button_color" id="tc_button" value="<%= settings.button_color || '#000000' %>" style="width: 50px; height: 38px; border: 2px solid #e8e0d8; border-radius: 8px; cursor: pointer;" onchange="document.getElementById('tt_button').value=this.value; updatePreview()">
+                                <input type="text" id="tt_button" value="<%= settings.button_color || '#000000' %>" style="width: 90px; padding: 8px; border: 2px solid #e8e0d8; border-radius: 8px; font-size: 13px; direction: ltr; text-align: center; font-family: monospace;" onchange="document.getElementById('tc_button').value=this.value; updatePreview()">
+                            </div>
+                            <div class="hint">خلفية أزرار الشراء والإجراءات</div>
+                        </div>
+                        <!-- Button Text Color -->
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label>لون نص الأزرار (Button Text)</label>
+                            <div style="display: flex; gap: 10px; align-items: center;">
+                                <input type="color" name="button_text_color" id="tc_btntext" value="<%= settings.button_text_color || '#FFFFFF' %>" style="width: 50px; height: 38px; border: 2px solid #e8e0d8; border-radius: 8px; cursor: pointer;" onchange="document.getElementById('tt_btntext').value=this.value; updatePreview()">
+                                <input type="text" id="tt_btntext" value="<%= settings.button_text_color || '#FFFFFF' %>" style="width: 90px; padding: 8px; border: 2px solid #e8e0d8; border-radius: 8px; font-size: 13px; direction: ltr; text-align: center; font-family: monospace;" onchange="document.getElementById('tc_btntext').value=this.value; updatePreview()">
+                            </div>
+                            <div class="hint">لون الكتابة داخل الأزرار</div>
+                        </div>
+                        <!-- Text Color -->
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label>لون النصوص (Text)</label>
+                            <div style="display: flex; gap: 10px; align-items: center;">
+                                <input type="color" name="text_color" id="tc_text" value="<%= settings.text_color || '#2C1810' %>" style="width: 50px; height: 38px; border: 2px solid #e8e0d8; border-radius: 8px; cursor: pointer;" onchange="document.getElementById('tt_text').value=this.value; updatePreview()">
+                                <input type="text" id="tt_text" value="<%= settings.text_color || '#2C1810' %>" style="width: 90px; padding: 8px; border: 2px solid #e8e0d8; border-radius: 8px; font-size: 13px; direction: ltr; text-align: center; font-family: monospace;" onchange="document.getElementById('tc_text').value=this.value; updatePreview()">
+                            </div>
+                            <div class="hint">لون النصوص الرئيسية في الموقع</div>
+                        </div>
+                        <!-- Background Color -->
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label>لون الخلفية (Background)</label>
+                            <div style="display: flex; gap: 10px; align-items: center;">
+                                <input type="color" name="bg_color" id="tc_bg" value="<%= settings.bg_color || '#FFFFFF' %>" style="width: 50px; height: 38px; border: 2px solid #e8e0d8; border-radius: 8px; cursor: pointer;" onchange="document.getElementById('tt_bg').value=this.value; updatePreview()">
+                                <input type="text" id="tt_bg" value="<%= settings.bg_color || '#FFFFFF' %>" style="width: 90px; padding: 8px; border: 2px solid #e8e0d8; border-radius: 8px; font-size: 13px; direction: ltr; text-align: center; font-family: monospace;" onchange="document.getElementById('tc_bg').value=this.value; updatePreview()">
+                            </div>
+                            <div class="hint">خلفية الصفحة الكاملة</div>
+                        </div>
+                        <!-- Header BG -->
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label>خلفية الـ Header</label>
+                            <div style="display: flex; gap: 10px; align-items: center;">
+                                <input type="color" name="header_bg_color" id="tc_headerbg" value="<%= settings.header_bg_color || '#FFFFFF' %>" style="width: 50px; height: 38px; border: 2px solid #e8e0d8; border-radius: 8px; cursor: pointer;" onchange="document.getElementById('tt_headerbg').value=this.value; updatePreview()">
+                                <input type="text" id="tt_headerbg" value="<%= settings.header_bg_color || '#FFFFFF' %>" style="width: 90px; padding: 8px; border: 2px solid #e8e0d8; border-radius: 8px; font-size: 13px; direction: ltr; text-align: center; font-family: monospace;" onchange="document.getElementById('tc_headerbg').value=this.value; updatePreview()">
+                            </div>
+                        </div>
+                        <!-- Header Text -->
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label>نص الـ Header</label>
+                            <div style="display: flex; gap: 10px; align-items: center;">
+                                <input type="color" name="header_text_color" id="tc_headertxt" value="<%= settings.header_text_color || '#000000' %>" style="width: 50px; height: 38px; border: 2px solid #e8e0d8; border-radius: 8px; cursor: pointer;" onchange="document.getElementById('tt_headertxt').value=this.value; updatePreview()">
+                                <input type="text" id="tt_headertxt" value="<%= settings.header_text_color || '#000000' %>" style="width: 90px; padding: 8px; border: 2px solid #e8e0d8; border-radius: 8px; font-size: 13px; direction: ltr; text-align: center; font-family: monospace;" onchange="document.getElementById('tc_headertxt').value=this.value; updatePreview()">
+                            </div>
+                        </div>
+                        <!-- Footer BG -->
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label>خلفية الـ Footer</label>
+                            <div style="display: flex; gap: 10px; align-items: center;">
+                                <input type="color" name="footer_bg_color" id="tc_footerbg" value="<%= settings.footer_bg_color || '#1a1a1a' %>" style="width: 50px; height: 38px; border: 2px solid #e8e0d8; border-radius: 8px; cursor: pointer;" onchange="document.getElementById('tt_footerbg').value=this.value; updatePreview()">
+                                <input type="text" id="tt_footerbg" value="<%= settings.footer_bg_color || '#1a1a1a' %>" style="width: 90px; padding: 8px; border: 2px solid #e8e0d8; border-radius: 8px; font-size: 13px; direction: ltr; text-align: center; font-family: monospace;" onchange="document.getElementById('tc_footerbg').value=this.value; updatePreview()">
+                            </div>
+                        </div>
+                        <!-- Footer Text -->
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label>نص الـ Footer</label>
+                            <div style="display: flex; gap: 10px; align-items: center;">
+                                <input type="color" name="footer_text_color" id="tc_footertxt" value="<%= settings.footer_text_color || '#FFFFFF' %>" style="width: 50px; height: 38px; border: 2px solid #e8e0d8; border-radius: 8px; cursor: pointer;" onchange="document.getElementById('tt_footertxt').value=this.value; updatePreview()">
+                                <input type="text" id="tt_footertxt" value="<%= settings.footer_text_color || '#FFFFFF' %>" style="width: 90px; padding: 8px; border: 2px solid #e8e0d8; border-radius: 8px; font-size: 13px; direction: ltr; text-align: center; font-family: monospace;" onchange="document.getElementById('tc_footertxt').value=this.value; updatePreview()">
+                            </div>
                         </div>
                     </div>
-                    <button type="submit" class="btn btn-primary">حفظ</button>
+
+                    <!-- Live Preview -->
+                    <div style="margin-top: 24px; border: 2px solid #e8e0d8; border-radius: 12px; overflow: hidden;" id="themePreview">
+                        <div id="prev_header" style="padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; background: <%= settings.header_bg_color || '#FFFFFF' %>; color: <%= settings.header_text_color || '#000000' %>;">
+                            <span style="font-weight: 700; font-size: 16px;">المتجر</span>
+                            <span style="font-size: 14px;">🛒 السلة</span>
+                        </div>
+                        <div id="prev_body" style="padding: 20px; background: <%= settings.bg_color || '#FFFFFF' %>; color: <%= settings.text_color || '#2C1810' %>;">
+                            <p style="font-size: 14px; margin-bottom: 12px;">هذا نص تجريبي لمعاينة ألوان الموقع الجديدة.</p>
+                            <div style="display: flex; gap: 8px;">
+                                <span id="prev_btn" style="display: inline-block; padding: 8px 20px; border-radius: 8px; font-size: 13px; font-weight: 700; background: <%= settings.button_color || '#000000' %>; color: <%= settings.button_text_color || '#FFFFFF' %>;">اشتري الآن</span>
+                                <span id="prev_price" style="padding: 8px 0; font-size: 15px; font-weight: 800; color: <%= settings.primary_color || '#000000' %>;">199 د.م</span>
+                            </div>
+                        </div>
+                        <div id="prev_footer" style="padding: 10px 20px; text-align: center; font-size: 12px; background: <%= settings.footer_bg_color || '#1a1a1a' %>; color: <%= settings.footer_text_color || '#FFFFFF' %>;">
+                            جميع الحقوق محفوظة © 2024
+                        </div>
+                    </div>
+                    <div class="hint" style="margin-top: 8px;">👆 معاينة مباشرة — التغييرات تُحفظ عند الضغط على "حفظ التصميم"</div>
+
+                    <div style="margin-top: 20px;">
+                        <button type="submit" class="btn btn-primary">حفظ التصميم</button>
+                    </div>
                 </form>
             </div>
+
+            <script>
+                function updatePreview() {
+                    var ph = document.getElementById('prev_header');
+                    var pb = document.getElementById('prev_body');
+                    var pf = document.getElementById('prev_footer');
+                    var btn = document.getElementById('prev_btn');
+                    var price = document.getElementById('prev_price');
+                    ph.style.background = document.getElementById('tc_headerbg').value;
+                    ph.style.color = document.getElementById('tc_headertxt').value;
+                    pb.style.background = document.getElementById('tc_bg').value;
+                    pb.style.color = document.getElementById('tc_text').value;
+                    btn.style.background = document.getElementById('tc_button').value;
+                    btn.style.color = document.getElementById('tc_btntext').value;
+                    price.style.color = document.getElementById('tc_primary').value;
+                    pf.style.background = document.getElementById('tc_footerbg').value;
+                    pf.style.color = document.getElementById('tc_footertxt').value;
+                }
+            </script>
 
             <!-- Profile Settings -->
             <div class="form-card">

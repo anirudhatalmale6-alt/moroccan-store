@@ -452,10 +452,24 @@ async function initDatabase() {
     db.prepare("INSERT INTO admin_settings (setting_key, setting_value) VALUES (?, ?)").run('custom_font_url', '');
   }
 
-  // Primary color setting
-  if (!db.prepare("SELECT 1 FROM admin_settings WHERE setting_key = 'primary_color'").get()) {
-    db.prepare("INSERT INTO admin_settings (setting_key, setting_value) VALUES (?, ?)").run('primary_color', '#8B6F47');
-  }
+  // Theme color settings
+  const themeDefaults = [
+    ['primary_color', '#000000'],
+    ['secondary_color', '#333333'],
+    ['button_color', '#000000'],
+    ['button_text_color', '#FFFFFF'],
+    ['text_color', '#2C1810'],
+    ['bg_color', '#FFFFFF'],
+    ['header_bg_color', '#FFFFFF'],
+    ['header_text_color', '#000000'],
+    ['footer_bg_color', '#1a1a1a'],
+    ['footer_text_color', '#FFFFFF'],
+  ];
+  themeDefaults.forEach(([key, val]) => {
+    if (!db.prepare("SELECT 1 FROM admin_settings WHERE setting_key = ?").get(key)) {
+      db.prepare("INSERT INTO admin_settings (setting_key, setting_value) VALUES (?, ?)").run(key, val);
+    }
+  });
 
   // Banner interval setting
   if (!db.prepare("SELECT 1 FROM admin_settings WHERE setting_key = 'banner_interval'").get()) {

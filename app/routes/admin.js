@@ -974,14 +974,27 @@ router.post('/settings/typography', requireAdmin, (req, res) => {
 });
 
 router.post('/settings/theme', requireAdmin, (req, res) => {
-  const color = req.body.primary_color || req.body.primary_color_text || '#8B6F47';
-  const existing = db.prepare("SELECT 1 FROM admin_settings WHERE setting_key = 'primary_color'").get();
-  if (existing) {
-    db.prepare("UPDATE admin_settings SET setting_value = ? WHERE setting_key = 'primary_color'").run(color);
-  } else {
-    db.prepare("INSERT INTO admin_settings (setting_key, setting_value) VALUES ('primary_color', ?)").run(color);
-  }
-  res.redirect('/admin/settings?success=تم تحديث لون المتجر');
+  const colorKeys = [
+    ['primary_color', req.body.primary_color || req.body.primary_color_text || '#000000'],
+    ['secondary_color', req.body.secondary_color || '#333333'],
+    ['button_color', req.body.button_color || '#000000'],
+    ['button_text_color', req.body.button_text_color || '#FFFFFF'],
+    ['text_color', req.body.text_color || '#2C1810'],
+    ['bg_color', req.body.bg_color || '#FFFFFF'],
+    ['header_bg_color', req.body.header_bg_color || '#FFFFFF'],
+    ['header_text_color', req.body.header_text_color || '#000000'],
+    ['footer_bg_color', req.body.footer_bg_color || '#1a1a1a'],
+    ['footer_text_color', req.body.footer_text_color || '#FFFFFF'],
+  ];
+  colorKeys.forEach(([key, value]) => {
+    const existing = db.prepare("SELECT 1 FROM admin_settings WHERE setting_key = ?").get(key);
+    if (existing) {
+      db.prepare("UPDATE admin_settings SET setting_value = ?, updated_at = datetime('now') WHERE setting_key = ?").run(value, key);
+    } else {
+      db.prepare("INSERT INTO admin_settings (setting_key, setting_value) VALUES (?, ?)").run(key, value);
+    }
+  });
+  res.redirect('/admin/settings?success=تم تحديث تصميم الموقع بنجاح');
 });
 
 router.post('/settings/site', requireAdmin, (req, res) => {

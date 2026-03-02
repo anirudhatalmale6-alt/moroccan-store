@@ -41,12 +41,21 @@ app.use((req, res, next) => {
     const fontUrlRow = db.prepare("SELECT setting_value FROM admin_settings WHERE setting_key = 'custom_font_url'").get();
     res.locals.customFontUrl = fontUrlRow ? fontUrlRow.setting_value : '';
 
-    const colorRow = db.prepare("SELECT setting_value FROM admin_settings WHERE setting_key = 'primary_color'").get();
-    res.locals.primaryColor = colorRow ? colorRow.setting_value : '#8B6F47';
-
-    // SEO & Social settings
+    // Load ALL settings at once
     const allSettings = {};
     db.prepare('SELECT setting_key, setting_value FROM admin_settings').all().forEach(r => { allSettings[r.setting_key] = r.setting_value; });
+
+    // Theme colors
+    res.locals.primaryColor = allSettings.primary_color || '#000000';
+    res.locals.secondaryColor = allSettings.secondary_color || '#333333';
+    res.locals.buttonColor = allSettings.button_color || '#000000';
+    res.locals.buttonTextColor = allSettings.button_text_color || '#FFFFFF';
+    res.locals.textColor = allSettings.text_color || '#2C1810';
+    res.locals.bgColor = allSettings.bg_color || '#FFFFFF';
+    res.locals.headerBgColor = allSettings.header_bg_color || '#FFFFFF';
+    res.locals.headerTextColor = allSettings.header_text_color || '#000000';
+    res.locals.footerBgColor = allSettings.footer_bg_color || '#1a1a1a';
+    res.locals.footerTextColor = allSettings.footer_text_color || '#FFFFFF';
     res.locals.metaTitle = allSettings.meta_title || '';
     res.locals.metaDescription = allSettings.meta_description || '';
     res.locals.ogImage = allSettings.og_image || '';
@@ -86,7 +95,16 @@ app.use((req, res, next) => {
     res.locals.siteName = 'متجرنا';
     res.locals.fontFamily = 'Cairo';
     res.locals.customFontUrl = '';
-    res.locals.primaryColor = '#8B6F47';
+    res.locals.primaryColor = '#000000';
+    res.locals.secondaryColor = '#333333';
+    res.locals.buttonColor = '#000000';
+    res.locals.buttonTextColor = '#FFFFFF';
+    res.locals.textColor = '#2C1810';
+    res.locals.bgColor = '#FFFFFF';
+    res.locals.headerBgColor = '#FFFFFF';
+    res.locals.headerTextColor = '#000000';
+    res.locals.footerBgColor = '#1a1a1a';
+    res.locals.footerTextColor = '#FFFFFF';
     res.locals.metaTitle = '';
     res.locals.metaDescription = '';
     res.locals.ogImage = '';
