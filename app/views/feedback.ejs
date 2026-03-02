@@ -90,11 +90,26 @@
 
             <% if (review.image_filename) { %>
               <% var _fimgs = []; try { _fimgs = JSON.parse(review.image_filename); } catch(e) { _fimgs = [review.image_filename]; } %>
-              <div style="margin-top: 16px; display: flex; gap: 8px; flex-wrap: wrap; justify-content: center;">
-                <% _fimgs.forEach(function(img) { if(img) { %>
-                  <img src="/uploads/reviews/<%= img %>" alt="صورة التقييم" style="max-width: <%= _fimgs.length > 1 ? '48%' : '100%' %>; max-height: 300px; border-radius: var(--radius-md); object-fit: cover; border: 1px solid var(--color-border-light);" loading="lazy">
-                <% } }); %>
-              </div>
+              <% if (_fimgs.length === 1 && _fimgs[0]) { %>
+                <div style="margin-top: 16px; text-align: center;">
+                  <img src="/uploads/reviews/<%= _fimgs[0] %>" alt="صورة التقييم" style="max-width: 100%; max-height: 300px; border-radius: var(--radius-md); object-fit: cover; border: 1px solid var(--color-border-light);" loading="lazy">
+                </div>
+              <% } else if (_fimgs.length > 1) { %>
+                <div class="review-img-slider" style="margin-top: 16px; position: relative; overflow: hidden; border-radius: var(--radius-md);">
+                  <div class="review-img-track" style="display: flex; transition: transform 0.3s ease; touch-action: pan-y;">
+                    <% _fimgs.forEach(function(img) { if(img) { %>
+                      <div style="flex: 0 0 100%; min-width: 0;">
+                        <img src="/uploads/reviews/<%= img %>" alt="صورة التقييم" style="width: 100%; aspect-ratio: 4/3; object-fit: cover; display: block;" loading="lazy">
+                      </div>
+                    <% } }); %>
+                  </div>
+                  <div style="display: flex; justify-content: center; gap: 6px; padding: 8px 0 4px;">
+                    <% _fimgs.forEach(function(img, idx) { if(img) { %>
+                      <span class="review-slider-dot" style="width: 8px; height: 8px; border-radius: 50%; background: <%= idx === 0 ? 'var(--color-primary)' : 'var(--color-border)' %>; cursor: pointer; transition: background 0.2s;"></span>
+                    <% } }); %>
+                  </div>
+                </div>
+              <% } %>
             <% } %>
 
             <% if (review.audio_filename) { %>

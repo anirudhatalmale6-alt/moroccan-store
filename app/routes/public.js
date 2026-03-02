@@ -203,25 +203,29 @@ router.get('/', (req, res) => {
     homeReviewCount = rc ? rc.count : 0;
   } catch (e) {}
 
-  // Load collections with their products
+  // Load collections with their products (and banner sections)
   let collections = [];
   try {
     const rawCollections = db.prepare('SELECT * FROM collections WHERE is_active = 1 ORDER BY sort_order').all();
     rawCollections.forEach(col => {
-      let colProducts = [];
-      const limit = Math.max(col.grid_product_count || 6, col.slider_product_count || 10);
-      if (col.category_id) {
-        colProducts = db.prepare('SELECT * FROM products WHERE is_active = 1 AND category_id = ? ORDER BY created_at DESC LIMIT ?').all(col.category_id, limit);
+      if (col.section_type === 'banner') {
+        // Banner sections don't need products
+        collections.push({ ...col, products: [], categorySlug: null });
       } else {
-        colProducts = db.prepare('SELECT * FROM products WHERE is_active = 1 ORDER BY created_at DESC LIMIT ?').all(limit);
+        let colProducts = [];
+        const limit = Math.max(col.grid_product_count || 6, col.slider_product_count || 10);
+        if (col.category_id) {
+          colProducts = db.prepare('SELECT * FROM products WHERE is_active = 1 AND category_id = ? ORDER BY created_at DESC LIMIT ?').all(col.category_id, limit);
+        } else {
+          colProducts = db.prepare('SELECT * FROM products WHERE is_active = 1 ORDER BY created_at DESC LIMIT ?').all(limit);
+        }
+        let categorySlug = null;
+        if (col.category_id) {
+          const cat = db.prepare('SELECT slug FROM categories WHERE id = ?').get(col.category_id);
+          if (cat) categorySlug = cat.slug;
+        }
+        collections.push({ ...col, products: colProducts, categorySlug });
       }
-      // Get category info for "view all" link
-      let categorySlug = null;
-      if (col.category_id) {
-        const cat = db.prepare('SELECT slug FROM categories WHERE id = ?').get(col.category_id);
-        if (cat) categorySlug = cat.slug;
-      }
-      collections.push({ ...col, products: colProducts, categorySlug });
     });
   } catch (e) {}
 

@@ -410,6 +410,12 @@ async function initDatabase() {
   addColumnIfNotExists('landing_page_sections', 'muted', "ALTER TABLE landing_page_sections ADD COLUMN muted INTEGER DEFAULT 1");
   addColumnIfNotExists('landing_page_sections', 'full_width', "ALTER TABLE landing_page_sections ADD COLUMN full_width INTEGER DEFAULT 0");
 
+  // Collections table — Section Builder (banner support)
+  addColumnIfNotExists('collections', 'section_type', "ALTER TABLE collections ADD COLUMN section_type TEXT DEFAULT 'products'");
+  addColumnIfNotExists('collections', 'banner_desktop_image', "ALTER TABLE collections ADD COLUMN banner_desktop_image TEXT DEFAULT ''");
+  addColumnIfNotExists('collections', 'banner_mobile_image', "ALTER TABLE collections ADD COLUMN banner_mobile_image TEXT DEFAULT ''");
+  addColumnIfNotExists('collections', 'banner_link_url', "ALTER TABLE collections ADD COLUMN banner_link_url TEXT DEFAULT ''");
+
   // Admins table
   addColumnIfNotExists('admins', 'email', "ALTER TABLE admins ADD COLUMN email TEXT DEFAULT ''");
 
@@ -464,6 +470,8 @@ async function initDatabase() {
     ['header_text_color', '#000000'],
     ['footer_bg_color', '#1a1a1a'],
     ['footer_text_color', '#FFFFFF'],
+    ['slider_arrow_color', '#333333'],
+    ['slider_arrow_bg_color', 'rgba(255,255,255,0.9)'],
   ];
   themeDefaults.forEach(([key, val]) => {
     if (!db.prepare("SELECT 1 FROM admin_settings WHERE setting_key = ?").get(key)) {

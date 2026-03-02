@@ -985,6 +985,8 @@ router.post('/settings/theme', requireAdmin, (req, res) => {
     ['header_text_color', req.body.header_text_color || '#000000'],
     ['footer_bg_color', req.body.footer_bg_color || '#1a1a1a'],
     ['footer_text_color', req.body.footer_text_color || '#FFFFFF'],
+    ['slider_arrow_color', req.body.slider_arrow_color || '#333333'],
+    ['slider_arrow_bg_color', req.body.slider_arrow_bg_color_text || req.body.slider_arrow_bg_color || 'rgba(255,255,255,0.9)'],
   ];
   colorKeys.forEach(([key, value]) => {
     const existing = db.prepare("SELECT 1 FROM admin_settings WHERE setting_key = ?").get(key);
@@ -1211,15 +1213,21 @@ router.get('/collections', requireAdmin, (req, res) => {
   res.render('admin/collections', { collections, categories });
 });
 
-router.post('/collections', requireAdmin, (req, res) => {
-  const { name, category_id, display_mode, grid_columns, grid_product_count, slider_product_count, slider_autoplay, show_title } = req.body;
+router.post('/collections', requireAdmin, bannerUpload.fields([
+  { name: 'banner_desktop_image', maxCount: 1 },
+  { name: 'banner_mobile_image', maxCount: 1 }
+]), (req, res) => {
+  const { name, section_type, category_id, display_mode, grid_columns, grid_product_count, slider_product_count, slider_autoplay, show_title, banner_link_url } = req.body;
   if (!name) return res.redirect('/admin/collections');
   const maxOrder = db.prepare('SELECT COALESCE(MAX(sort_order), -1) as max_order FROM collections').get();
+  const desktopImage = req.files && req.files.banner_desktop_image ? req.files.banner_desktop_image[0].filename : '';
+  const mobileImage = req.files && req.files.banner_mobile_image ? req.files.banner_mobile_image[0].filename : '';
   db.prepare(`
-    INSERT INTO collections (name, category_id, display_mode, grid_columns, grid_product_count, slider_product_count, slider_autoplay, show_title, sort_order)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO collections (name, section_type, category_id, display_mode, grid_columns, grid_product_count, slider_product_count, slider_autoplay, show_title, sort_order, banner_desktop_image, banner_mobile_image, banner_link_url)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `).run(
     name,
+    section_type || 'products',
     category_id || null,
     display_mode || 'grid',
     parseInt(grid_columns) || 2,
@@ -1227,18 +1235,38 @@ router.post('/collections', requireAdmin, (req, res) => {
     parseInt(slider_product_count) || 10,
     slider_autoplay === 'on' || slider_autoplay === '1' ? 1 : 0,
     show_title === 'on' || show_title === '1' ? 1 : 0,
-    maxOrder.max_order + 1
+    maxOrder.max_order + 1,
+    desktopImage,
+    mobileImage,
+    banner_link_url || ''
   );
   res.redirect('/admin/collections');
 });
 
-router.post('/collections/:id/update', requireAdmin, (req, res) => {
-  const { name, category_id, display_mode, grid_columns, grid_product_count, slider_product_count, slider_autoplay, is_active, show_title, sort_order } = req.body;
+router.post('/collections/:id/update', requireAdmin, bannerUpload.fields([
+  { name: 'banner_desktop_image', maxCount: 1 },
+  { name: 'banner_mobile_image', maxCount: 1 }
+]), (req, res) => {
+  const { name, section_type, category_id, display_mode, grid_columns, grid_product_count, slider_product_count, slider_autoplay, is_active, show_title, sort_order, banner_link_url } = req.body;
+  const existing = db.prepare('SELECT * FROM collections WHERE id = ?').get(req.params.id);
+  if (!existing) return res.redirect('/admin/collections');
+  const desktopImage = req.files && req.files.banner_desktop_image ? req.files.banner_desktop_image[0].filename : (existing.banner_desktop_image || '');
+  const mobileImage = req.files && req.files.banner_mobile_image ? req.files.banner_mobile_image[0].filename : (existing.banner_mobile_image || '');
+  // Delete old banner images if new ones are uploaded
+  if (req.files && req.files.banner_desktop_image && existing.banner_desktop_image) {
+    const oldPath = path.join(__dirname, '..', 'public', 'uploads', 'banners', existing.banner_desktop_image);
+    try { fs.unlinkSync(oldPath); } catch(e) {}
+  }
+  if (req.files && req.files.banner_mobile_image && existing.banner_mobile_image) {
+    const oldPath = path.join(__dirname, '..', 'public', 'uploads', 'banners', existing.banner_mobile_image);
+    try { fs.unlinkSync(oldPath); } catch(e) {}
+  }
   db.prepare(`
-    UPDATE collections SET name = ?, category_id = ?, display_mode = ?, grid_columns = ?, grid_product_count = ?, slider_product_count = ?, slider_autoplay = ?, is_active = ?, show_title = ?, sort_order = ?
+    UPDATE collections SET name = ?, section_type = ?, category_id = ?, display_mode = ?, grid_columns = ?, grid_product_count = ?, slider_product_count = ?, slider_autoplay = ?, is_active = ?, show_title = ?, sort_order = ?, banner_desktop_image = ?, banner_mobile_image = ?, banner_link_url = ?
     WHERE id = ?
   `).run(
     name,
+    section_type || 'products',
     category_id || null,
     display_mode || 'grid',
     parseInt(grid_columns) || 2,
@@ -1248,13 +1276,25 @@ router.post('/collections/:id/update', requireAdmin, (req, res) => {
     is_active === 'on' || is_active === '1' ? 1 : 0,
     show_title === 'on' || show_title === '1' ? 1 : 0,
     parseInt(sort_order) || 0,
+    desktopImage,
+    mobileImage,
+    banner_link_url || '',
     req.params.id
   );
   res.redirect('/admin/collections');
 });
 
 router.post('/collections/:id/delete', requireAdmin, (req, res) => {
-  db.prepare('DELETE FROM collections WHERE id = ?').run(req.params.id);
+  const col = db.prepare('SELECT * FROM collections WHERE id = ?').get(req.params.id);
+  if (col) {
+    if (col.banner_desktop_image) {
+      try { fs.unlinkSync(path.join(__dirname, '..', 'public', 'uploads', 'banners', col.banner_desktop_image)); } catch(e) {}
+    }
+    if (col.banner_mobile_image) {
+      try { fs.unlinkSync(path.join(__dirname, '..', 'public', 'uploads', 'banners', col.banner_mobile_image)); } catch(e) {}
+    }
+    db.prepare('DELETE FROM collections WHERE id = ?').run(req.params.id);
+  }
   res.redirect('/admin/collections');
 });
 

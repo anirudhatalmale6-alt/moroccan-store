@@ -19,6 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initQuantityControl();
   initDeliveryOptions();
   initImageProtection();
+  initReviewImageSliders();
 });
 
 /* --- Image Protection --- */
@@ -1128,3 +1129,73 @@ function seekWaAudio(e, wrap) {
 
 // Initialize waveforms on page load
 document.addEventListener('DOMContentLoaded', initWaWaveforms);
+
+/* --- Review Image Sliders (swipeable multi-image reviews) --- */
+function initReviewImageSliders() {
+  var sliders = document.querySelectorAll('.review-img-slider');
+  sliders.forEach(function(slider) {
+    var track = slider.querySelector('.review-img-track');
+    var dots = slider.querySelectorAll('.review-slider-dot');
+    if (!track || dots.length < 2) return;
+
+    var currentIdx = 0;
+    var totalSlides = dots.length;
+    var startX = 0;
+    var startY = 0;
+    var isDragging = false;
+    var isHorizontal = null;
+
+    function goTo(idx) {
+      idx = Math.max(0, Math.min(totalSlides - 1, idx));
+      currentIdx = idx;
+      track.style.transform = 'translateX(' + (-idx * 100) + '%)';
+      dots.forEach(function(d, i) {
+        d.style.background = i === idx ? 'var(--color-primary)' : 'var(--color-border)';
+      });
+    }
+
+    // Dot clicks
+    dots.forEach(function(dot, i) {
+      dot.addEventListener('click', function() { goTo(i); });
+    });
+
+    // Touch swipe
+    track.addEventListener('touchstart', function(e) {
+      startX = e.touches[0].clientX;
+      startY = e.touches[0].clientY;
+      isDragging = true;
+      isHorizontal = null;
+      track.style.transition = 'none';
+    }, { passive: true });
+
+    track.addEventListener('touchmove', function(e) {
+      if (!isDragging) return;
+      var dx = e.touches[0].clientX - startX;
+      var dy = e.touches[0].clientY - startY;
+      // Determine direction on first significant move
+      if (isHorizontal === null && (Math.abs(dx) > 5 || Math.abs(dy) > 5)) {
+        isHorizontal = Math.abs(dx) > Math.abs(dy);
+      }
+      if (!isHorizontal) return; // Let vertical scroll through
+      e.preventDefault();
+      var pct = (dx / slider.offsetWidth) * 100;
+      track.style.transform = 'translateX(' + (-currentIdx * 100 + pct) + '%)';
+    }, { passive: false });
+
+    track.addEventListener('touchend', function(e) {
+      if (!isDragging || !isHorizontal) { isDragging = false; return; }
+      isDragging = false;
+      track.style.transition = 'transform 0.3s ease';
+      var endX = e.changedTouches[0].clientX;
+      var diff = endX - startX;
+      var threshold = slider.offsetWidth * 0.2;
+      if (diff < -threshold && currentIdx < totalSlides - 1) {
+        goTo(currentIdx + 1);
+      } else if (diff > threshold && currentIdx > 0) {
+        goTo(currentIdx - 1);
+      } else {
+        goTo(currentIdx);
+      }
+    });
+  });
+}

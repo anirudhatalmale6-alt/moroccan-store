@@ -25,6 +25,8 @@
   --color-error: #C0392B;
   --color-error-light: #FDECEA;
   --color-whatsapp: #25D366;
+  --color-star: #F5A623;
+  --color-discount: #e74c3c;
   --shadow-sm: 0 1px 3px rgba(44, 24, 16, 0.06);
   --shadow-md: 0 4px 16px rgba(44, 24, 16, 0.08);
   --shadow-lg: 0 8px 32px rgba(44, 24, 16, 0.1);
@@ -482,7 +484,7 @@ a {
 }
 
 .btn--success {
-  background: linear-gradient(135deg, var(--color-success), #238B4E);
+  background: linear-gradient(135deg, var(--color-success), var(--color-success));
   color: white;
   box-shadow: 0 4px 20px rgba(45, 143, 94, 0.3);
 }
@@ -493,7 +495,7 @@ a {
 }
 
 .btn--whatsapp {
-  background: linear-gradient(135deg, var(--color-whatsapp), #1EBE5A);
+  background: linear-gradient(135deg, var(--color-whatsapp), var(--color-whatsapp));
   color: white;
   box-shadow: 0 4px 20px rgba(37, 211, 102, 0.3);
 }
@@ -675,16 +677,16 @@ a {
 }
 
 .gallery__placeholder--1 {
-  background: linear-gradient(135deg, #F5EDE3, #E8DDD0);
+  background: linear-gradient(135deg, var(--color-bg-warm), var(--color-border));
 }
 .gallery__placeholder--2 {
-  background: linear-gradient(135deg, #E8DDD0, #D4C4B0);
+  background: linear-gradient(135deg, var(--color-border), var(--color-primary-light));
 }
 .gallery__placeholder--3 {
-  background: linear-gradient(135deg, #D4C4B0, #C4A882);
+  background: linear-gradient(135deg, var(--color-primary-light), var(--color-accent));
 }
 .gallery__placeholder--4 {
-  background: linear-gradient(135deg, #C4A882, #B08D6A);
+  background: linear-gradient(135deg, var(--color-accent), var(--color-primary));
 }
 
 /* --- Trust / Testimonials --- */
@@ -711,7 +713,7 @@ a {
 }
 
 .trust-card__stars {
-  color: #F5A623;
+  color: var(--color-star);
   font-size: 16px;
   letter-spacing: 2px;
   margin-bottom: 16px;
@@ -1549,7 +1551,7 @@ a {
 }
 
 .hero__rating-stars {
-  color: #F5A623;
+  color: var(--color-star);
   font-size: 18px;
   letter-spacing: 2px;
   line-height: 1;
@@ -1644,7 +1646,7 @@ a {
 }
 
 .reviews-hero__stars {
-  color: #F5A623;
+  color: var(--color-star);
   font-size: 28px;
   letter-spacing: 3px;
 }
@@ -1710,7 +1712,7 @@ a {
 }
 
 .review-card__stars {
-  color: #F5A623;
+  color: var(--color-star);
   font-size: 16px;
   letter-spacing: 2px;
 }
@@ -1778,7 +1780,7 @@ a {
 
 .feedback-star:hover,
 .feedback-star.active {
-  color: #F5A623;
+  color: var(--color-star);
   transform: scale(1.15);
 }
 

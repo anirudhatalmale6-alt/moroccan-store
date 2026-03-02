@@ -25,6 +25,8 @@
   var htc = typeof headerTextColor !== 'undefined' ? headerTextColor : '#000000';
   var fbgc = typeof footerBgColor !== 'undefined' ? footerBgColor : '#1a1a1a';
   var ftc = typeof footerTextColor !== 'undefined' ? footerTextColor : '#FFFFFF';
+  var sac = typeof sliderArrowColor !== 'undefined' ? sliderArrowColor : '#333333';
+  var sabgc = typeof sliderArrowBgColor !== 'undefined' ? sliderArrowBgColor : 'rgba(255,255,255,0.9)';
 %>
 <link rel="stylesheet" href="/css/style.css">
 <style>
@@ -41,14 +43,24 @@
   --color-header-text: <%= htc %>;
   --color-footer-bg: <%= fbgc %>;
   --color-footer-text: <%= ftc %>;
+  --color-slider-arrow: <%= sac %>;
+  --color-slider-arrow-bg: <%= sabgc %>;
 }
 /* Dynamic theme overrides */
 body { background-color: var(--color-bg); color: var(--color-text); }
 .navbar { background: var(--color-header-bg) !important; }
+.navbar.scrolled { background: var(--color-header-bg) !important; }
 .navbar, .navbar a, .navbar__name, .navbar button { color: var(--color-header-text) !important; }
+.navbar__logo { background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark)); }
 .footer { background: var(--color-footer-bg) !important; color: var(--color-footer-text) !important; }
-.footer a { color: var(--color-footer-text) !important; }
-.btn-primary, .cta-btn, a[style*="background: var(--color-primary)"], a[style*="background:var(--color-primary)"] { background: var(--color-button) !important; color: var(--color-button-text) !important; }
+.footer a { color: var(--color-footer-text) !important; opacity: 0.8; }
+.btn--primary { background: linear-gradient(135deg, var(--color-button), var(--color-button)) !important; color: var(--color-button-text) !important; box-shadow: none; }
+.btn--primary:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.15); }
+.cta-section { background: linear-gradient(135deg, var(--color-primary-dark), var(--color-primary)); }
+.cta-section .btn--primary { background: var(--color-button-text) !important; color: var(--color-button) !important; }
+.section-header__divider { background: linear-gradient(90deg, var(--color-primary), var(--color-primary-dark)); }
+.hero__price-current { color: var(--color-primary); }
+.collection-viewall { color: var(--color-primary); }
 </style>
 
 <%/* SEO Meta Tags */%>

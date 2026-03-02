@@ -109,12 +109,23 @@
 
             <!-- Add Collection Form -->
             <div class="form-card">
-                <h3>اضافة مجموعة جديدة</h3>
-                <form method="POST" action="/admin/collections">
-                    <div class="form-group">
-                        <label>اسم المجموعة</label>
-                        <input type="text" name="name" placeholder="مثل: أحدث المنتجات، الأكثر مبيعاً..." required>
+                <h3>اضافة عنصر جديد</h3>
+                <form method="POST" action="/admin/collections" enctype="multipart/form-data">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>نوع العنصر</label>
+                            <select name="section_type" id="newSectionType" onchange="toggleNewSectionType()">
+                                <option value="products">مجموعة منتجات</option>
+                                <option value="banner">بانر (صورة)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>الاسم</label>
+                            <input type="text" name="name" placeholder="مثل: أحدث المنتجات، بانر عرض خاص..." required>
+                        </div>
                     </div>
+                    <!-- Products fields -->
+                    <div id="newProductsFields">
                     <div class="form-row">
                         <div class="form-group">
                             <label>التصنيف (اختياري)</label>
@@ -162,13 +173,32 @@
                             </div>
                         </div>
                     </div>
+                    </div>
+                    <!-- Banner fields -->
+                    <div id="newBannerFields" style="display: none;">
+                    <div class="form-group">
+                        <label>صورة البانر (سطح المكتب) *</label>
+                        <input type="file" name="banner_desktop_image" accept="image/*" style="padding: 8px;">
+                        <div class="info-text">الصورة الرئيسية للبانر — العرض الكامل</div>
+                    </div>
+                    <div class="form-group">
+                        <label>صورة البانر (موبايل) — اختياري</label>
+                        <input type="file" name="banner_mobile_image" accept="image/*" style="padding: 8px;">
+                        <div class="info-text">صورة مخصصة للموبايل (إذا تركت فارغة ستُعرض صورة سطح المكتب)</div>
+                    </div>
+                    <div class="form-group">
+                        <label>رابط البانر (اختياري)</label>
+                        <input type="text" name="banner_link_url" placeholder="https://...">
+                        <div class="info-text">عند الضغط على البانر سيتم التوجيه لهذا الرابط</div>
+                    </div>
+                    </div>
                     <div class="form-group">
                         <div class="checkbox-group">
                             <input type="checkbox" name="show_title" id="newShowTitle" checked>
                             <label for="newShowTitle" style="font-weight: 400; color: #666;">عرض عنوان المجموعة</label>
                         </div>
                     </div>
-                    <button type="submit" class="btn btn-primary">اضافة مجموعة</button>
+                    <button type="submit" class="btn btn-primary">اضافة عنصر</button>
                 </form>
             </div>
 
@@ -183,14 +213,18 @@
                             <div class="collection-top">
                                 <span class="collection-handle" title="اسحب لتغيير الترتيب">⠿</span>
                                 <span class="collection-name"><%= col.name %></span>
-                                <% if (col.category_name) { %>
-                                    <span style="font-size: 12px; color: #888; background: #f5f0eb; padding: 2px 10px; border-radius: 6px;"><%= col.category_name %></span>
+                                <% if (col.section_type === 'banner') { %>
+                                    <span class="collection-badge" style="background: #fff3e0; color: #e65100;">بانر</span>
                                 <% } else { %>
-                                    <span style="font-size: 12px; color: #888; background: #f5f0eb; padding: 2px 10px; border-radius: 6px;">كل المنتجات</span>
+                                    <% if (col.category_name) { %>
+                                        <span style="font-size: 12px; color: #888; background: #f5f0eb; padding: 2px 10px; border-radius: 6px;"><%= col.category_name %></span>
+                                    <% } else { %>
+                                        <span style="font-size: 12px; color: #888; background: #f5f0eb; padding: 2px 10px; border-radius: 6px;">كل المنتجات</span>
+                                    <% } %>
+                                    <span class="collection-badge <%= col.display_mode === 'grid' ? 'badge-grid' : (col.display_mode === 'slider' ? 'badge-slider' : 'badge-both') %>">
+                                        <%= col.display_mode === 'grid' ? 'شبكة' : (col.display_mode === 'slider' ? 'سلايدر' : 'شبكة + سلايدر') %>
+                                    </span>
                                 <% } %>
-                                <span class="collection-badge <%= col.display_mode === 'grid' ? 'badge-grid' : (col.display_mode === 'slider' ? 'badge-slider' : 'badge-both') %>">
-                                    <%= col.display_mode === 'grid' ? 'شبكة' : (col.display_mode === 'slider' ? 'سلايدر' : 'شبكة + سلايدر') %>
-                                </span>
                                 <span class="collection-badge <%= col.is_active ? 'badge-active' : 'badge-inactive' %>">
                                     <%= col.is_active ? 'مفعّل' : 'معطّل' %>
                                 </span>
@@ -202,11 +236,22 @@
                                 </div>
                             </div>
                             <div class="collection-details" id="details-<%= col.id %>">
-                                <form method="POST" action="/admin/collections/<%= col.id %>/update">
-                                    <div class="form-group">
-                                        <label>اسم المجموعة</label>
-                                        <input type="text" name="name" value="<%= col.name %>" required>
+                                <form method="POST" action="/admin/collections/<%= col.id %>/update" enctype="multipart/form-data">
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label>نوع العنصر</label>
+                                            <select name="section_type" onchange="toggleEditSectionType(this, '<%= col.id %>')">
+                                                <option value="products" <%= (!col.section_type || col.section_type === 'products') ? 'selected' : '' %>>مجموعة منتجات</option>
+                                                <option value="banner" <%= col.section_type === 'banner' ? 'selected' : '' %>>بانر (صورة)</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label>الاسم</label>
+                                            <input type="text" name="name" value="<%= col.name %>" required>
+                                        </div>
                                     </div>
+                                    <!-- Products fields -->
+                                    <div id="editProductsFields-<%= col.id %>" style="<%= col.section_type === 'banner' ? 'display:none;' : '' %>">
                                     <div class="form-row">
                                         <div class="form-group">
                                             <label>التصنيف</label>
@@ -253,6 +298,28 @@
                                             </div>
                                         </div>
                                     </div>
+                                    </div>
+                                    <!-- Banner fields -->
+                                    <div id="editBannerFields-<%= col.id %>" style="<%= col.section_type === 'banner' ? '' : 'display:none;' %>">
+                                    <div class="form-group">
+                                        <label>صورة البانر (سطح المكتب)</label>
+                                        <input type="file" name="banner_desktop_image" accept="image/*" style="padding: 8px;">
+                                        <% if (col.banner_desktop_image) { %>
+                                            <div style="margin-top: 8px;"><img src="/uploads/banners/<%= col.banner_desktop_image %>" style="max-width: 300px; max-height: 100px; border-radius: 8px; border: 1px solid #e8e0d8;"></div>
+                                        <% } %>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>صورة البانر (موبايل) — اختياري</label>
+                                        <input type="file" name="banner_mobile_image" accept="image/*" style="padding: 8px;">
+                                        <% if (col.banner_mobile_image) { %>
+                                            <div style="margin-top: 8px;"><img src="/uploads/banners/<%= col.banner_mobile_image %>" style="max-width: 200px; max-height: 80px; border-radius: 8px; border: 1px solid #e8e0d8;"></div>
+                                        <% } %>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>رابط البانر (اختياري)</label>
+                                        <input type="text" name="banner_link_url" value="<%= col.banner_link_url || '' %>" placeholder="https://...">
+                                    </div>
+                                    </div>
                                     <div class="form-row">
                                         <div class="form-group">
                                             <label>الترتيب</label>
@@ -288,13 +355,13 @@
 
             <!-- Help Section -->
             <div class="form-card" style="background: #faf8f5;">
-                <h3 style="border-bottom-color: #e8e0d8;">كيف تعمل المجموعات؟</h3>
+                <h3 style="border-bottom-color: #e8e0d8;">كيف يعمل منشئ الأقسام؟</h3>
                 <div style="font-size: 14px; color: #666; line-height: 2;">
-                    <p>🔹 <strong>شبكة (Grid)</strong> — عرض المنتجات في شبكة مع التحكم بعدد الأعمدة (2/3/4)</p>
-                    <p>🔹 <strong>سلايدر (Slider)</strong> — عرض المنتجات في شريط تمرير أفقي مع تشغيل تلقائي</p>
-                    <p>🔹 <strong>شبكة + سلايدر (Both)</strong> — عرض سلايدر أولاً ثم شبكة أسفله</p>
-                    <p>🔹 <strong>التصنيف</strong> — اربط المجموعة بتصنيف معين أو اتركها لعرض كل المنتجات</p>
-                    <p>🔹 <strong>الترتيب</strong> — حدد ترتيب ظهور كل مجموعة في الصفحة الرئيسية</p>
+                    <p>🔹 <strong>مجموعة منتجات</strong> — عرض منتجات بشكل شبكة أو سلايدر أو كلاهما</p>
+                    <p>🔹 <strong>بانر (صورة)</strong> — صورة بعرض كامل مع رابط اختياري وصورة مخصصة للموبايل</p>
+                    <p>🔹 <strong>الترتيب</strong> — حدد ترتيب ظهور كل عنصر في الصفحة الرئيسية (مثلاً: مجموعة ← بانر ← مجموعة)</p>
+                    <p>🔹 <strong>التصنيف</strong> — اربط مجموعة المنتجات بتصنيف معين أو اتركها لعرض الكل</p>
+                    <p>🔹 <strong>شبكة / سلايدر / كلاهما</strong> — اختر طريقة عرض المنتجات</p>
                 </div>
             </div>
         </main>
@@ -306,6 +373,18 @@
             var details = item.querySelector('.collection-details');
             details.classList.toggle('open');
             btn.textContent = details.classList.contains('open') ? 'إغلاق ▲' : 'تعديل ▼';
+        }
+
+        function toggleNewSectionType() {
+            var type = document.getElementById('newSectionType').value;
+            document.getElementById('newProductsFields').style.display = (type === 'banner') ? 'none' : '';
+            document.getElementById('newBannerFields').style.display = (type === 'banner') ? '' : 'none';
+        }
+
+        function toggleEditSectionType(select, id) {
+            var type = select.value;
+            document.getElementById('editProductsFields-' + id).style.display = (type === 'banner') ? 'none' : '';
+            document.getElementById('editBannerFields-' + id).style.display = (type === 'banner') ? '' : 'none';
         }
 
         function toggleNewFields() {

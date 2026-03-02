@@ -381,6 +381,23 @@
                                 <input type="text" id="tt_footertxt" value="<%= settings.footer_text_color || '#FFFFFF' %>" style="width: 90px; padding: 8px; border: 2px solid #e8e0d8; border-radius: 8px; font-size: 13px; direction: ltr; text-align: center; font-family: monospace;" onchange="document.getElementById('tc_footertxt').value=this.value; updatePreview()">
                             </div>
                         </div>
+                        <!-- Slider Arrow Color -->
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label>لون أسهم السلايدر</label>
+                            <div style="display: flex; gap: 10px; align-items: center;">
+                                <input type="color" name="slider_arrow_color" id="tc_arrowcolor" value="<%= settings.slider_arrow_color || '#333333' %>" style="width: 50px; height: 38px; border: 2px solid #e8e0d8; border-radius: 8px; cursor: pointer;">
+                                <input type="text" id="tt_arrowcolor" value="<%= settings.slider_arrow_color || '#333333' %>" style="width: 90px; padding: 8px; border: 2px solid #e8e0d8; border-radius: 8px; font-size: 13px; direction: ltr; text-align: center; font-family: monospace;" onchange="document.getElementById('tc_arrowcolor').value=this.value">
+                            </div>
+                        </div>
+                        <!-- Slider Arrow Background -->
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label>خلفية أسهم السلايدر</label>
+                            <div style="display: flex; gap: 10px; align-items: center;">
+                                <input type="color" name="slider_arrow_bg_color" id="tc_arrowbg" value="<%= (settings.slider_arrow_bg_color || 'rgba(255,255,255,0.9)').indexOf('rgba') === -1 ? (settings.slider_arrow_bg_color || '#FFFFFF') : '#FFFFFF' %>" style="width: 50px; height: 38px; border: 2px solid #e8e0d8; border-radius: 8px; cursor: pointer;">
+                                <input type="text" id="tt_arrowbg" name="slider_arrow_bg_color_text" value="<%= settings.slider_arrow_bg_color || 'rgba(255,255,255,0.9)' %>" style="width: 160px; padding: 8px; border: 2px solid #e8e0d8; border-radius: 8px; font-size: 13px; direction: ltr; text-align: center; font-family: monospace;" placeholder="rgba(255,255,255,0.9)">
+                            </div>
+                            <small style="color: #888; font-size: 11px;">يمكنك استخدام rgba للشفافية مثل: rgba(255,255,255,0.8)</small>
+                        </div>
                     </div>
 
                     <!-- Live Preview -->

@@ -2,9 +2,9 @@
   <div class="container">
     <% if (typeof siteLang !== 'undefined' && siteLang === 'both') { %>
     <div style="display: flex; justify-content: center; gap: 12px; margin-bottom: 12px;">
-      <a href="?lang=ar" style="color: inherit; text-decoration: none; font-size: 13px; font-weight: 700; opacity: <%= (typeof lang !== 'undefined' && lang === 'ar') ? '1' : '0.6' %>; border-bottom: <%= (typeof lang !== 'undefined' && lang === 'ar') ? '2px solid var(--color-primary)' : 'none' %>; padding-bottom: 2px;">العربية</a>
+      <a href="?lang=ar" style="color: inherit; text-decoration: none; font-size: 13px; font-weight: 700; opacity: <%= (typeof lang !== 'undefined' && lang === 'ar') ? '1' : '0.6' %>; border-bottom: <%= (typeof lang !== 'undefined' && lang === 'ar') ? '2px solid currentColor' : 'none' %>; padding-bottom: 2px;">العربية</a>
       <span style="opacity: 0.3;">|</span>
-      <a href="?lang=fr" style="color: inherit; text-decoration: none; font-size: 13px; font-weight: 700; opacity: <%= (typeof lang !== 'undefined' && lang === 'fr') ? '1' : '0.6' %>; border-bottom: <%= (typeof lang !== 'undefined' && lang === 'fr') ? '2px solid var(--color-primary)' : 'none' %>; padding-bottom: 2px;">Français</a>
+      <a href="?lang=fr" style="color: inherit; text-decoration: none; font-size: 13px; font-weight: 700; opacity: <%= (typeof lang !== 'undefined' && lang === 'fr') ? '1' : '0.6' %>; border-bottom: <%= (typeof lang !== 'undefined' && lang === 'fr') ? '2px solid currentColor' : 'none' %>; padding-bottom: 2px;">Français</a>
     </div>
     <% } %>
     <div style="display: flex; justify-content: center; gap: 24px; margin-bottom: 12px; flex-wrap: wrap;">
@@ -20,28 +20,28 @@
 <% if (typeof sidebarCategories !== 'undefined' && sidebarCategories && sidebarCategories.length > 0) { %>
 <% var _sidePos = (typeof dir !== 'undefined' && dir === 'ltr') ? 'left' : 'right'; %>
 <div id="sidebarOverlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.4); z-index:998; transition:opacity 0.3s;" onclick="closeSidebar()"></div>
-<div id="sidebarMenu" style="position:fixed; top:0; <%= _sidePos %>:-280px; width:280px; height:100%; background:#fff; z-index:999; transition:<%= _sidePos %> 0.3s ease; box-shadow:<%= _sidePos === 'right' ? '-' : '' %>2px 0 12px rgba(0,0,0,0.1); overflow-y:auto; display:flex; flex-direction:column;">
-  <div style="padding:20px 20px 16px; border-bottom:1px solid #f0ebe5; display:flex; align-items:center; justify-content:space-between;">
-    <h3 style="margin:0; font-size:18px; font-weight:700; color:var(--color-primary,#8B6F47);"><%= t('categories') %></h3>
-    <button type="button" onclick="closeSidebar()" style="background:none; border:none; font-size:24px; color:#999; cursor:pointer; padding:0; line-height:1;">&times;</button>
+<div id="sidebarMenu" style="position:fixed; top:0; <%= _sidePos %>:-280px; width:280px; height:100%; background:var(--color-card); z-index:999; transition:<%= _sidePos %> 0.3s ease; box-shadow:<%= _sidePos === 'right' ? '-' : '' %>2px 0 12px rgba(0,0,0,0.1); overflow-y:auto; display:flex; flex-direction:column;">
+  <div style="padding:20px 20px 16px; border-bottom:1px solid var(--color-border-light); display:flex; align-items:center; justify-content:space-between;">
+    <h3 style="margin:0; font-size:18px; font-weight:700; color:var(--color-primary);"><%= t('categories') %></h3>
+    <button type="button" onclick="closeSidebar()" style="background:none; border:none; font-size:24px; color:var(--color-text-muted); cursor:pointer; padding:0; line-height:1;">&times;</button>
   </div>
   <nav style="flex:1; padding:12px 0;">
-    <a href="/" style="display:flex; align-items:center; gap:12px; padding:12px 20px; text-decoration:none; color:#333; font-size:14px; font-weight:600; transition:background 0.2s;" onmouseover="this.style.background='#faf8f5'" onmouseout="this.style.background=''">
+    <a href="/" style="display:flex; align-items:center; gap:12px; padding:12px 20px; text-decoration:none; color:var(--color-text); font-size:14px; font-weight:600; transition:background 0.2s;" onmouseover="this.style.background='var(--color-bg-warm)'" onmouseout="this.style.background=''">
       <span style="font-size:18px;">🏠</span> <%= t('home') %>
     </a>
     <% sidebarCategories.forEach(function(cat) { %>
-      <a href="/category/<%= cat.slug %>" style="display:flex; align-items:center; gap:12px; padding:12px 20px; text-decoration:none; color:#333; font-size:14px; font-weight:600; transition:background 0.2s;" onmouseover="this.style.background='#faf8f5'" onmouseout="this.style.background=''">
+      <a href="/category/<%= cat.slug %>" style="display:flex; align-items:center; gap:12px; padding:12px 20px; text-decoration:none; color:var(--color-text); font-size:14px; font-weight:600; transition:background 0.2s;" onmouseover="this.style.background='var(--color-bg-warm)'" onmouseout="this.style.background=''">
         <% if (cat.image_filename) { %>
           <img src="/uploads/categories/<%= cat.image_filename %>" alt="" style="width:32px; height:32px; border-radius:50%; object-fit:cover;">
         <% } else { %>
-          <span style="width:32px; height:32px; border-radius:50%; background:#f0ebe5; display:flex; align-items:center; justify-content:center; font-size:16px;">📦</span>
+          <span style="width:32px; height:32px; border-radius:50%; background:var(--color-bg-warm); display:flex; align-items:center; justify-content:center; font-size:16px;">📦</span>
         <% } %>
         <%= cat.name %>
       </a>
     <% }); %>
   </nav>
-  <div style="padding:16px 20px; border-top:1px solid #f0ebe5;">
-    <a href="/feedback" style="display:flex; align-items:center; gap:8px; text-decoration:none; color:var(--color-primary,#8B6F47); font-size:13px; font-weight:700;">⭐ <%= t('sidebar_feedback') %></a>
+  <div style="padding:16px 20px; border-top:1px solid var(--color-border-light);">
+    <a href="/feedback" style="display:flex; align-items:center; gap:8px; text-decoration:none; color:var(--color-primary); font-size:13px; font-weight:700;">⭐ <%= t('sidebar_feedback') %></a>
   </div>
 </div>
 <script>
@@ -63,35 +63,35 @@ function closeSidebar(){
 <% if (typeof cartMode !== 'undefined' && cartMode === 'drawer') { %>
 <% var _cartSide = (typeof dir !== 'undefined' && dir === 'ltr') ? 'right' : 'left'; %>
 <div id="cartDrawerOverlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.4); z-index:1000; transition:opacity 0.3s;" onclick="closeCartDrawer()"></div>
-<div id="cartDrawer" style="position:fixed; top:0; <%= _cartSide %>:-360px; width:360px; max-width:90vw; height:100%; background:#fff; z-index:1001; transition:<%= _cartSide %> 0.3s ease; box-shadow:<%= _cartSide === 'left' ? '' : '-' %>2px 0 16px rgba(0,0,0,0.15); display:flex; flex-direction:column;">
+<div id="cartDrawer" style="position:fixed; top:0; <%= _cartSide %>:-360px; width:360px; max-width:90vw; height:100%; background:var(--color-card); z-index:1001; transition:<%= _cartSide %> 0.3s ease; box-shadow:<%= _cartSide === 'left' ? '' : '-' %>2px 0 16px rgba(0,0,0,0.15); display:flex; flex-direction:column;">
   <!-- Header -->
-  <div style="padding:16px 20px; border-bottom:1px solid #f0ebe5; display:flex; align-items:center; justify-content:space-between; flex-shrink:0;">
-    <h3 style="margin:0; font-size:18px; font-weight:700; color:var(--color-primary,#8B6F47);">🛒 <%= t('shopping_cart') %></h3>
-    <button type="button" onclick="closeCartDrawer()" style="background:none; border:none; font-size:24px; color:#999; cursor:pointer; padding:0; line-height:1;">&times;</button>
+  <div style="padding:16px 20px; border-bottom:1px solid var(--color-border-light); display:flex; align-items:center; justify-content:space-between; flex-shrink:0;">
+    <h3 style="margin:0; font-size:18px; font-weight:700; color:var(--color-primary);">🛒 <%= t('shopping_cart') %></h3>
+    <button type="button" onclick="closeCartDrawer()" style="background:none; border:none; font-size:24px; color:var(--color-text-muted); cursor:pointer; padding:0; line-height:1;">&times;</button>
   </div>
   <!-- Items container -->
   <div id="cartDrawerItems" style="flex:1; overflow-y:auto; padding:12px 16px;">
-    <div id="cartDrawerLoading" style="text-align:center; padding:40px 0; color:#999;">
+    <div id="cartDrawerLoading" style="text-align:center; padding:40px 0; color:var(--color-text-muted);">
       <div style="font-size:32px; margin-bottom:8px;">🛒</div>
       <p><%= t('loading_more') %></p>
     </div>
-    <div id="cartDrawerEmpty" style="display:none; text-align:center; padding:40px 0; color:#999;">
+    <div id="cartDrawerEmpty" style="display:none; text-align:center; padding:40px 0; color:var(--color-text-muted);">
       <div style="font-size:48px; margin-bottom:12px;">🛒</div>
       <p style="font-size:16px; font-weight:600; margin-bottom:8px;"><%= t('empty_cart') %></p>
-      <a href="/" style="display:inline-block; margin-top:12px; padding:10px 24px; background:var(--color-primary); color:#fff; text-decoration:none; border-radius:10px; font-size:14px; font-weight:700;"><%= t('continue_shopping') %></a>
+      <a href="/" style="display:inline-block; margin-top:12px; padding:10px 24px; background:var(--color-button); color:var(--color-button-text); text-decoration:none; border-radius:10px; font-size:14px; font-weight:700;"><%= t('continue_shopping') %></a>
     </div>
     <div id="cartDrawerList" style="display:none;"></div>
   </div>
   <!-- Footer with total -->
-  <div id="cartDrawerFooter" style="display:none; padding:16px 20px; border-top:2px solid #f0ebe5; flex-shrink:0; background:#faf8f5;">
-    <div id="cartDrawerGift" style="display:none; margin-bottom:12px; padding:10px; background:#e8f5e9; border-radius:8px; font-size:13px; color:#2e7d32; font-weight:600;"></div>
+  <div id="cartDrawerFooter" style="display:none; padding:16px 20px; border-top:2px solid var(--color-border-light); flex-shrink:0; background:var(--color-bg-warm);">
+    <div id="cartDrawerGift" style="display:none; margin-bottom:12px; padding:10px; background:var(--color-success-light); border-radius:8px; font-size:13px; color:var(--color-success); font-weight:600;"></div>
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-      <span style="font-size:15px; font-weight:700; color:#555;"><%= t('total') %></span>
+      <span style="font-size:15px; font-weight:700; color:var(--color-text-secondary);"><%= t('total') %></span>
       <span id="cartDrawerTotal" style="font-size:20px; font-weight:800; color:var(--color-primary);"></span>
     </div>
     <div style="display:flex; gap:8px;">
-      <a href="/cart" style="flex:1; display:block; text-align:center; padding:12px; background:#f0ebe5; color:#333; text-decoration:none; border-radius:10px; font-size:14px; font-weight:700;"><%= t('cart') %></a>
-      <a id="cartDrawerCheckoutBtn" href="/cart" style="flex:2; display:block; text-align:center; padding:12px; background:var(--color-primary); color:#fff; text-decoration:none; border-radius:10px; font-size:14px; font-weight:700;"><%= t('checkout') %></a>
+      <a href="/cart" style="flex:1; display:block; text-align:center; padding:12px; background:var(--color-bg-warm); color:var(--color-text); text-decoration:none; border-radius:10px; font-size:14px; font-weight:700;"><%= t('cart') %></a>
+      <a id="cartDrawerCheckoutBtn" href="/cart" style="flex:2; display:block; text-align:center; padding:12px; background:var(--color-button); color:var(--color-button-text); text-decoration:none; border-radius:10px; font-size:14px; font-weight:700;"><%= t('checkout') %></a>
     </div>
   </div>
 </div>
@@ -131,28 +131,28 @@ function loadCartDrawer(){
       data.items.forEach(function(item){
         var imgHtml = item.main_image
           ? '<img src="/uploads/products/'+item.main_image+'" style="width:60px;height:60px;object-fit:cover;border-radius:8px;flex-shrink:0;">'
-          : '<div style="width:60px;height:60px;border-radius:8px;background:#f0ebe5;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;">🛍️</div>';
+          : '<div style="width:60px;height:60px;border-radius:8px;background:var(--color-bg-warm);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;">🛍️</div>';
         var varInfo='';
-        if(item.size_label) varInfo+='<span style="font-size:11px;color:#888;background:#f5f1ed;padding:2px 6px;border-radius:4px;">'+item.size_label+'</span> ';
-        if(item.color_label) varInfo+='<span style="font-size:11px;color:#888;background:#f5f1ed;padding:2px 6px;border-radius:4px;">'+item.color_label+'</span>';
-        html+='<div style="display:flex;gap:12px;padding:12px 0;border-bottom:1px solid #f5f1ed;align-items:center;">'+
+        if(item.size_label) varInfo+='<span style="font-size:11px;color:var(--color-text-muted);background:var(--color-bg-warm);padding:2px 6px;border-radius:4px;">'+item.size_label+'</span> ';
+        if(item.color_label) varInfo+='<span style="font-size:11px;color:var(--color-text-muted);background:var(--color-bg-warm);padding:2px 6px;border-radius:4px;">'+item.color_label+'</span>';
+        html+='<div style="display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--color-border-light);align-items:center;">'+
           imgHtml+
           '<div style="flex:1;min-width:0;">'+
-            '<a href="/product/'+item.slug+'" style="font-size:13px;font-weight:600;color:#333;text-decoration:none;display:block;margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+item.title+'</a>'+
+            '<a href="/product/'+item.slug+'" style="font-size:13px;font-weight:600;color:var(--color-text);text-decoration:none;display:block;margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+item.title+'</a>'+
             (varInfo?'<div style="margin-bottom:4px;">'+varInfo+'</div>':'')+
             '<div style="display:flex;align-items:center;gap:8px;">'+
               '<span id="drawer-item-total-'+item.id+'" style="font-size:14px;font-weight:700;color:var(--color-primary);">'+item.subtotal+' '+_cartDrawerCurrency+'</span>'+
             '</div>'+
             '<div style="display:flex;align-items:center;gap:6px;margin-top:6px;">'+
               (item.quantity<=1
-                ? '<button id="drawer-minus-'+item.id+'" disabled onclick="drawerQtyDelta('+item.id+',-1)" style="width:28px;height:28px;border-radius:50%;border:1px solid #eee;background:#f9f9f9;font-size:16px;cursor:not-allowed;display:flex;align-items:center;justify-content:center;color:#ccc;line-height:1;">−</button>'
-                : '<button id="drawer-minus-'+item.id+'" onclick="drawerQtyDelta('+item.id+',-1)" style="width:28px;height:28px;border-radius:50%;border:1px solid #e0d8d0;background:#faf8f5;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#555;line-height:1;">−</button>'
+                ? '<button id="drawer-minus-'+item.id+'" disabled onclick="drawerQtyDelta('+item.id+',-1)" style="width:28px;height:28px;border-radius:50%;border:1px solid var(--color-border-light);background:var(--color-bg);font-size:16px;cursor:not-allowed;display:flex;align-items:center;justify-content:center;color:var(--color-text-muted);line-height:1;">−</button>'
+                : '<button id="drawer-minus-'+item.id+'" onclick="drawerQtyDelta('+item.id+',-1)" style="width:28px;height:28px;border-radius:50%;border:1px solid var(--color-border);background:var(--color-bg-warm);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--color-text-secondary);line-height:1;">−</button>'
               )+
-              '<span id="drawer-qty-'+item.id+'" style="font-size:14px;font-weight:700;color:#333;min-width:20px;text-align:center;">'+item.quantity+'</span>'+
-              '<button onclick="drawerQtyDelta('+item.id+',1)" style="width:28px;height:28px;border-radius:50%;border:1px solid #e0d8d0;background:#faf8f5;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#555;line-height:1;">+</button>'+
+              '<span id="drawer-qty-'+item.id+'" style="font-size:14px;font-weight:700;color:var(--color-text);min-width:20px;text-align:center;">'+item.quantity+'</span>'+
+              '<button onclick="drawerQtyDelta('+item.id+',1)" style="width:28px;height:28px;border-radius:50%;border:1px solid var(--color-border);background:var(--color-bg-warm);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--color-text-secondary);line-height:1;">+</button>'+
             '</div>'+
           '</div>'+
-          '<button onclick="removeCartDrawerItem('+item.id+')" style="background:none;border:none;font-size:18px;color:#ccc;cursor:pointer;padding:4px;line-height:1;" title="'+_cartDrawerRemoveText+'">🗑️</button>'+
+          '<button onclick="removeCartDrawerItem('+item.id+')" style="background:none;border:none;font-size:18px;color:var(--color-text-muted);cursor:pointer;padding:4px;line-height:1;" title="'+_cartDrawerRemoveText+'">🗑️</button>'+
         '</div>';
       });
       document.getElementById('cartDrawerList').innerHTML=html;
@@ -166,7 +166,7 @@ function loadCartDrawer(){
         var giftImgHtml = data.giftProduct.image_filename
           ? '<img src="/uploads/gifts/'+data.giftProduct.image_filename+'" style="width:40px;height:40px;object-fit:cover;border-radius:6px;flex-shrink:0;" alt="">'
           : '<span style="font-size:24px;flex-shrink:0;">🎁</span>';
-        giftDiv.innerHTML='<div style="display:flex;align-items:center;gap:10px;">'+giftImgHtml+'<div style="flex:1;min-width:0;"><div style="font-weight:700;font-size:13px;">'+_cartDrawerFreeGiftText+'</div><div style="font-size:12px;opacity:0.85;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+data.giftProduct.name+'</div></div><span style="flex-shrink:0;font-weight:800;color:#2e7d32;font-size:13px;">مجاناً</span></div>';
+        giftDiv.innerHTML='<div style="display:flex;align-items:center;gap:10px;">'+giftImgHtml+'<div style="flex:1;min-width:0;"><div style="font-weight:700;font-size:13px;">'+_cartDrawerFreeGiftText+'</div><div style="font-size:12px;opacity:0.85;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+data.giftProduct.name+'</div></div><span style="flex-shrink:0;font-weight:800;color:var(--color-success);font-size:13px;">مجاناً</span></div>';
         giftDiv.style.display='block';
       } else {
         giftDiv.style.display='none';
@@ -204,37 +204,31 @@ function drawerQtyDelta(itemId, delta){
     .then(function(data){
       if(data.success){
         if(data.removed){
-          // Item removed, reload drawer to reflect
           loadCartDrawer();
         } else {
-          // Update quantity in drawer without full reload
           var qtyEl = document.getElementById('drawer-qty-'+itemId);
           if(qtyEl) qtyEl.textContent=data.newQty;
-          // Update item total price
           var itemTotalEl = document.getElementById('drawer-item-total-'+itemId);
           if(itemTotalEl) itemTotalEl.textContent=data.itemTotal+' '+_cartDrawerCurrency;
-          // Update cart total
           var totalEl = document.getElementById('cartDrawerTotal');
           if(totalEl) totalEl.textContent=data.cartTotal+' '+_cartDrawerCurrency;
-          // Update minus button state
           var minusBtnEl = document.getElementById('drawer-minus-'+itemId);
           if(minusBtnEl){
             if(data.newQty<=1){
               minusBtnEl.disabled=true;
               minusBtnEl.style.cursor='not-allowed';
-              minusBtnEl.style.color='#ccc';
-              minusBtnEl.style.borderColor='#eee';
-              minusBtnEl.style.background='#f9f9f9';
+              minusBtnEl.style.color='var(--color-text-muted)';
+              minusBtnEl.style.borderColor='var(--color-border-light)';
+              minusBtnEl.style.background='var(--color-bg)';
             } else {
               minusBtnEl.disabled=false;
               minusBtnEl.style.cursor='pointer';
-              minusBtnEl.style.color='#555';
-              minusBtnEl.style.borderColor='#e0d8d0';
-              minusBtnEl.style.background='#faf8f5';
+              minusBtnEl.style.color='var(--color-text-secondary)';
+              minusBtnEl.style.borderColor='var(--color-border)';
+              minusBtnEl.style.background='var(--color-bg-warm)';
             }
           }
         }
-        // Update badge
         var badge=document.getElementById('cartBadge');
         if(badge && data.cartCount !== undefined){
           badge.textContent=data.cartCount;
