@@ -141,15 +141,15 @@ function loadCartDrawer(){
             '<a href="/product/'+item.slug+'" style="font-size:13px;font-weight:600;color:#333;text-decoration:none;display:block;margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+item.title+'</a>'+
             (varInfo?'<div style="margin-bottom:4px;">'+varInfo+'</div>':'')+
             '<div style="display:flex;align-items:center;gap:8px;">'+
-              '<span style="font-size:14px;font-weight:700;color:var(--color-primary);">'+item.unit_price+' '+_cartDrawerCurrency+'</span>'+
+              '<span id="drawer-item-total-'+item.id+'" style="font-size:14px;font-weight:700;color:var(--color-primary);">'+item.subtotal+' '+_cartDrawerCurrency+'</span>'+
             '</div>'+
             '<div style="display:flex;align-items:center;gap:6px;margin-top:6px;">'+
               (item.quantity<=1
-                ? '<button disabled style="width:28px;height:28px;border-radius:50%;border:1px solid #eee;background:#f9f9f9;font-size:16px;cursor:not-allowed;display:flex;align-items:center;justify-content:center;color:#ccc;line-height:1;">−</button>'
-                : '<button onclick="updateCartDrawerQty('+item.id+','+(item.quantity-1)+')" style="width:28px;height:28px;border-radius:50%;border:1px solid #e0d8d0;background:#faf8f5;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#555;line-height:1;">−</button>'
+                ? '<button id="drawer-minus-'+item.id+'" disabled onclick="drawerQtyDelta('+item.id+',-1)" style="width:28px;height:28px;border-radius:50%;border:1px solid #eee;background:#f9f9f9;font-size:16px;cursor:not-allowed;display:flex;align-items:center;justify-content:center;color:#ccc;line-height:1;">−</button>'
+                : '<button id="drawer-minus-'+item.id+'" onclick="drawerQtyDelta('+item.id+',-1)" style="width:28px;height:28px;border-radius:50%;border:1px solid #e0d8d0;background:#faf8f5;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#555;line-height:1;">−</button>'
               )+
-              '<span style="font-size:14px;font-weight:700;color:#333;min-width:20px;text-align:center;">'+item.quantity+'</span>'+
-              '<button onclick="updateCartDrawerQty('+item.id+','+(item.quantity+1)+')" style="width:28px;height:28px;border-radius:50%;border:1px solid #e0d8d0;background:#faf8f5;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#555;line-height:1;">+</button>'+
+              '<span id="drawer-qty-'+item.id+'" style="font-size:14px;font-weight:700;color:#333;min-width:20px;text-align:center;">'+item.quantity+'</span>'+
+              '<button onclick="drawerQtyDelta('+item.id+',1)" style="width:28px;height:28px;border-radius:50%;border:1px solid #e0d8d0;background:#faf8f5;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#555;line-height:1;">+</button>'+
             '</div>'+
           '</div>'+
           '<button onclick="removeCartDrawerItem('+item.id+')" style="background:none;border:none;font-size:18px;color:#ccc;cursor:pointer;padding:4px;line-height:1;" title="'+_cartDrawerRemoveText+'">🗑️</button>'+
@@ -195,21 +195,62 @@ function removeCartDrawerItem(itemId){
   }).then(function(){ loadCartDrawer(); });
 }
 
-function updateCartDrawerQty(itemId, newQty){
-  if(newQty<1){ removeCartDrawerItem(itemId); return; }
-  fetch('/cart/update',{
+function drawerQtyDelta(itemId, delta){
+  fetch('/api/cart/update-qty',{
     method:'POST',
     headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({item_id:itemId, quantity:newQty})
+    body:JSON.stringify({itemId:itemId, delta:delta})
   }).then(function(r){ return r.json(); })
     .then(function(data){
-      if(data.success) loadCartDrawer();
-      var badge=document.getElementById('cartBadge');
-      if(badge && data.cartCount !== undefined){
-        badge.textContent=data.cartCount;
-        badge.style.display=data.cartCount>0?'flex':'none';
+      if(data.success){
+        if(data.removed){
+          // Item removed, reload drawer to reflect
+          loadCartDrawer();
+        } else {
+          // Update quantity in drawer without full reload
+          var qtyEl = document.getElementById('drawer-qty-'+itemId);
+          if(qtyEl) qtyEl.textContent=data.newQty;
+          // Update item total price
+          var itemTotalEl = document.getElementById('drawer-item-total-'+itemId);
+          if(itemTotalEl) itemTotalEl.textContent=data.itemTotal+' '+_cartDrawerCurrency;
+          // Update cart total
+          var totalEl = document.getElementById('cartDrawerTotal');
+          if(totalEl) totalEl.textContent=data.cartTotal+' '+_cartDrawerCurrency;
+          // Update minus button state
+          var minusBtnEl = document.getElementById('drawer-minus-'+itemId);
+          if(minusBtnEl){
+            if(data.newQty<=1){
+              minusBtnEl.disabled=true;
+              minusBtnEl.style.cursor='not-allowed';
+              minusBtnEl.style.color='#ccc';
+              minusBtnEl.style.borderColor='#eee';
+              minusBtnEl.style.background='#f9f9f9';
+            } else {
+              minusBtnEl.disabled=false;
+              minusBtnEl.style.cursor='pointer';
+              minusBtnEl.style.color='#555';
+              minusBtnEl.style.borderColor='#e0d8d0';
+              minusBtnEl.style.background='#faf8f5';
+            }
+          }
+        }
+        // Update badge
+        var badge=document.getElementById('cartBadge');
+        if(badge && data.cartCount !== undefined){
+          badge.textContent=data.cartCount;
+          badge.style.display=data.cartCount>0?'flex':'none';
+        }
       }
     });
+}
+
+// Legacy compat wrapper
+function updateCartDrawerQty(itemId, newQty){
+  var currentQtyEl = document.getElementById('drawer-qty-'+itemId);
+  var currentQty = currentQtyEl ? parseInt(currentQtyEl.textContent) : 0;
+  var delta = newQty - currentQty;
+  if(newQty<1){ removeCartDrawerItem(itemId); return; }
+  drawerQtyDelta(itemId, delta);
 }
 </script>
 <% } %>

@@ -13,8 +13,12 @@
       <div class="navbar__inner">
         <div class="navbar__brand">
           <a href="/" style="display: flex; align-items: center; gap: 10px;">
-            <div class="navbar__logo"><%= typeof siteName !== 'undefined' ? siteName.charAt(0) : 'م' %></div>
-            <span class="navbar__name"><%= typeof siteName !== 'undefined' ? siteName : 'متجرنا' %></span>
+            <% if (typeof desktopLogo !== 'undefined' && desktopLogo) { %>
+              <img src="/uploads/settings/<%= desktopLogo %>" alt="" style="height: 36px; width: auto;">
+            <% } else { %>
+              <div class="navbar__logo"><%= typeof siteName !== 'undefined' ? siteName.charAt(0) : 'م' %></div>
+              <span class="navbar__name"><%= typeof siteName !== 'undefined' ? siteName : 'متجرنا' %></span>
+            <% } %>
           </a>
         </div>
         <div class="checkout-header__steps">
@@ -94,7 +98,7 @@
             <div class="form-section">
               <h2 class="form-section__title">
                 <span class="form-section__title-icon">📐</span>
-                اختر الحجم
+                <%= t('choose_size') %>
               </h2>
               <div style="display: flex; flex-wrap: wrap; gap: 8px;">
                 <% sizeVariations.forEach(function(v, idx) { %>
@@ -121,7 +125,7 @@
             <div class="form-section">
               <h2 class="form-section__title">
                 <span class="form-section__title-icon">🎨</span>
-                اختر اللون
+                <%= t('choose_color') %>
               </h2>
               <div style="display: flex; flex-wrap: wrap; gap: 10px;">
                 <% colorVariations.forEach(function(v, idx) { %>
@@ -168,7 +172,7 @@
                     <div class="qty-control__value" id="qtyValue">1</div>
                     <button type="button" class="qty-control__btn" id="qtyPlus">+</button>
                   </div>
-                  <div class="qty-control__price" id="qtyPrice"><%= typeof product !== 'undefined' && product ? product.price : 0 %> درهم</div>
+                  <div class="qty-control__price" id="qtyPrice"><%= typeof product !== 'undefined' && product ? product.price : 0 %> <%= t('currency') %></div>
                 </div>
                 <div class="qty-control__detail" id="qtyDetail" style="display: none;">
                   <span id="qtyCalc"></span>
@@ -181,7 +185,7 @@
             <div class="form-section">
               <h2 class="form-section__title">
                 <span class="form-section__title-icon">💳</span>
-                خيار الدفع والتوصيل
+                <%= t('payment_delivery_option') %>
               </h2>
 
               <div class="delivery-options" id="paymentOptions">
@@ -214,13 +218,13 @@
                   <div class="delivery-option__card">
                     <div class="delivery-option__radio"></div>
                     <div class="delivery-option__content">
-                      <div class="delivery-option__title">الدفع عند الاستلام (COD)</div>
+                      <div class="delivery-option__title"><%= t('cod_title') %></div>
                       <div class="delivery-option__desc">
-                        ادفع المبلغ الكامل عند استلام الطلب. <strong>لا حاجة لإيصال</strong>.
+                        <%= t('cod_desc') %>. <strong><%= t('no_receipt_needed') %></strong>.
                       </div>
-                      <div class="delivery-option__meta">🚚 التوصيل خلال 24-48 ساعة</div>
+                      <div class="delivery-option__meta">🚚 <%= t('delivery_24_48') %></div>
                     </div>
-                    <div class="delivery-option__price" id="codPrice"><%= typeof product !== 'undefined' && product ? product.price : (typeof cartTotal !== 'undefined' ? cartTotal : 0) %> درهم</div>
+                    <div class="delivery-option__price" id="codPrice"><%= typeof product !== 'undefined' && product ? product.price : (typeof cartTotal !== 'undefined' ? cartTotal : 0) %> <%= t('currency') %></div>
                   </div>
                 </label>
                 <% } %>
@@ -232,13 +236,13 @@
                   <div class="delivery-option__card">
                     <div class="delivery-option__radio"></div>
                     <div class="delivery-option__content">
-                      <div class="delivery-option__title">الدفع الكامل (تحويل بنكي)</div>
+                      <div class="delivery-option__title"><%= t('bank_full_title') %></div>
                       <div class="delivery-option__desc">
-                        ادفع المبلغ الكامل واحصل على <strong>توصيل مجاني</strong> في نفس اليوم
+                        <%= t('bank_full_desc') %> <strong><%= t('free_delivery') %></strong> <%= t('same_day') %>
                       </div>
-                      <div class="delivery-option__meta">🎁 توصيل مجاني — نفس اليوم</div>
+                      <div class="delivery-option__meta">🎁 <%= t('free_delivery') %> — <%= t('same_day') %></div>
                     </div>
-                    <div class="delivery-option__price" id="fullPrice"><%= typeof product !== 'undefined' && product ? product.price : (typeof cartTotal !== 'undefined' ? cartTotal : 0) %> درهم</div>
+                    <div class="delivery-option__price" id="fullPrice"><%= typeof product !== 'undefined' && product ? product.price : (typeof cartTotal !== 'undefined' ? cartTotal : 0) %> <%= t('currency') %></div>
                   </div>
                 </label>
                 <% } %>
@@ -250,14 +254,14 @@
                   <div class="delivery-option__card">
                     <div class="delivery-option__radio"></div>
                     <div class="delivery-option__content">
-                      <div class="delivery-option__title">دفع العربون (تحويل بنكي)</div>
+                      <div class="delivery-option__title"><%= t('deposit_title') %></div>
                       <div class="delivery-option__desc">
-                        ادفع <strong><%= typeof product !== 'undefined' && product ? product.deposit_amount : 50 %> درهم</strong> كعربون + <strong>رسوم التوصيل <%= typeof product !== 'undefined' && product ? (product.delivery_fee || 50) : 50 %> درهم</strong>.
-                        المتبقي عند الاستلام: <strong id="depositRemainingInline"><%= typeof product !== 'undefined' && product ? (product.price - product.deposit_amount) : '' %> درهم</strong>
+                        <%= t('pay') %> <strong><%= typeof product !== 'undefined' && product ? product.deposit_amount : 50 %> <%= t('currency') %></strong> <%= t('as_deposit') %> + <strong><%= t('delivery_fee') %> <%= typeof product !== 'undefined' && product ? (product.delivery_fee || 50) : 50 %> <%= t('currency') %></strong>.
+                        <%= t('remaining_on_delivery') %>: <strong id="depositRemainingInline"><%= typeof product !== 'undefined' && product ? (product.price - product.deposit_amount) : '' %> <%= t('currency') %></strong>
                       </div>
-                      <div class="delivery-option__meta">⏰ التوصيل خلال 48 ساعة — رسوم التوصيل <%= typeof product !== 'undefined' && product ? (product.delivery_fee || 50) : 50 %> درهم</div>
+                      <div class="delivery-option__meta">⏰ <%= t('delivery_within_48') %> — <%= t('delivery_fee') %> <%= typeof product !== 'undefined' && product ? (product.delivery_fee || 50) : 50 %> <%= t('currency') %></div>
                     </div>
-                    <div class="delivery-option__price" id="depositPrice"><%= typeof product !== 'undefined' && product ? product.deposit_amount : 50 %> درهم</div>
+                    <div class="delivery-option__price" id="depositPrice"><%= typeof product !== 'undefined' && product ? product.deposit_amount : 50 %> <%= t('currency') %></div>
                   </div>
                 </label>
                 <% } %>
@@ -268,53 +272,53 @@
             <div class="form-section" id="bankDetailsSection">
               <h2 class="form-section__title">
                 <span class="form-section__title-icon">🏦</span>
-                التحويل البنكي
+                <%= t('bank_transfer') %>
               </h2>
 
               <div class="bank-transfer-amount">
                 <span class="bank-transfer-amount__label"><%= t('amount_to_transfer') %></span>
-                <span class="bank-transfer-amount__value" id="bankAmount"><%= typeof product !== 'undefined' && product ? product.price : (typeof cartTotal !== 'undefined' ? cartTotal : 0) %> درهم</span>
+                <span class="bank-transfer-amount__value" id="bankAmount"><%= typeof product !== 'undefined' && product ? product.price : (typeof cartTotal !== 'undefined' ? cartTotal : 0) %> <%= t('currency') %></span>
               </div>
 
               <div class="bank-details">
                 <% if (typeof bankSettings !== 'undefined' && bankSettings && bankSettings.length > 0) { %>
                   <% bankSettings.forEach(function(bank) { %>
                     <div class="bank-detail">
-                      <span class="bank-detail__label">البنك</span>
+                      <span class="bank-detail__label"><%= t('bank_name') %></span>
                       <span class="bank-detail__value"><%= bank.bank_name %></span>
                     </div>
                     <div class="bank-detail">
-                      <span class="bank-detail__label">صاحب الحساب</span>
+                      <span class="bank-detail__label"><%= t('account_holder') %></span>
                       <span class="bank-detail__value">
                         <%= bank.account_holder %>
-                        <button type="button" class="bank-detail__copy" data-value="<%= bank.account_holder %>" title="نسخ">📋</button>
+                        <button type="button" class="bank-detail__copy" data-value="<%= bank.account_holder %>" title="<%= t('copy') %>">📋</button>
                       </span>
                     </div>
                     <div class="bank-detail">
-                      <span class="bank-detail__label">رقم الحساب (RIB)</span>
+                      <span class="bank-detail__label"><%= t('account_number_rib') %></span>
                       <span class="bank-detail__value">
                         <%= bank.rib %>
-                        <button type="button" class="bank-detail__copy" data-value="<%= bank.rib.replace(/\s/g, '') %>" title="نسخ">📋</button>
+                        <button type="button" class="bank-detail__copy" data-value="<%= bank.rib.replace(/\s/g, '') %>" title="<%= t('copy') %>">📋</button>
                       </span>
                     </div>
                   <% }); %>
                 <% } else { %>
                   <div class="bank-detail">
-                    <span class="bank-detail__label">البنك</span>
+                    <span class="bank-detail__label"><%= t('bank_name') %></span>
                     <span class="bank-detail__value">CIH Bank</span>
                   </div>
                   <div class="bank-detail">
-                    <span class="bank-detail__label">صاحب الحساب</span>
+                    <span class="bank-detail__label"><%= t('account_holder') %></span>
                     <span class="bank-detail__value">
                       متجرنا SARL
-                      <button type="button" class="bank-detail__copy" data-value="متجرنا SARL" title="نسخ">📋</button>
+                      <button type="button" class="bank-detail__copy" data-value="متجرنا SARL" title="<%= t('copy') %>">📋</button>
                     </span>
                   </div>
                   <div class="bank-detail">
-                    <span class="bank-detail__label">رقم الحساب (RIB)</span>
+                    <span class="bank-detail__label"><%= t('account_number_rib') %></span>
                     <span class="bank-detail__value">
                       230 780 0118274000 68 30
-                      <button type="button" class="bank-detail__copy" data-value="230780011827400006830" title="نسخ">📋</button>
+                      <button type="button" class="bank-detail__copy" data-value="230780011827400006830" title="<%= t('copy') %>">📋</button>
                     </span>
                   </div>
                 <% } %>
@@ -331,16 +335,16 @@
               <div class="form-group">
                 <div class="upload-zone" id="uploadZone">
                   <div class="upload-zone__icon">📤</div>
-                  <div class="upload-zone__text">اضغط لرفع صورة إيصال الدفع</div>
-                  <div class="upload-zone__hint">JPG, PNG, PDF — الحد الأقصى 10MB</div>
+                  <div class="upload-zone__text"><%= t('click_upload_receipt') %></div>
+                  <div class="upload-zone__hint">JPG, PNG, PDF — Max 10MB</div>
                   <input type="file" id="receiptUpload" name="receipt" accept="image/*,.pdf">
                 </div>
                 <div class="upload-preview" id="uploadPreview">
-                  <img class="upload-preview__img" id="uploadPreviewImg" src="" alt="معاينة الإيصال" style="display:none;">
+                  <img class="upload-preview__img" id="uploadPreviewImg" src="" alt="<%= t('receipt_preview') %>" style="display:none;">
                   <div class="upload-preview__name" id="uploadPreviewName"></div>
                   <button type="button" class="upload-preview__remove" id="uploadPreviewRemove">✕</button>
                 </div>
-                <div class="form-error" id="receiptError">يرجى رفع إيصال الدفع</div>
+                <div class="form-error" id="receiptError"><%= t('please_upload_receipt') %></div>
               </div>
             </div>
 
@@ -367,9 +371,9 @@
               <% } %>
               <div class="order-summary__product-info">
                 <div class="order-summary__product-name" style="font-size: 14px;"><%= item.title %></div>
-                <% if (item.size_label) { %><div style="font-size: 11px; color: var(--color-text-muted);">الحجم: <%= item.size_label %></div><% } %>
-                <% if (item.color_label) { %><div style="font-size: 11px; color: var(--color-text-muted);">اللون: <%= item.color_label %></div><% } %>
-                <div class="order-summary__product-qty">الكمية: <%= item.quantity %> × <%= item.unit_price %> د.م</div>
+                <% if (item.size_label) { %><div style="font-size: 11px; color: var(--color-text-muted);"><%= t('variations_size') %>: <%= item.size_label %></div><% } %>
+                <% if (item.color_label) { %><div style="font-size: 11px; color: var(--color-text-muted);"><%= t('variations_color') %>: <%= item.color_label %></div><% } %>
+                <div class="order-summary__product-qty"><%= t('quantity') %>: <%= item.quantity %> × <%= item.unit_price %> <%= t('currency') %></div>
               </div>
             </div>
             <% }); %>
@@ -383,9 +387,9 @@
               <% } %>
               <div class="order-summary__product-info" style="flex: 1;">
                 <div style="font-size: 13px; font-weight: 700; color: var(--color-success, #2e7d32);"><%= giftProduct.name %></div>
-                <div style="font-size: 11px; color: var(--color-success, #2e7d32);">هدية مجانية</div>
+                <div style="font-size: 11px; color: var(--color-success, #2e7d32);"><%= t('free_gift') %></div>
               </div>
-              <div style="font-size: 14px; font-weight: 800; color: var(--color-success, #2e7d32); flex-shrink: 0;">مجاناً</div>
+              <div style="font-size: 14px; font-weight: 800; color: var(--color-success, #2e7d32); flex-shrink: 0;"><%= t('free') %></div>
             </div>
             <% } %>
           <% } else if (typeof product !== 'undefined' && product) { %>
@@ -400,8 +404,8 @@
               <% } %>
               <div class="order-summary__product-info">
                 <div class="order-summary__product-name"><%= product.title %></div>
-                <div class="order-summary__product-variant" id="summaryVariant">المنتج الأصلي</div>
-                <div class="order-summary__product-qty" id="summaryQty">الكمية: 1</div>
+                <div class="order-summary__product-variant" id="summaryVariant"><%= t('original_product') %></div>
+                <div class="order-summary__product-qty" id="summaryQty"><%= t('quantity') %>: 1</div>
               </div>
             </div>
           <% } %>
@@ -412,30 +416,30 @@
           </div>
 
           <div class="order-summary__row">
-            <span class="order-summary__row-label" id="summaryOptionLabel">خيار الدفع</span>
+            <span class="order-summary__row-label" id="summaryOptionLabel"><%= t('payment_option') %></span>
             <span class="order-summary__row-value" id="summaryOptionValue">—</span>
           </div>
 
           <div class="order-summary__row">
-            <span class="order-summary__row-label">التوصيل</span>
+            <span class="order-summary__row-label"><%= t('delivery') %></span>
             <span class="order-summary__row-value" id="summaryDelivery" style="color: var(--color-success);">—</span>
           </div>
 
           <div class="order-summary__row" id="summaryDeliveryFeeRow" style="display: none;">
-            <span class="order-summary__row-label">رسوم التوصيل</span>
-            <span class="order-summary__row-value" id="summaryDeliveryFee"><%= typeof product !== 'undefined' && product ? (product.delivery_fee || 50) : 50 %> درهم</span>
+            <span class="order-summary__row-label"><%= t('delivery_fee') %></span>
+            <span class="order-summary__row-value" id="summaryDeliveryFee"><%= typeof product !== 'undefined' && product ? (product.delivery_fee || 50) : 50 %> <%= t('currency') %></span>
           </div>
 
           <div class="order-summary__row order-summary__row--total">
-            <span class="order-summary__row-label">المبلغ المطلوب</span>
-            <span class="order-summary__row-value" id="summaryTotal"><%= typeof product !== 'undefined' && product ? product.price : (typeof cartTotal !== 'undefined' ? cartTotal : 0) %> درهم</span>
+            <span class="order-summary__row-label"><%= t('amount_required') %></span>
+            <span class="order-summary__row-value" id="summaryTotal"><%= typeof product !== 'undefined' && product ? product.price : (typeof cartTotal !== 'undefined' ? cartTotal : 0) %> <%= t('currency') %></span>
           </div>
 
           <div class="order-summary__remaining" id="summaryRemaining" style="display: none;">
-            المتبقي عند التوصيل: <strong id="summaryRemainingAmount">—</strong>
+            <%= t('remaining_on_delivery') %>: <strong id="summaryRemainingAmount">—</strong>
           </div>
 
-          <div class="order-summary__secure">🔒 معاملة آمنة ومشفرة</div>
+          <div class="order-summary__secure">🔒 <%= t('secure_transaction') %></div>
         </div>
 
       </div>
@@ -445,7 +449,7 @@
   <!-- Loading Overlay -->
   <div class="loading-overlay" id="loadingOverlay">
     <div class="loading-spinner"></div>
-    <div class="loading-text">جاري معالجة طلبك...</div>
+    <div class="loading-text"><%= t('processing_order') %></div>
   </div>
 
   <%- include('partials/footer') %>
@@ -472,6 +476,35 @@
     var DEPOSIT_AMOUNT = <%= typeof product !== 'undefined' && product ? product.deposit_amount : 50 %>;
     var DELIVERY_FEE = <%= typeof product !== 'undefined' && product ? (product.delivery_fee || 50) : 50 %>;
     var CART_TOTAL = <%= typeof cartTotal !== 'undefined' ? cartTotal : 0 %>;
+
+    // i18n strings for JS
+    var T_CURRENCY = '<%= t("currency") %>';
+    var T_QUANTITY = '<%= t("quantity") %>';
+    var T_SIZE = '<%= t("variations_size") %>';
+    var T_COLOR = '<%= t("variations_color") %>';
+    var T_ORIGINAL_PRODUCT = '<%= t("original_product") %>';
+    var T_PAYMENT_OPTION = '<%= t("payment_option") %>';
+    var T_COD_LABEL = '<%= t("cod") %>';
+    var T_DEPOSIT_LABEL = '<%= t("deposit") %>';
+    var T_FULL_PAYMENT = '<%= t("full_payment") %>';
+    var T_DELIVERY_24_48 = '<%= t("delivery_24_48") %>';
+    var T_WITHIN_48 = '<%= t("delivery_within_48") %>';
+    var T_FREE_DELIVERY_SAME_DAY = '<%= t("free_delivery_same_day") %>';
+    var T_REMAINING_ON_DELIVERY = '<%= t("remaining_on_delivery") %>';
+    var T_CLICK_UPLOAD_RECEIPT = '<%= t("click_upload_receipt") %>';
+    var T_FILE_SELECTED = '<%= t("file_selected") %>';
+    var T_SENDING_ORDER = '<%= t("sending_order") %>';
+    var T_PLACE_ORDER = '<%= t("place_order") %>';
+    var T_FILL_REQUIRED = '<%= t("fill_required_fields") %>';
+    var T_ENTER_NAME = '<%= t("enter_name") %>';
+    var T_ENTER_PHONE = '<%= t("enter_phone") %>';
+    var T_INVALID_PHONE = '<%= t("invalid_phone") %>';
+    var T_ENTER_CITY = '<%= t("enter_city") %>';
+    var T_ENTER_ADDRESS = '<%= t("enter_address") %>';
+    var T_CHOOSE_IMAGE_PDF = '<%= t("choose_image_pdf") %>';
+    var T_FILE_TOO_LARGE = '<%= t("file_too_large") %>';
+    var T_ERROR_OCCURRED = '<%= t("error_occurred") %>';
+    var T_CONNECTION_ERROR = '<%= t("connection_error") %>';
 
     var selectedSizeId = null;
     var selectedColorId = null;
@@ -599,10 +632,10 @@
         // codAddressFields always visible — delivery fields shown for all payment types
 
         // Quantity
-        if (qtyPriceEl) qtyPriceEl.textContent = totalProductPrice + ' درهم';
+        if (qtyPriceEl) qtyPriceEl.textContent = totalProductPrice + ' ' + T_CURRENCY;
         if (qty > 1 && qtyDetailEl && qtyCalcEl) {
           qtyDetailEl.style.display = 'block';
-          qtyCalcEl.textContent = qty + ' \u00d7 ' + effectiveUnitPrice + ' درهم = ' + totalProductPrice + ' درهم';
+          qtyCalcEl.textContent = qty + ' \u00d7 ' + effectiveUnitPrice + ' ' + T_CURRENCY + ' = ' + totalProductPrice + ' ' + T_CURRENCY;
         } else if (qtyDetailEl) {
           qtyDetailEl.style.display = 'none';
         }
@@ -611,26 +644,26 @@
         var codPriceEl = document.getElementById('codPrice');
         var fullPriceEl = document.getElementById('fullPrice');
         var depositPriceEl = document.getElementById('depositPrice');
-        if (codPriceEl) codPriceEl.textContent = totalProductPrice + ' درهم';
-        if (fullPriceEl) fullPriceEl.textContent = totalProductPrice + ' درهم';
-        if (depositPriceEl) depositPriceEl.textContent = DEPOSIT_AMOUNT + ' درهم';
+        if (codPriceEl) codPriceEl.textContent = totalProductPrice + ' ' + T_CURRENCY;
+        if (fullPriceEl) fullPriceEl.textContent = totalProductPrice + ' ' + T_CURRENCY;
+        if (depositPriceEl) depositPriceEl.textContent = DEPOSIT_AMOUNT + ' ' + T_CURRENCY;
 
         // Deposit remaining
         var depositRemainingInlineEl = document.getElementById('depositRemainingInline');
         if (depositRemainingInlineEl) {
-          depositRemainingInlineEl.textContent = (totalProductPrice - DEPOSIT_AMOUNT) + ' درهم';
+          depositRemainingInlineEl.textContent = (totalProductPrice - DEPOSIT_AMOUNT) + ' ' + T_CURRENCY;
         }
 
         // Bank amount
         var bankAmountEl = document.getElementById('bankAmount');
-        if (bankAmountEl) bankAmountEl.textContent = bankTransferAmount + ' درهم';
+        if (bankAmountEl) bankAmountEl.textContent = bankTransferAmount + ' ' + T_CURRENCY;
 
         // Summary: qty
-        if (summaryQtyEl) summaryQtyEl.textContent = 'الكمية: ' + qty;
+        if (summaryQtyEl) summaryQtyEl.textContent = T_QUANTITY + ': ' + qty;
         if (qty > 1 && summaryQtyRow) {
           summaryQtyRow.style.display = '';
-          if (summaryQtyLabel) summaryQtyLabel.textContent = qty + ' \u00d7 ' + effectiveUnitPrice + ' درهم';
-          if (summarySubtotal) summarySubtotal.textContent = totalProductPrice + ' درهم';
+          if (summaryQtyLabel) summaryQtyLabel.textContent = qty + ' \u00d7 ' + effectiveUnitPrice + ' ' + T_CURRENCY;
+          if (summarySubtotal) summarySubtotal.textContent = totalProductPrice + ' ' + T_CURRENCY;
         } else if (summaryQtyRow) {
           summaryQtyRow.style.display = 'none';
         }
@@ -638,33 +671,33 @@
         // Summary: variation
         if (summaryVariant) {
           var parts = [];
-          if (selectedSizeLabel) parts.push('الحجم: ' + selectedSizeLabel);
-          if (selectedColorLabel) parts.push('اللون: ' + selectedColorLabel);
-          summaryVariant.textContent = parts.length > 0 ? parts.join(' | ') : 'المنتج الأصلي';
+          if (selectedSizeLabel) parts.push(T_SIZE + ': ' + selectedSizeLabel);
+          if (selectedColorLabel) parts.push(T_COLOR + ': ' + selectedColorLabel);
+          summaryVariant.textContent = parts.length > 0 ? parts.join(' | ') : T_ORIGINAL_PRODUCT;
         }
 
         // Summary: payment option
         if (summaryOptionLabel && summaryOptionValue) {
-          summaryOptionLabel.textContent = 'خيار الدفع';
+          summaryOptionLabel.textContent = T_PAYMENT_OPTION;
           if (isCod) {
-            summaryOptionValue.textContent = 'الدفع عند الاستلام';
+            summaryOptionValue.textContent = T_COD_LABEL;
           } else if (isDeposit) {
-            summaryOptionValue.textContent = 'عربون (' + DEPOSIT_AMOUNT + ' درهم)';
+            summaryOptionValue.textContent = T_DEPOSIT_LABEL + ' (' + DEPOSIT_AMOUNT + ' ' + T_CURRENCY + ')';
           } else {
-            summaryOptionValue.textContent = 'الدفع الكامل';
+            summaryOptionValue.textContent = T_FULL_PAYMENT;
           }
         }
 
         // Summary: delivery
         if (summaryDeliveryEl) {
           if (isCod) {
-            summaryDeliveryEl.textContent = 'التوصيل خلال 24-48 ساعة';
+            summaryDeliveryEl.textContent = T_DELIVERY_24_48;
             summaryDeliveryEl.style.color = 'var(--color-text-secondary)';
           } else if (isDeposit) {
-            summaryDeliveryEl.textContent = 'خلال 48 ساعة';
+            summaryDeliveryEl.textContent = T_WITHIN_48;
             summaryDeliveryEl.style.color = 'var(--color-text-secondary)';
           } else {
-            summaryDeliveryEl.textContent = 'مجاني — نفس اليوم';
+            summaryDeliveryEl.textContent = T_FREE_DELIVERY_SAME_DAY;
             summaryDeliveryEl.style.color = 'var(--color-success)';
           }
         }
@@ -672,15 +705,15 @@
         // Summary: delivery fee row
         if (summaryDeliveryFeeRow) {
           summaryDeliveryFeeRow.style.display = isDeposit ? '' : 'none';
-          if (summaryDeliveryFee) summaryDeliveryFee.textContent = DELIVERY_FEE + ' درهم';
+          if (summaryDeliveryFee) summaryDeliveryFee.textContent = DELIVERY_FEE + ' ' + T_CURRENCY;
         }
 
         // Summary: total
         if (summaryTotalEl) {
           if (isCod) {
-            summaryTotalEl.textContent = totalProductPrice + ' درهم';
+            summaryTotalEl.textContent = totalProductPrice + ' ' + T_CURRENCY;
           } else {
-            summaryTotalEl.textContent = bankTransferAmount + ' درهم';
+            summaryTotalEl.textContent = bankTransferAmount + ' ' + T_CURRENCY;
           }
         }
 
@@ -688,7 +721,7 @@
         if (summaryRemaining) {
           if (isDeposit) {
             summaryRemaining.style.display = 'block';
-            if (summaryRemainingAmount) summaryRemainingAmount.textContent = remainingAmount + ' درهم';
+            if (summaryRemainingAmount) summaryRemainingAmount.textContent = remainingAmount + ' ' + T_CURRENCY;
           } else {
             summaryRemaining.style.display = 'none';
           }
@@ -725,8 +758,8 @@
           var file = e.target.files[0];
           if (!file) return;
           var validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'application/pdf'];
-          if (validTypes.indexOf(file.type) === -1) { showToast('يرجى اختيار صورة أو ملف PDF', 'error'); uploadInput.value = ''; return; }
-          if (file.size > 10 * 1024 * 1024) { showToast('حجم الملف كبير جداً', 'error'); uploadInput.value = ''; return; }
+          if (validTypes.indexOf(file.type) === -1) { showToast(T_CHOOSE_IMAGE_PDF, 'error'); uploadInput.value = ''; return; }
+          if (file.size > 10 * 1024 * 1024) { showToast(T_FILE_TOO_LARGE, 'error'); uploadInput.value = ''; return; }
           if (uploadZone) { uploadZone.classList.remove('upload-zone--error'); uploadZone.classList.add('upload-zone--has-file'); }
           var receiptError = document.getElementById('receiptError');
           if (receiptError) receiptError.classList.remove('visible');
@@ -740,7 +773,7 @@
           if (uploadZone) {
             var zoneText = uploadZone.querySelector('.upload-zone__text');
             var zoneIcon = uploadZone.querySelector('.upload-zone__icon');
-            if (zoneText) zoneText.textContent = 'تم اختيار الملف بنجاح';
+            if (zoneText) zoneText.textContent = T_FILE_SELECTED;
             if (zoneIcon) zoneIcon.textContent = '✅';
           }
         });
@@ -755,7 +788,7 @@
             uploadZone.classList.remove('upload-zone--has-file');
             var zoneText = uploadZone.querySelector('.upload-zone__text');
             var zoneIcon = uploadZone.querySelector('.upload-zone__icon');
-            if (zoneText) zoneText.textContent = 'اضغط لرفع صورة إيصال الدفع';
+            if (zoneText) zoneText.textContent = T_CLICK_UPLOAD_RECEIPT;
             if (zoneIcon) zoneIcon.textContent = '📤';
           }
         });
@@ -787,17 +820,17 @@
 
           var isValid = true;
 
-          if (!fullName.value.trim()) { showFieldErr(fullName, 'يرجى إدخال الاسم الكامل'); isValid = false; }
-          if (!phone.value.trim()) { showFieldErr(phone, 'يرجى إدخال رقم الهاتف'); isValid = false; }
+          if (!fullName.value.trim()) { showFieldErr(fullName, T_ENTER_NAME); isValid = false; }
+          if (!phone.value.trim()) { showFieldErr(phone, T_ENTER_PHONE); isValid = false; }
           else {
             var phoneClean = phone.value.trim().replace(/[\s\-\+]/g, '');
-            if (!/^\d{9,15}$/.test(phoneClean)) { showFieldErr(phone, 'رقم الهاتف غير صالح'); isValid = false; }
+            if (!/^\d{9,15}$/.test(phoneClean)) { showFieldErr(phone, T_INVALID_PHONE); isValid = false; }
           }
 
           // Always validate city
-          if (cityEl && !cityEl.value.trim()) { showFieldErr(cityEl, 'يرجى إدخال المدينة'); isValid = false; }
+          if (cityEl && !cityEl.value.trim()) { showFieldErr(cityEl, T_ENTER_CITY); isValid = false; }
           // Address required for COD, optional for bank
-          if (isCod && addressEl && !addressEl.value.trim()) { showFieldErr(addressEl, 'يرجى إدخال العنوان'); isValid = false; }
+          if (isCod && addressEl && !addressEl.value.trim()) { showFieldErr(addressEl, T_ENTER_ADDRESS); isValid = false; }
 
           // Receipt required for bank transfer (not COD)
           if (!isCod) {
@@ -809,12 +842,12 @@
             }
           }
 
-          if (!isValid) { showToast('يرجى تعبئة جميع الحقول المطلوبة', 'error'); return; }
+          if (!isValid) { showToast(T_FILL_REQUIRED, 'error'); return; }
 
           isSubmitting = true;
           if (submitBtn) {
             submitBtn.disabled = true;
-            submitBtn.innerHTML = '<span style="display:inline-flex;align-items:center;gap:8px;"><svg style="animation:spin 1s linear infinite;width:20px;height:20px;" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-dasharray="31.4 31.4" stroke-dashoffset="10"/></svg> جاري إرسال الطلب...</span>';
+            submitBtn.innerHTML = '<span style="display:inline-flex;align-items:center;gap:8px;"><svg style="animation:spin 1s linear infinite;width:20px;height:20px;" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-dasharray="31.4 31.4" stroke-dashoffset="10"/></svg> ' + T_SENDING_ORDER + '</span>';
           }
           showLoading();
 
@@ -866,20 +899,20 @@
               window.location.href = '/thankyou';
             } else {
               hideLoading(); resetSubmitBtn();
-              showToast(data.error || 'حدث خطأ، يرجى المحاولة مرة أخرى', 'error');
+              showToast(data.error || T_ERROR_OCCURRED, 'error');
             }
           })
           .catch(function(err) {
             hideLoading(); resetSubmitBtn();
             console.error('Order error:', err);
-            showToast('حدث خطأ في الاتصال، يرجى المحاولة مرة أخرى', 'error');
+            showToast(T_CONNECTION_ERROR, 'error');
           });
         }, true);
       }
 
       function resetSubmitBtn() {
         isSubmitting = false;
-        if (submitBtn) { submitBtn.disabled = false; submitBtn.innerHTML = 'تأكيد الطلب'; }
+        if (submitBtn) { submitBtn.disabled = false; submitBtn.innerHTML = T_PLACE_ORDER; }
       }
 
       function showFieldErr(input, message) {

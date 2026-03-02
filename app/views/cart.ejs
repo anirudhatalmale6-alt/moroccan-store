@@ -2,7 +2,7 @@
 <html lang="<%= typeof lang !== 'undefined' ? lang : 'ar' %>" dir="<%= typeof dir !== 'undefined' ? dir : 'rtl' %>">
 <head>
   <%- include('partials/head') %>
-  <title>سلة المشتريات — <%= typeof siteName !== 'undefined' ? siteName : 'متجرنا' %></title>
+  <title><%= t('shopping_cart') %> — <%= typeof siteName !== 'undefined' ? siteName : 'متجرنا' %></title>
 </head>
 <body>
   <div class="pattern-overlay"></div>
@@ -13,14 +13,18 @@
       <div class="navbar__inner">
         <div class="navbar__brand">
           <a href="/" style="display: flex; align-items: center; gap: 10px;">
-            <div class="navbar__logo"><%= typeof siteName !== 'undefined' ? siteName.charAt(0) : 'م' %></div>
-            <span class="navbar__name"><%= typeof siteName !== 'undefined' ? siteName : 'متجرنا' %></span>
+            <% if (typeof desktopLogo !== 'undefined' && desktopLogo) { %>
+              <img src="/uploads/settings/<%= desktopLogo %>" alt="" style="height: 36px; width: auto;">
+            <% } else { %>
+              <div class="navbar__logo"><%= typeof siteName !== 'undefined' ? siteName.charAt(0) : 'م' %></div>
+              <span class="navbar__name"><%= typeof siteName !== 'undefined' ? siteName : 'متجرنا' %></span>
+            <% } %>
           </a>
         </div>
         <div style="display: flex; align-items: center; gap: 12px;">
-          <a href="/" class="navbar__cta">🏠 الرئيسية</a>
+          <a href="/" class="navbar__cta"><%= t('home') %></a>
           <% if (typeof sidebarCategories !== 'undefined' && sidebarCategories && sidebarCategories.length > 0) { %>
-          <button type="button" onclick="openSidebar()" style="background: none; border: none; font-size: 22px; cursor: pointer; color: var(--color-text); padding: 4px; line-height: 1; opacity: 0.8;" title="القائمة">☰</button>
+          <button type="button" onclick="openSidebar()" style="background: none; border: none; font-size: 22px; cursor: pointer; color: var(--color-text); padding: 4px; line-height: 1; opacity: 0.8;" title="<%= t('menu') %>">☰</button>
           <% } %>
         </div>
       </div>
@@ -31,8 +35,8 @@
   <section class="hero" style="padding-bottom: 80px;">
     <div class="container">
       <div class="section-header" style="margin-top: 20px;">
-        <span class="section-header__label">🛒 سلة المشتريات</span>
-        <h1 class="section-header__title">سلتك</h1>
+        <span class="section-header__label"><%= t('shopping_cart') %></span>
+        <h1 class="section-header__title"><%= t('your_cart') %></h1>
         <div class="section-header__divider"></div>
       </div>
 
@@ -63,48 +67,36 @@
             <!-- Variation Info -->
             <% if (item.size_label) { %>
               <div style="font-size: 13px; color: var(--color-text-secondary); margin-bottom: 4px;">
-                الحجم: <strong><%= item.size_label %></strong>
+                <%= t('variations_size') %>: <strong><%= item.size_label %></strong>
               </div>
             <% } %>
             <% if (item.color_label) { %>
               <div style="font-size: 13px; color: var(--color-text-secondary); margin-bottom: 4px;">
-                اللون: <strong><%= item.color_label %></strong>
+                <%= t('variations_color') %>: <strong><%= item.color_label %></strong>
               </div>
             <% } %>
 
             <!-- Unit Price -->
             <div style="font-size: 15px; font-weight: 700; color: var(--color-primary); margin-bottom: 8px;">
-              <%= item.unit_price %> درهم
+              <%= item.unit_price %> <%= t('currency') %>
             </div>
 
             <!-- Quantity Control -->
             <div style="display: flex; align-items: center; gap: 12px;">
-              <div class="qty-control" style="display: flex; align-items: center; gap: 0;">
-                <button type="button" class="qty-control__btn" onclick="updateCartQty(<%= item.id %>, <%= item.quantity - 1 %>)" style="
-                  width: 36px; height: 36px; border: 1px solid var(--color-border); background: var(--color-card);
-                  border-radius: var(--radius-sm) 0 0 var(--radius-sm); cursor: pointer; font-size: 18px; font-weight: 700;
-                ">−</button>
-                <div style="
-                  width: 44px; height: 36px; border-top: 1px solid var(--color-border); border-bottom: 1px solid var(--color-border);
-                  display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 15px;
-                  background: var(--color-bg);
-                " id="cartQty_<%= item.id %>"><%= item.quantity %></div>
-                <button type="button" class="qty-control__btn" onclick="updateCartQty(<%= item.id %>, <%= item.quantity + 1 %>)" style="
-                  width: 36px; height: 36px; border: 1px solid var(--color-border); background: var(--color-card);
-                  border-radius: 0 var(--radius-sm) var(--radius-sm) 0; cursor: pointer; font-size: 18px; font-weight: 700;
-                ">+</button>
-              </div>
+              <button type="button" onclick="updateCartQty(<%= item.id %>, -1)" style="width: 32px; height: 32px; border-radius: 50%; border: 2px solid var(--color-border); background: var(--color-card); cursor: pointer; font-size: 16px; font-weight: 700; display: flex; align-items: center; justify-content: center;">−</button>
+              <span id="qty-<%= item.id %>" style="font-size: 16px; font-weight: 700; min-width: 24px; text-align: center;"><%= item.quantity %></span>
+              <button type="button" onclick="updateCartQty(<%= item.id %>, 1)" style="width: 32px; height: 32px; border-radius: 50%; border: 2px solid var(--color-border); background: var(--color-card); cursor: pointer; font-size: 16px; font-weight: 700; display: flex; align-items: center; justify-content: center;">+</button>
               <button type="button" onclick="removeCartItem(<%= item.id %>)" style="
                 background: none; border: none; color: var(--color-error); cursor: pointer;
                 font-size: 14px; font-weight: 600; padding: 4px 8px;
-              ">حذف</button>
+              "><%= t('remove') %></button>
             </div>
           </div>
 
           <!-- Item Subtotal -->
           <div style="text-align: left; min-width: 100px;">
             <div style="font-size: 18px; font-weight: 800; color: var(--color-primary);">
-              <%= item.subtotal %> درهم
+              <span id="item-total-<%= item.id %>"><%= item.subtotal %></span> <%= t('currency') %>
             </div>
           </div>
         </div>
@@ -126,11 +118,11 @@
               <% } %>
             </div>
             <div style="flex: 1;">
-              <div style="font-size: 14px; font-weight: 800; color: var(--color-success); margin-bottom: 4px;">🎁 هدية مجانية!</div>
+              <div style="font-size: 14px; font-weight: 800; color: var(--color-success); margin-bottom: 4px;"><%= t('free_gift') %>!</div>
               <h3 style="font-size: 16px; font-weight: 700; color: var(--color-text); margin-bottom: 4px;"><%= giftProduct.name %></h3>
-              <div style="font-size: 12px; color: var(--color-text-muted);" id="giftToggleHint">اضغط لعرض التفاصيل ▼</div>
+              <div style="font-size: 12px; color: var(--color-text-muted);" id="giftToggleHint"><%= t('tap_details') %> ▼</div>
             </div>
-            <div style="font-size: 18px; font-weight: 800; color: var(--color-success);">مجاناً</div>
+            <div style="font-size: 18px; font-weight: 800; color: var(--color-success);"><%= t('free') %></div>
           </div>
           <!-- Expandable Gift Details -->
           <div id="giftDetails" style="max-height: 0; overflow: hidden; transition: max-height 0.4s ease, margin-top 0.3s ease; margin-top: 0;">
@@ -148,7 +140,7 @@
                 background: var(--color-primary); color: #fff; border: none; border-radius: var(--radius-md);
                 padding: 10px 20px; font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer;
                 transition: opacity 0.2s;
-              ">العودة إلى السلة ↑</button>
+              "><%= t('back_to_cart') %> ↑</button>
             </div>
           </div>
         </div>
@@ -160,14 +152,14 @@
           box-shadow: var(--shadow-md); margin-top: 24px;
         ">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid var(--color-border-light);">
-            <span style="font-size: 16px; color: var(--color-text-secondary);">المجموع (<%= items.length %> منتجات)</span>
-            <span style="font-size: 20px; font-weight: 800; color: var(--color-primary);"><%= cartTotal %> درهم</span>
+            <span style="font-size: 16px; color: var(--color-text-secondary);"><%= t('total') %> (<%= items.length %> <%= t('products') %>)</span>
+            <span style="font-size: 20px; font-weight: 800; color: var(--color-primary);"><span id="cartSubtotal"><%= cartTotal %></span> <%= t('currency') %></span>
           </div>
           <a href="/cart/checkout" class="btn btn--primary btn--lg btn--full" style="text-align: center;">
-            إتمام الطلب
+            <%= t('checkout') %>
           </a>
           <a href="/" style="display: block; text-align: center; margin-top: 12px; color: var(--color-text-secondary); font-size: 14px;">
-            متابعة التسوق
+            <%= t('continue_shopping') %>
           </a>
         </div>
       </div>
@@ -175,9 +167,9 @@
       <% } else { %>
         <div style="text-align: center; padding: 60px 20px; color: var(--color-text-muted);">
           <p style="font-size: 64px; margin-bottom: 16px;">🛒</p>
-          <p style="font-size: 20px; font-weight: 700; margin-bottom: 8px;">سلتك فارغة</p>
-          <p style="font-size: 14px; margin-bottom: 24px;">لم تضف أي منتجات بعد</p>
-          <a href="/" class="btn btn--primary">تسوق الآن</a>
+          <p style="font-size: 20px; font-weight: 700; margin-bottom: 8px;"><%= t('empty_cart') %></p>
+          <p style="font-size: 14px; margin-bottom: 24px;"><%= t('no_products_added') %></p>
+          <a href="/" class="btn btn--primary"><%= t('continue_shopping') %></a>
         </div>
       <% } %>
     </div>
@@ -186,45 +178,74 @@
   <%- include('partials/footer') %>
 
   <script>
-    function updateCartQty(itemId, newQty) {
-      if (newQty < 1) {
-        removeCartItem(itemId);
-        return;
-      }
-      fetch('/cart/update', {
+    var T_CONNECTION_ERROR = '<%= t("connection_error") %>';
+    var T_TAP_DETAILS = '<%= t("tap_details") %>';
+    var T_TAP_HIDE = '<%= t("tap_hide") %>';
+
+    function updateCartQty(itemId, delta) {
+      fetch('/api/cart/update-qty', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ item_id: itemId, quantity: newQty })
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ itemId: itemId, delta: delta })
       })
       .then(function(r) { return r.json(); })
       .then(function(data) {
         if (data.success) {
-          window.location.reload();
-        } else {
-          showToast(data.error || 'حدث خطأ', 'error');
+          if (data.removed) {
+            // Item was removed (qty reached 0), remove the element
+            var el = document.querySelector('[data-item-id="' + itemId + '"]');
+            if (el) el.remove();
+            // If cart is empty, reload to show empty state
+            if (data.cartCount === 0) location.reload();
+          } else {
+            // Update quantity display
+            document.getElementById('qty-' + itemId).textContent = data.newQty;
+            // Update item total price
+            var priceEl = document.getElementById('item-total-' + itemId);
+            if (priceEl) priceEl.textContent = data.itemTotal;
+          }
+          // Update subtotal
+          var subtotalEl = document.getElementById('cartSubtotal');
+          if (subtotalEl) subtotalEl.textContent = data.cartTotal;
+          // Update cart badge
+          var badge = document.getElementById('cartBadge');
+          if (badge) {
+            badge.textContent = data.cartCount;
+            badge.style.display = data.cartCount > 0 ? 'flex' : 'none';
+          }
         }
       })
       .catch(function() {
-        showToast('حدث خطأ في الاتصال', 'error');
+        showToast(T_CONNECTION_ERROR, 'error');
       });
     }
 
     function removeCartItem(itemId) {
-      fetch('/cart/remove', {
+      // Use delta to bring qty to 0 — send a large negative delta
+      fetch('/api/cart/update-qty', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ item_id: itemId })
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ itemId: itemId, delta: -9999 })
       })
       .then(function(r) { return r.json(); })
       .then(function(data) {
         if (data.success) {
-          window.location.reload();
-        } else {
-          showToast(data.error || 'حدث خطأ', 'error');
+          var el = document.querySelector('[data-item-id="' + itemId + '"]');
+          if (el) el.remove();
+          if (data.cartCount === 0) location.reload();
+          // Update subtotal
+          var subtotalEl = document.getElementById('cartSubtotal');
+          if (subtotalEl) subtotalEl.textContent = data.cartTotal;
+          // Update cart badge
+          var badge = document.getElementById('cartBadge');
+          if (badge) {
+            badge.textContent = data.cartCount;
+            badge.style.display = data.cartCount > 0 ? 'flex' : 'none';
+          }
         }
       })
       .catch(function() {
-        showToast('حدث خطأ في الاتصال', 'error');
+        showToast(T_CONNECTION_ERROR, 'error');
       });
     }
   </script>
@@ -237,11 +258,11 @@
       if (isOpen) {
         details.style.maxHeight = '0';
         details.style.marginTop = '0';
-        if (hint) hint.textContent = 'اضغط لعرض التفاصيل ▼';
+        if (hint) hint.textContent = T_TAP_DETAILS + ' ▼';
       } else {
         details.style.maxHeight = details.scrollHeight + 'px';
         details.style.marginTop = '16px';
-        if (hint) hint.textContent = 'اضغط لإخفاء التفاصيل ▲';
+        if (hint) hint.textContent = T_TAP_HIDE + ' ▲';
       }
     }
 
@@ -257,7 +278,7 @@
         details.style.maxHeight = '0';
         details.style.marginTop = '0';
       }
-      if (hint) hint.textContent = 'اضغط لعرض التفاصيل ▼';
+      if (hint) hint.textContent = T_TAP_DETAILS + ' ▼';
     }
   </script>
   <script src="/js/main.js"></script>

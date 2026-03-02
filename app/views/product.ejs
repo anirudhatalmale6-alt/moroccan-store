@@ -37,17 +37,17 @@
           <% if (prodAvail === 'out_of_stock') { %>
           <div class="hero__badge" style="background: rgba(198,40,40,0.1); color: #c62828;">
             <span class="hero__badge-dot" style="background: #c62828;"></span>
-            غير متوفر حاليا
+            <%= t('out_of_stock') %>
           </div>
           <% } else if (prodAvail === 'preorder') { %>
           <div class="hero__badge" style="background: rgba(245,127,23,0.1); color: #f57f17;">
             <span class="hero__badge-dot" style="background: #f57f17;"></span>
-            طلب مسبق — سيتم الشحن قريبا
+            <%= t('preorder') %>
           </div>
           <% } else { %>
           <div class="hero__badge">
             <span class="hero__badge-dot"></span>
-            متوفر الآن — توصيل لجميع المدن
+            <%= t('in_stock') %>
           </div>
           <% } %>
           <h1 class="hero__title">
@@ -55,8 +55,8 @@
           </h1>
           <a href="/product/<%= product.slug %>/reviews" class="hero__rating">
             <span class="hero__rating-stars"><% for (let i = 1; i <= 5; i++) { %><%= i <= Math.round(avgRating) ? '★' : '☆' %><% } %></span>
-            <span class="hero__rating-count"><%= avgRating %> — <%= reviewCount %> تقييم</span>
-            <span class="hero__rating-link">شاهد التقييمات ←</span>
+            <span class="hero__rating-count"><%= avgRating %> — <%= reviewCount %> <%= t('reviews_count') %></span>
+            <span class="hero__rating-link"><%= t('view_reviews') %> ←</span>
           </a>
           <p class="hero__desc">
             <%= product.description %>
@@ -65,7 +65,7 @@
           <!-- Variations -->
           <% if (typeof sizeVariations !== 'undefined' && sizeVariations && sizeVariations.length > 0) { %>
           <div class="product-variations" style="margin-top: 12px; margin-bottom: 8px;">
-            <label style="display: block; font-weight: 700; font-size: 14px; margin-bottom: 8px; color: var(--color-primary-dark);">اختر الحجم:</label>
+            <label style="display: block; font-weight: 700; font-size: 14px; margin-bottom: 8px; color: var(--color-primary-dark);"><%= t('choose_size') %>:</label>
             <div style="display: flex; flex-wrap: wrap; gap: 8px;">
               <% sizeVariations.forEach(function(v, idx) { %>
                 <button type="button" class="variation-btn size-variation-btn<%= idx === 0 ? ' active' : '' %>"
@@ -88,7 +88,7 @@
 
           <% if (typeof colorVariations !== 'undefined' && colorVariations && colorVariations.length > 0) { %>
           <div class="product-variations" style="margin-top: 8px; margin-bottom: 8px;">
-            <label style="display: block; font-weight: 700; font-size: 14px; margin-bottom: 8px; color: var(--color-primary-dark);">اختر اللون:</label>
+            <label style="display: block; font-weight: 700; font-size: 14px; margin-bottom: 8px; color: var(--color-primary-dark);"><%= t('choose_color') %>:</label>
             <div style="display: flex; flex-wrap: wrap; gap: 10px;">
               <% colorVariations.forEach(function(v, idx) { %>
                 <button type="button" class="variation-btn color-variation-btn<%= idx === 0 ? ' active' : '' %>"
@@ -119,27 +119,27 @@
           <% } %>
 
           <div class="hero__price" id="heroPrice">
-            <span class="hero__price-current" id="currentPrice"><%= product.price %> درهم</span>
+            <span class="hero__price-current" id="currentPrice"><%= product.price %> <%= t('currency') %></span>
             <% if (product.old_price) { %>
-              <span class="hero__price-old"><%= product.old_price %> درهم</span>
+              <span class="hero__price-old"><%= product.old_price %> <%= t('currency') %></span>
             <% } %>
             <% if (product.discount) { %>
               <span class="hero__price-badge">-<%= product.discount %>%</span>
             <% } %>
           </div>
           <% if (product.stock_quantity !== null && product.stock_quantity >= 0 && product.stock_quantity <= 10) { %>
-            <div style="font-size: 13px; font-weight: 700; color: #c62828; margin-top: 4px; margin-bottom: 4px;"><%= product.stock_quantity === 0 ? 'نفذت الكمية!' : 'باقي ' + product.stock_quantity + ' قطع فقط!' %></div>
+            <div style="font-size: 13px; font-weight: 700; color: #c62828; margin-top: 4px; margin-bottom: 4px;"><%= product.stock_quantity === 0 ? t('sold_out') : t('only_left_prefix') + ' ' + product.stock_quantity + ' ' + t('only_left_suffix') %></div>
           <% } %>
           <div class="hero__actions" style="display: flex; gap: 12px; flex-wrap: wrap;">
             <% if (prodAvail !== 'out_of_stock' && (product.stock_quantity === null || product.stock_quantity < 0 || product.stock_quantity > 0)) { %>
             <a href="/product/<%= product.slug %>/checkout" id="buyNowBtn" class="btn btn--primary btn--lg">
-              اشتري الآن 🛍️
+              <%= t('buy_now') %>
             </a>
             <button type="button" class="btn btn--outline btn--lg" id="addToCartBtn" onclick="addToCartFromProduct()">
-              أضف للسلة 🛒
+              <%= t('add_to_cart') %>
             </button>
             <% } else { %>
-            <button type="button" class="btn btn--lg" style="background: #ccc; color: #666; cursor: not-allowed;" disabled>غير متوفر حاليا</button>
+            <button type="button" class="btn btn--lg" style="background: #ccc; color: #666; cursor: not-allowed;" disabled><%= t('out_of_stock') %></button>
             <% } %>
           </div>
         </div>
@@ -186,8 +186,8 @@
   <section class="features" id="features">
     <div class="container">
       <div class="section-header animate-on-scroll">
-        <span class="section-header__label">لماذا منتجنا؟</span>
-        <h2 class="section-header__title">مميزات تجعله الخيار الأفضل</h2>
+        <span class="section-header__label"><%= t('why_our_product') %></span>
+        <h2 class="section-header__title"><%= t('features_best_choice') %></h2>
         <div class="section-header__divider"></div>
       </div>
       <div class="features__grid">
@@ -208,8 +208,8 @@
   <section class="gallery">
     <div class="container">
       <div class="section-header animate-on-scroll">
-        <span class="section-header__label">صور المنتج</span>
-        <h2 class="section-header__title">شاهد المنتج من كل الزوايا</h2>
+        <span class="section-header__label"><%= t('product_photos') %></span>
+        <h2 class="section-header__title"><%= t('view_all_angles') %></h2>
         <div class="section-header__divider"></div>
       </div>
       <div class="gallery__grid">
@@ -228,8 +228,8 @@
   <section class="faq-section" id="faq">
     <div class="container">
       <div class="section-header animate-on-scroll">
-        <span class="section-header__label">أسئلة شائعة</span>
-        <h2 class="section-header__title">الأسئلة المتكررة</h2>
+        <span class="section-header__label"><%= t('faq') %></span>
+        <h2 class="section-header__title"><%= t('faq_title') %></h2>
         <div class="section-header__divider"></div>
       </div>
       <div class="faq-list" style="max-width: 800px; margin: 0 auto;">
@@ -256,12 +256,12 @@
   <section class="trust">
     <div class="container">
       <div class="section-header animate-on-scroll">
-        <span class="section-header__label">آراء العملاء</span>
-        <h2 class="section-header__title">ماذا يقول عملاؤنا</h2>
+        <span class="section-header__label"><%= t('customer_feedback') %></span>
+        <h2 class="section-header__title"><%= t('what_customers_say') %></h2>
         <div class="section-header__divider"></div>
       </div>
       <div style="text-align: center; margin-bottom: 24px;">
-        <button type="button" class="btn btn--primary" id="showFeedbackFormBtn" onclick="toggleFeedbackView(true)">اكتب تقييمك</button>
+        <button type="button" class="btn btn--primary" id="showFeedbackFormBtn" onclick="toggleFeedbackView(true)"><%= t('write_review') %></button>
       </div>
       <div id="reviewsDisplay">
       <% if (reviews && reviews.length) { %>
@@ -271,7 +271,7 @@
               <div class="trust-card__author" style="margin-bottom: 12px;">
                 <div class="trust-card__avatar" style="font-size: 24px; display: flex; align-items: center; justify-content: center;"><%= (function(n){ var e=['😊','😎','🤩','😇','🥰','😄','🤗','😺','🦊','🐻','🐶','🐱','🐸','🦁','🐼','🐯','🐨','🦋','🌸','⭐']; var h=0; for(var i=0;i<n.length;i++) h=((h<<5)-h)+n.charCodeAt(i); return e[Math.abs(h)%e.length]; })(review.name) %></div>
                 <div>
-                  <div class="trust-card__name" style="display: flex; align-items: center; gap: 6px;"><%= review.name %> <span style="background: var(--color-success); color: #fff; font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px; white-space: nowrap;">✓ موثّق</span></div>
+                  <div class="trust-card__name" style="display: flex; align-items: center; gap: 6px;"><%= review.name %> <span style="background: var(--color-success); color: #fff; font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px; white-space: nowrap;">✓ <%= t('verified') %></span></div>
                 </div>
               </div>
               <div class="trust-card__stars">
@@ -300,8 +300,8 @@
         </div>
       <% } else { %>
         <div style="text-align: center; padding: 40px 0; color: var(--color-text-muted);">
-          <p style="font-size: 18px; margin-bottom: 8px;">لا توجد تقييمات بعد</p>
-          <p style="font-size: 14px;">كن أول من يشارك تجربته!</p>
+          <p style="font-size: 18px; margin-bottom: 8px;"><%= t('no_reviews_yet') %></p>
+          <p style="font-size: 14px;"><%= t('be_first_reviewer') %></p>
         </div>
       <% } %>
       </div>
@@ -312,33 +312,26 @@
   <section class="feedback-section" id="feedback" style="display: none;">
     <div class="container container--narrow">
       <div style="text-align: center; margin-bottom: 24px;">
-        <button type="button" class="btn btn--outline" onclick="toggleFeedbackView(false)">العودة للتقييمات</button>
+        <button type="button" class="btn btn--outline" onclick="toggleFeedbackView(false)"><%= t('back_to_reviews') %></button>
       </div>
       <div class="section-header animate-on-scroll">
-        <span class="section-header__label">شاركنا رأيك</span>
-        <h2 class="section-header__title">نحب نسمعو منك!</h2>
+        <span class="section-header__label"><%= t('share_experience') %></span>
+        <h2 class="section-header__title"><%= t('we_love_hearing') %></h2>
         <div class="section-header__divider"></div>
       </div>
       <div class="feedback-card animate-on-scroll">
         <form id="feedbackForm" class="feedback-form" data-slug="<%= product.slug %>" action="/product/<%= product.slug %>/review" method="POST" enctype="multipart/form-data">
           <div class="feedback-form__row">
             <div class="form-group">
-              <label class="form-label" for="feedbackName">
-                <span class="required">*</span> الاسم
-              </label>
-              <input type="text" id="feedbackName" name="name" class="form-input" placeholder="أدخل اسمك" required>
-              <div class="form-error">يرجى إدخال الاسم</div>
+              <input type="text" id="feedbackName" name="name" class="form-input" placeholder="<%= t('your_name') %> *" required>
+              <div class="form-error"><%= t('enter_name') %></div>
             </div>
             <div class="form-group">
-              <label class="form-label" for="feedbackPhone">
-                <span class="required">*</span> رقم الهاتف
-              </label>
-              <input type="tel" id="feedbackPhone" name="phone" class="form-input" placeholder="0612345678" required dir="ltr" style="text-align: left;">
-              <div class="form-error">يرجى إدخال رقم الهاتف</div>
+              <input type="tel" id="feedbackPhone" name="phone" class="form-input" placeholder="<%= t('your_phone') %> *" required dir="ltr" style="text-align: left;">
+              <div class="form-error"><%= t('enter_phone') %></div>
             </div>
           </div>
           <div class="form-group">
-            <label class="form-label">التقييم</label>
             <div class="feedback-stars" id="feedbackStars">
               <span class="feedback-star" data-rating="1">☆</span>
               <span class="feedback-star" data-rating="2">☆</span>
@@ -349,48 +342,43 @@
             <input type="hidden" id="feedbackRating" name="rating" value="5">
           </div>
           <div class="form-group">
-            <label class="form-label" for="feedbackMessage">
-              تعليقك (اختياري)
-            </label>
-            <textarea id="feedbackMessage" name="message" class="form-input form-textarea" placeholder="اكتب تجربتك مع المنتج أو أي ملاحظة..." rows="4"></textarea>
+            <textarea id="feedbackMessage" name="message" class="form-input form-textarea" placeholder="<%= t('your_review') %>" rows="4"></textarea>
           </div>
           <!-- Image Upload (up to 3) -->
           <div class="form-group">
-            <label class="form-label">صور (اختياري — حتى 3 صور)</label>
             <div class="feedback-upload-zone" id="feedbackImageZone">
               <div class="feedback-upload-zone__icon">📷</div>
-              <div class="feedback-upload-zone__text">اضغط لرفع صور</div>
-              <div class="feedback-upload-zone__hint">JPG, PNG — الحد الأقصى 10MB لكل صورة</div>
+              <div class="feedback-upload-zone__text"><%= t('photos') %></div>
+              <div class="feedback-upload-zone__hint">JPG, PNG — Max 10MB</div>
               <input type="file" id="feedbackImage" name="images" accept="image/jpeg,image/png,image/webp,image/heic,image/heif,image/*" multiple onchange="previewFeedbackImages(this)">
             </div>
             <div id="feedbackImagePreviews" style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px;"></div>
           </div>
           <!-- Voice Recording -->
           <div class="form-group">
-            <label class="form-label">تعليق صوتي (اختياري)</label>
             <div class="voice-recorder" id="voiceRecorder">
               <button type="button" class="voice-recorder__btn" id="voiceRecordBtn">
                 <span class="voice-recorder__icon">🎙️</span>
-                <span class="voice-recorder__label">اضغط للتسجيل</span>
+                <span class="voice-recorder__label"><%= t('voice_note') %></span>
               </button>
               <div class="voice-recorder__status" id="voiceStatus"></div>
               <div class="voice-recorder__player" id="voicePlayer">
                 <audio id="voiceAudio" controls></audio>
-                <button type="button" class="voice-recorder__remove" id="voiceRemoveBtn">حذف</button>
+                <button type="button" class="voice-recorder__remove" id="voiceRemoveBtn"><%= t('delete_recording') %></button>
               </div>
             </div>
           </div>
-          <button type="submit" class="btn btn--primary">
-            إرسال التعليق
+          <button type="submit" class="btn btn--primary" id="feedbackSubmitBtn" data-original-text="<%= t('submit_review') %>" data-sending-text="<%= t('sending_review') %>">
+            <%= t('submit_review') %>
           </button>
-          <p class="feedback-form__note">سيتم مراجعة تعليقك قبل نشره</p>
+          <p class="feedback-form__note"><%= t('review_moderation_note') %></p>
         </form>
         <!-- Success state (hidden by default) -->
         <div class="feedback-success" id="feedbackSuccess">
           <div class="feedback-success__icon">✅</div>
-          <h3 class="feedback-success__title">شكراً على تعليقك!</h3>
-          <p class="feedback-success__text">تم إرسال تعليقك بنجاح. سيتم مراجعته ونشره قريباً.</p>
-          <button type="button" class="btn btn--outline" onclick="resetFeedbackForm()">إرسال تعليق آخر</button>
+          <h3 class="feedback-success__title"><%= t('thanks_for_review') %></h3>
+          <p class="feedback-success__text"><%= t('review_submitted') %></p>
+          <button type="button" class="btn btn--outline" onclick="resetFeedbackForm()"><%= t('send_another_review') %></button>
         </div>
       </div>
     </div>
@@ -401,12 +389,12 @@
   <section class="cta-section">
     <div class="container">
       <div class="cta-section__inner animate-on-scroll">
-        <h2 class="cta-section__title">لا تفوّت العرض المحدود!</h2>
+        <h2 class="cta-section__title"><%= t('dont_miss_offer') %></h2>
         <p class="cta-section__desc">
-          احصل على منتجك اليوم بسعر مخفض مع توصيل سريع لجميع مدن المغرب
+          <%= t('cta_desc') %>
         </p>
         <a href="/product/<%= product.slug %>/checkout" class="btn btn--primary btn--lg">
-          اطلب الآن — <%= product.price %> درهم فقط
+          <%= t('order_now') %> — <%= product.price %> <%= t('currency') %>
         </a>
       </div>
     </div>
@@ -431,6 +419,17 @@
     var PRODUCT_BASE_PRICE = <%= product.price %>;
     var PRODUCT_SLUG = '<%= product.slug %>';
     var PRODUCT_ID = <%= product.id %>;
+    var T_CURRENCY = '<%= t("currency") %>';
+    var T_ADDING = '<%= t("adding_to_cart") %>';
+    var T_ADDED_TO_CART = '<%= t("added_to_cart") %>';
+    var T_ADD_TO_CART = '<%= t("add_to_cart") %>';
+    var T_ERROR = '<%= t("error_occurred") %>';
+    var T_CONNECTION_ERROR = '<%= t("connection_error") %>';
+    var T_MAX_3_PHOTOS = '<%= t("max_3_photos") %>';
+    var T_IMAGES_ONLY = '<%= t("images_only") %>';
+    var T_IMAGE_TOO_LARGE = '<%= t("image_too_large") %>';
+    var T_CLICK_UPLOAD_PHOTOS = '<%= t("photos") %>';
+    var T_PHOTOS_SELECTED = '<%= t("photos_selected") %>';
     var selectedSizeId = null;
     var selectedColorId = null;
     var sizePriceAdj = 0;
@@ -471,13 +470,13 @@
     function updateDisplayedPrice() {
       var total = PRODUCT_BASE_PRICE + sizePriceAdj + colorPriceAdj;
       var priceEl = document.getElementById('currentPrice');
-      if (priceEl) priceEl.textContent = total + ' درهم';
+      if (priceEl) priceEl.textContent = total + ' ' + T_CURRENCY;
     }
 
     function addToCartFromProduct() {
       var btn = document.getElementById('addToCartBtn');
       btn.disabled = true;
-      btn.innerHTML = 'جاري الإضافة...';
+      btn.innerHTML = T_ADDING;
 
       fetch('/cart/add', {
         method: 'POST',
@@ -492,7 +491,7 @@
       .then(function(r) { return r.json(); })
       .then(function(data) {
         if (data.success) {
-          showToast('تمت إضافة المنتج للسلة', 'success');
+          showToast(T_ADDED_TO_CART, 'success');
           // Update cart badge if exists
           var badge = document.getElementById('cartBadge');
           if (badge) {
@@ -500,15 +499,15 @@
             badge.style.display = (data.cartCount > 0) ? 'flex' : 'none';
           }
         } else {
-          showToast(data.error || 'حدث خطأ', 'error');
+          showToast(data.error || T_ERROR, 'error');
         }
         btn.disabled = false;
-        btn.innerHTML = 'أضف للسلة 🛒';
+        btn.innerHTML = T_ADD_TO_CART;
       })
       .catch(function(err) {
-        showToast('حدث خطأ في الاتصال', 'error');
+        showToast(T_CONNECTION_ERROR, 'error');
         btn.disabled = false;
-        btn.innerHTML = 'أضف للسلة 🛒';
+        btn.innerHTML = T_ADD_TO_CART;
       });
     }
 
@@ -582,15 +581,15 @@
       previewContainer.innerHTML = '';
 
       if (!input.files || input.files.length === 0) {
-        if (zoneText) zoneText.textContent = 'اضغط لرفع صور';
+        if (zoneText) zoneText.textContent = T_CLICK_UPLOAD_PHOTOS;
         if (zoneIcon) zoneIcon.textContent = '📷';
         return;
       }
 
       if (input.files.length > 3) {
-        showToast('الحد الأقصى 3 صور', 'error');
+        showToast(T_MAX_3_PHOTOS, 'error');
         input.value = '';
-        if (zoneText) zoneText.textContent = 'اضغط لرفع صور';
+        if (zoneText) zoneText.textContent = T_CLICK_UPLOAD_PHOTOS;
         if (zoneIcon) zoneIcon.textContent = '📷';
         return;
       }
@@ -599,11 +598,11 @@
       for (var i = 0; i < input.files.length; i++) {
         var file = input.files[i];
         if (!file.type.startsWith('image/')) {
-          showToast('يرجى اختيار صور فقط', 'error');
+          showToast(T_IMAGES_ONLY, 'error');
           continue;
         }
         if (file.size > 10 * 1024 * 1024) {
-          showToast('حجم الصورة كبير جداً (الحد الأقصى 10 ميجابايت)', 'error');
+          showToast(T_IMAGE_TOO_LARGE, 'error');
           continue;
         }
         validFiles++;
@@ -620,7 +619,7 @@
       }
 
       if (validFiles > 0) {
-        if (zoneText) zoneText.textContent = 'تم اختيار ' + validFiles + ' صورة — اضغط لتغيير';
+        if (zoneText) zoneText.textContent = validFiles + ' ' + T_PHOTOS_SELECTED;
         if (zoneIcon) zoneIcon.textContent = '✅';
       }
     }

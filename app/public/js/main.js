@@ -572,22 +572,29 @@ function initFeedbackForm() {
     const name = document.getElementById('feedbackName');
     const phone = document.getElementById('feedbackPhone');
     const message = document.getElementById('feedbackMessage');
-    const city = document.getElementById('feedbackCity');
     const rating = document.getElementById('feedbackRating');
+    const submitBtn = document.getElementById('feedbackSubmitBtn');
 
     let isValid = true;
 
+    // Name is required
     if (!name.value.trim()) {
       showFieldError(name, 'يرجى إدخال الاسم');
       isValid = false;
     }
 
+    // Phone is required
     if (phone && !phone.value.trim()) {
       showFieldError(phone, 'يرجى إدخال رقم الهاتف');
       isValid = false;
     }
 
-    // Check at least one content type — look for both possible IDs
+    if (!isValid) {
+      showToast('يرجى تعبئة الحقول المطلوبة', 'error');
+      return;
+    }
+
+    // Check at least one content type (text, images, or audio)
     const feedbackImage = document.getElementById('feedbackImage');
     const hasImages = feedbackImage && feedbackImage.files && feedbackImage.files.length > 0;
     const hasAudio = !!window._voiceBlob;
@@ -604,9 +611,13 @@ function initFeedbackForm() {
       return;
     }
 
-    if (!isValid) {
-      showToast('يرجى تعبئة الحقول المطلوبة', 'error');
-      return;
+    // Disable submit button and show sending text
+    var originalText = submitBtn ? (submitBtn.dataset.originalText || submitBtn.textContent) : '';
+    var sendingText = submitBtn ? (submitBtn.dataset.sendingText || 'جاري الإرسال...') : '';
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.textContent = sendingText;
+      submitBtn.style.opacity = '0.7';
     }
 
     // Submit feedback via fetch
@@ -644,13 +655,25 @@ function initFeedbackForm() {
         form.style.display = 'none';
         const success = document.getElementById('feedbackSuccess');
         success.classList.add('visible');
-        showToast('شكراً! تم إرسال تعليقك بنجاح', 'success');
+        showToast(submitBtn && submitBtn.dataset.successText ? submitBtn.dataset.successText : 'شكراً! تم إرسال تعليقك بنجاح', 'success');
       } else {
         showToast(result.error || 'حدث خطأ', 'error');
+        // Re-enable submit button on error
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = originalText;
+          submitBtn.style.opacity = '';
+        }
       }
     } catch (err) {
       console.error('Feedback error:', err);
       showToast('حدث خطأ في الإرسال', 'error');
+      // Re-enable submit button on error
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalText;
+        submitBtn.style.opacity = '';
+      }
     }
   });
 }

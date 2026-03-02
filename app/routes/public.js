@@ -197,7 +197,7 @@ router.get('/', (req, res) => {
   let homeReviewCount = 0;
   try {
     latestReviews = db.prepare(
-      'SELECT r.name, r.rating, r.message, r.image_filename, r.audio_filename, p.title as product_title FROM reviews r LEFT JOIN products p ON r.product_id = p.id WHERE r.status = ? ORDER BY r.created_at DESC LIMIT 6'
+      'SELECT r.name, r.rating, r.message, r.image_filename, r.audio_filename, p.title as product_title FROM reviews r LEFT JOIN products p ON r.product_id = p.id WHERE r.status = ? AND r.image_filename IS NOT NULL AND r.image_filename != \'\' ORDER BY r.created_at DESC LIMIT 6'
     ).all('approved');
     const rc = db.prepare('SELECT COUNT(*) as count FROM reviews WHERE status = ?').get('approved');
     homeReviewCount = rc ? rc.count : 0;
