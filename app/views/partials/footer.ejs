@@ -1,10 +1,188 @@
 <footer class="footer">
   <div class="container">
-    <div style="display: flex; justify-content: center; gap: 24px; margin-bottom: 12px; flex-wrap: wrap;">
-      <a href="/returns" style="color: inherit; text-decoration: none; opacity: 0.8;">سياسة الإرجاع</a>
-      <a href="/payment-delivery" style="color: inherit; text-decoration: none; opacity: 0.8;">الدفع والتوصيل</a>
-      <a href="/contact" style="color: inherit; text-decoration: none; opacity: 0.8;">اتصل بنا</a>
+    <% if (typeof siteLang !== 'undefined' && siteLang === 'both') { %>
+    <div style="display: flex; justify-content: center; gap: 12px; margin-bottom: 12px;">
+      <a href="?lang=ar" style="color: inherit; text-decoration: none; font-size: 13px; font-weight: 700; opacity: <%= (typeof lang !== 'undefined' && lang === 'ar') ? '1' : '0.6' %>; border-bottom: <%= (typeof lang !== 'undefined' && lang === 'ar') ? '2px solid var(--color-primary)' : 'none' %>; padding-bottom: 2px;">العربية</a>
+      <span style="opacity: 0.3;">|</span>
+      <a href="?lang=fr" style="color: inherit; text-decoration: none; font-size: 13px; font-weight: 700; opacity: <%= (typeof lang !== 'undefined' && lang === 'fr') ? '1' : '0.6' %>; border-bottom: <%= (typeof lang !== 'undefined' && lang === 'fr') ? '2px solid var(--color-primary)' : 'none' %>; padding-bottom: 2px;">Français</a>
     </div>
-    <p>&copy; 2024 <%= typeof siteName !== 'undefined' ? siteName : 'متجرنا' %> — جميع الحقوق محفوظة</p>
+    <% } %>
+    <div style="display: flex; justify-content: center; gap: 24px; margin-bottom: 12px; flex-wrap: wrap;">
+      <a href="/returns" style="color: inherit; text-decoration: none; opacity: 0.8;"><%= t('return_policy') %></a>
+      <a href="/payment-delivery" style="color: inherit; text-decoration: none; opacity: 0.8;"><%= t('payment_delivery') %></a>
+      <a href="/contact" style="color: inherit; text-decoration: none; opacity: 0.8;"><%= t('contact_us') %></a>
+    </div>
+    <p>&copy; 2024 <%= typeof siteName !== 'undefined' ? siteName : 'متجرنا' %> — <%= t('all_rights') %></p>
   </div>
 </footer>
+
+<!-- Sidebar Categories Menu -->
+<% if (typeof sidebarCategories !== 'undefined' && sidebarCategories && sidebarCategories.length > 0) { %>
+<% var _sidePos = (typeof dir !== 'undefined' && dir === 'ltr') ? 'left' : 'right'; %>
+<div id="sidebarOverlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.4); z-index:998; transition:opacity 0.3s;" onclick="closeSidebar()"></div>
+<div id="sidebarMenu" style="position:fixed; top:0; <%= _sidePos %>:-280px; width:280px; height:100%; background:#fff; z-index:999; transition:<%= _sidePos %> 0.3s ease; box-shadow:<%= _sidePos === 'right' ? '-' : '' %>2px 0 12px rgba(0,0,0,0.1); overflow-y:auto; display:flex; flex-direction:column;">
+  <div style="padding:20px 20px 16px; border-bottom:1px solid #f0ebe5; display:flex; align-items:center; justify-content:space-between;">
+    <h3 style="margin:0; font-size:18px; font-weight:700; color:var(--color-primary,#8B6F47);"><%= t('categories') %></h3>
+    <button type="button" onclick="closeSidebar()" style="background:none; border:none; font-size:24px; color:#999; cursor:pointer; padding:0; line-height:1;">&times;</button>
+  </div>
+  <nav style="flex:1; padding:12px 0;">
+    <a href="/" style="display:flex; align-items:center; gap:12px; padding:12px 20px; text-decoration:none; color:#333; font-size:14px; font-weight:600; transition:background 0.2s;" onmouseover="this.style.background='#faf8f5'" onmouseout="this.style.background=''">
+      <span style="font-size:18px;">🏠</span> <%= t('home') %>
+    </a>
+    <% sidebarCategories.forEach(function(cat) { %>
+      <a href="/category/<%= cat.slug %>" style="display:flex; align-items:center; gap:12px; padding:12px 20px; text-decoration:none; color:#333; font-size:14px; font-weight:600; transition:background 0.2s;" onmouseover="this.style.background='#faf8f5'" onmouseout="this.style.background=''">
+        <% if (cat.image_filename) { %>
+          <img src="/uploads/categories/<%= cat.image_filename %>" alt="" style="width:32px; height:32px; border-radius:50%; object-fit:cover;">
+        <% } else { %>
+          <span style="width:32px; height:32px; border-radius:50%; background:#f0ebe5; display:flex; align-items:center; justify-content:center; font-size:16px;">📦</span>
+        <% } %>
+        <%= cat.name %>
+      </a>
+    <% }); %>
+  </nav>
+  <div style="padding:16px 20px; border-top:1px solid #f0ebe5;">
+    <a href="/feedback" style="display:flex; align-items:center; gap:8px; text-decoration:none; color:var(--color-primary,#8B6F47); font-size:13px; font-weight:700;">⭐ <%= t('sidebar_feedback') %></a>
+  </div>
+</div>
+<script>
+var _sidebarSide = '<%= _sidePos %>';
+function openSidebar(){
+  document.getElementById('sidebarOverlay').style.display='block';
+  document.getElementById('sidebarMenu').style[_sidebarSide]='0';
+  document.body.style.overflow='hidden';
+}
+function closeSidebar(){
+  document.getElementById('sidebarMenu').style[_sidebarSide]='-280px';
+  document.getElementById('sidebarOverlay').style.display='none';
+  document.body.style.overflow='';
+}
+</script>
+<% } %>
+
+<!-- Cart Drawer -->
+<% if (typeof cartMode !== 'undefined' && cartMode === 'drawer') { %>
+<% var _cartSide = (typeof dir !== 'undefined' && dir === 'ltr') ? 'right' : 'left'; %>
+<div id="cartDrawerOverlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.4); z-index:1000; transition:opacity 0.3s;" onclick="closeCartDrawer()"></div>
+<div id="cartDrawer" style="position:fixed; top:0; <%= _cartSide %>:-360px; width:360px; max-width:90vw; height:100%; background:#fff; z-index:1001; transition:<%= _cartSide %> 0.3s ease; box-shadow:<%= _cartSide === 'left' ? '' : '-' %>2px 0 16px rgba(0,0,0,0.15); display:flex; flex-direction:column;">
+  <!-- Header -->
+  <div style="padding:16px 20px; border-bottom:1px solid #f0ebe5; display:flex; align-items:center; justify-content:space-between; flex-shrink:0;">
+    <h3 style="margin:0; font-size:18px; font-weight:700; color:var(--color-primary,#8B6F47);">🛒 <%= t('shopping_cart') %></h3>
+    <button type="button" onclick="closeCartDrawer()" style="background:none; border:none; font-size:24px; color:#999; cursor:pointer; padding:0; line-height:1;">&times;</button>
+  </div>
+  <!-- Items container -->
+  <div id="cartDrawerItems" style="flex:1; overflow-y:auto; padding:12px 16px;">
+    <div id="cartDrawerLoading" style="text-align:center; padding:40px 0; color:#999;">
+      <div style="font-size:32px; margin-bottom:8px;">🛒</div>
+      <p><%= t('loading_more') %></p>
+    </div>
+    <div id="cartDrawerEmpty" style="display:none; text-align:center; padding:40px 0; color:#999;">
+      <div style="font-size:48px; margin-bottom:12px;">🛒</div>
+      <p style="font-size:16px; font-weight:600; margin-bottom:8px;"><%= t('empty_cart') %></p>
+      <a href="/" style="display:inline-block; margin-top:12px; padding:10px 24px; background:var(--color-primary); color:#fff; text-decoration:none; border-radius:10px; font-size:14px; font-weight:700;"><%= t('continue_shopping') %></a>
+    </div>
+    <div id="cartDrawerList" style="display:none;"></div>
+  </div>
+  <!-- Footer with total -->
+  <div id="cartDrawerFooter" style="display:none; padding:16px 20px; border-top:2px solid #f0ebe5; flex-shrink:0; background:#faf8f5;">
+    <div id="cartDrawerGift" style="display:none; margin-bottom:12px; padding:10px; background:#e8f5e9; border-radius:8px; font-size:13px; color:#2e7d32; font-weight:600;"></div>
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+      <span style="font-size:15px; font-weight:700; color:#555;"><%= t('total') %></span>
+      <span id="cartDrawerTotal" style="font-size:20px; font-weight:800; color:var(--color-primary);"></span>
+    </div>
+    <div style="display:flex; gap:8px;">
+      <a href="/cart" style="flex:1; display:block; text-align:center; padding:12px; background:#f0ebe5; color:#333; text-decoration:none; border-radius:10px; font-size:14px; font-weight:700;"><%= t('cart') %></a>
+      <a id="cartDrawerCheckoutBtn" href="/cart" style="flex:2; display:block; text-align:center; padding:12px; background:var(--color-primary); color:#fff; text-decoration:none; border-radius:10px; font-size:14px; font-weight:700;"><%= t('checkout') %></a>
+    </div>
+  </div>
+</div>
+<script>
+var _cartDrawerSide = '<%= _cartSide %>';
+var _cartDrawerCurrency = '<%= t("currency") %>';
+var _cartDrawerRemoveText = '<%= t("remove") %>';
+var _cartDrawerFreeGiftText = '<%= t("free_gift") %>';
+
+function openCartDrawer(){
+  document.getElementById('cartDrawerOverlay').style.display='block';
+  document.getElementById('cartDrawer').style[_cartDrawerSide]='0';
+  document.body.style.overflow='hidden';
+  loadCartDrawer();
+}
+function closeCartDrawer(){
+  document.getElementById('cartDrawer').style[_cartDrawerSide]= '-360px';
+  document.getElementById('cartDrawerOverlay').style.display='none';
+  document.body.style.overflow='';
+}
+
+function loadCartDrawer(){
+  document.getElementById('cartDrawerLoading').style.display='block';
+  document.getElementById('cartDrawerEmpty').style.display='none';
+  document.getElementById('cartDrawerList').style.display='none';
+  document.getElementById('cartDrawerFooter').style.display='none';
+
+  fetch('/api/cart')
+    .then(function(r){ return r.json(); })
+    .then(function(data){
+      document.getElementById('cartDrawerLoading').style.display='none';
+      if(!data.items || data.items.length===0){
+        document.getElementById('cartDrawerEmpty').style.display='block';
+        return;
+      }
+      var html='';
+      data.items.forEach(function(item){
+        var imgHtml = item.main_image
+          ? '<img src="/uploads/products/'+item.main_image+'" style="width:60px;height:60px;object-fit:cover;border-radius:8px;flex-shrink:0;">'
+          : '<div style="width:60px;height:60px;border-radius:8px;background:#f0ebe5;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;">🛍️</div>';
+        var varInfo='';
+        if(item.size_label) varInfo+='<span style="font-size:11px;color:#888;background:#f5f1ed;padding:2px 6px;border-radius:4px;">'+item.size_label+'</span> ';
+        if(item.color_label) varInfo+='<span style="font-size:11px;color:#888;background:#f5f1ed;padding:2px 6px;border-radius:4px;">'+item.color_label+'</span>';
+        html+='<div style="display:flex;gap:12px;padding:12px 0;border-bottom:1px solid #f5f1ed;align-items:center;">'+
+          imgHtml+
+          '<div style="flex:1;min-width:0;">'+
+            '<a href="/product/'+item.slug+'" style="font-size:13px;font-weight:600;color:#333;text-decoration:none;display:block;margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+item.title+'</a>'+
+            (varInfo?'<div style="margin-bottom:4px;">'+varInfo+'</div>':'')+
+            '<div style="display:flex;align-items:center;gap:8px;">'+
+              '<span style="font-size:14px;font-weight:700;color:var(--color-primary);">'+item.unit_price+' '+_cartDrawerCurrency+'</span>'+
+              '<span style="font-size:12px;color:#999;"> × '+item.quantity+'</span>'+
+            '</div>'+
+          '</div>'+
+          '<button onclick="removeCartDrawerItem('+item.id+')" style="background:none;border:none;font-size:18px;color:#ccc;cursor:pointer;padding:4px;line-height:1;" title="'+_cartDrawerRemoveText+'">🗑️</button>'+
+        '</div>';
+      });
+      document.getElementById('cartDrawerList').innerHTML=html;
+      document.getElementById('cartDrawerList').style.display='block';
+      document.getElementById('cartDrawerTotal').textContent=data.cartTotal+' '+data.currency;
+      document.getElementById('cartDrawerFooter').style.display='block';
+
+      // Gift product
+      var giftDiv = document.getElementById('cartDrawerGift');
+      if(data.giftProduct){
+        giftDiv.innerHTML='🎁 '+_cartDrawerFreeGiftText+': '+data.giftProduct.name;
+        giftDiv.style.display='block';
+      } else {
+        giftDiv.style.display='none';
+      }
+
+      // Update badge
+      var totalQty=0;
+      data.items.forEach(function(i){ totalQty+=i.quantity; });
+      var badge=document.getElementById('cartBadge');
+      if(badge){
+        badge.textContent=totalQty;
+        badge.style.display=totalQty>0?'flex':'none';
+      }
+    })
+    .catch(function(){
+      document.getElementById('cartDrawerLoading').style.display='none';
+      document.getElementById('cartDrawerEmpty').style.display='block';
+    });
+}
+
+function removeCartDrawerItem(itemId){
+  fetch('/cart/remove',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({item_id:itemId})
+  }).then(function(){ loadCartDrawer(); });
+}
+</script>
+<% } %>

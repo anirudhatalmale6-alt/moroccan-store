@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="<%= typeof lang !== 'undefined' ? lang : 'ar' %>" dir="<%= typeof dir !== 'undefined' ? dir : 'rtl' %>">
 <head>
   <%- include('partials/head') %>
   <title>الدفع والتوصيل — <%= typeof siteName !== 'undefined' ? siteName : 'متجرنا' %></title>
@@ -16,7 +16,12 @@
             <span class="navbar__name"><%= typeof siteName !== 'undefined' ? siteName : 'متجرنا' %></span>
           </a>
         </div>
-        <a href="/" class="navbar__cta">الرئيسية</a>
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <a href="/" class="navbar__cta">الرئيسية</a>
+          <% if (typeof sidebarCategories !== 'undefined' && sidebarCategories && sidebarCategories.length > 0) { %>
+          <button type="button" onclick="openSidebar()" style="background: none; border: none; font-size: 22px; cursor: pointer; color: var(--color-text); padding: 4px; line-height: 1; opacity: 0.8;" title="القائمة">☰</button>
+          <% } %>
+        </div>
       </div>
     </div>
   </nav>

@@ -997,6 +997,24 @@ router.post('/settings/site', requireAdmin, (req, res) => {
   res.redirect('/admin/settings?success=تم تحديث اعدادات الموقع');
 });
 
+// Language Settings
+router.post('/settings/language', requireAdmin, (req, res) => {
+  const { site_language } = req.body;
+  if (['ar', 'fr', 'both'].includes(site_language)) {
+    upsertSetting('site_language', site_language);
+  }
+  res.redirect('/admin/settings?success=تم تحديث لغة المتجر');
+});
+
+// Cart Mode Settings
+router.post('/settings/cart-mode', requireAdmin, (req, res) => {
+  const { cart_mode } = req.body;
+  if (['drawer', 'redirect', 'disabled'].includes(cart_mode)) {
+    upsertSetting('cart_mode', cart_mode);
+  }
+  res.redirect('/admin/settings?success=تم تحديث وضع السلة');
+});
+
 // Helper to upsert admin_settings
 function upsertSetting(key, value) {
   const existing = db.prepare("SELECT 1 FROM admin_settings WHERE setting_key = ?").get(key);

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="<%= typeof lang !== 'undefined' ? lang : 'ar' %>" dir="<%= typeof dir !== 'undefined' ? dir : 'rtl' %>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -97,6 +97,42 @@
                     <div class="form-group">
                         <label>اسم الموقع</label>
                         <input type="text" name="site_name" value="<%= settings.site_name || '' %>" placeholder="اسم المتجر">
+                    </div>
+                    <button type="submit" class="btn btn-primary">حفظ</button>
+                </form>
+            </div>
+
+            <!-- Language Settings -->
+            <div class="form-card">
+                <h3>لغة المتجر</h3>
+                <form method="POST" action="/admin/settings/language">
+                    <div class="form-group">
+                        <label>اللغة</label>
+                        <% var currentLang = (typeof settings !== 'undefined' && settings.site_language) ? settings.site_language : 'ar'; %>
+                        <select name="site_language" style="width: 100%; padding: 12px 16px; border: 2px solid #e8e0d8; border-radius: 10px; font-family: 'Cairo', sans-serif; font-size: 14px; color: #333; background: #fff; cursor: pointer;">
+                            <option value="ar" <%= currentLang === 'ar' ? 'selected' : '' %>>العربية فقط (RTL)</option>
+                            <option value="fr" <%= currentLang === 'fr' ? 'selected' : '' %>>الفرنسية فقط (LTR)</option>
+                            <option value="both" <%= currentLang === 'both' ? 'selected' : '' %>>العربية + الفرنسية (مع زر التبديل)</option>
+                        </select>
+                        <div class="hint">عند اختيار "العربية + الفرنسية" يظهر زر تبديل اللغة في أسفل الصفحة</div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">حفظ اللغة</button>
+                </form>
+            </div>
+
+            <!-- Cart Mode -->
+            <div class="form-card">
+                <h3>وضع السلة</h3>
+                <form method="POST" action="/admin/settings/cart-mode">
+                    <div class="form-group">
+                        <label>نوع السلة</label>
+                        <% var currentCartMode = (typeof settings !== 'undefined' && settings.cart_mode) ? settings.cart_mode : 'drawer'; %>
+                        <select name="cart_mode" style="width: 100%; padding: 12px 16px; border: 2px solid #e8e0d8; border-radius: 10px; font-family: 'Cairo', sans-serif; font-size: 14px; color: #333; background: #fff; cursor: pointer;">
+                            <option value="drawer" <%= currentCartMode === 'drawer' ? 'selected' : '' %>>سلة جانبية (Drawer)</option>
+                            <option value="redirect" <%= currentCartMode === 'redirect' ? 'selected' : '' %>>صفحة كاملة (Redirect)</option>
+                            <option value="disabled" <%= currentCartMode === 'disabled' ? 'selected' : '' %>>معطلة</option>
+                        </select>
+                        <div class="hint">Drawer: سلة جانبية تفتح كنافذة منبثقة — Redirect: ينتقل لصفحة السلة الكاملة</div>
                     </div>
                     <button type="submit" class="btn btn-primary">حفظ</button>
                 </form>

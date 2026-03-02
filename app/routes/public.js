@@ -115,6 +115,57 @@ router.get('/api/products', (req, res) => {
 
 
 // ============================================================
+// API: Get cart data (for drawer)
+// ============================================================
+router.get('/api/cart', (req, res) => {
+  const sessionId = req.sessionID;
+  const rawItems = db.prepare(`
+    SELECT ci.*, p.title, p.slug, p.price, p.main_image
+    FROM cart_items ci
+    JOIN products p ON ci.product_id = p.id
+    WHERE ci.session_id = ?
+    ORDER BY ci.created_at
+  `).all(sessionId);
+
+  let cartTotal = 0;
+  const items = rawItems.map(item => {
+    let unitPrice = item.price;
+    let sizeLabel = '';
+    let colorLabel = '';
+
+    if (item.variation_size_id) {
+      const sv = db.prepare('SELECT label, price_adjustment FROM product_variations WHERE id = ?').get(item.variation_size_id);
+      if (sv) { unitPrice += sv.price_adjustment; sizeLabel = sv.label; }
+    }
+    if (item.variation_color_id) {
+      const cv = db.prepare('SELECT label, price_adjustment FROM product_variations WHERE id = ?').get(item.variation_color_id);
+      if (cv) { unitPrice += cv.price_adjustment; colorLabel = cv.label; }
+    }
+
+    const subtotal = unitPrice * item.quantity;
+    cartTotal += subtotal;
+
+    return {
+      id: item.id,
+      product_id: item.product_id,
+      title: item.title,
+      slug: item.slug,
+      main_image: item.main_image,
+      quantity: item.quantity,
+      unit_price: unitPrice,
+      subtotal,
+      size_label: sizeLabel,
+      color_label: colorLabel
+    };
+  });
+
+  const giftProduct = getEligibleGift(cartTotal);
+  const currency = (typeof req.res.locals.t === 'function') ? req.res.locals.t('currency') : 'د.م';
+
+  res.json({ items, cartTotal, giftProduct, currency });
+});
+
+// ============================================================
 // HOME PAGE
 // ============================================================
 router.get('/', (req, res) => {
@@ -146,7 +197,7 @@ router.get('/', (req, res) => {
   let homeReviewCount = 0;
   try {
     latestReviews = db.prepare(
-      'SELECT r.name, r.rating, r.message, p.title as product_title FROM reviews r LEFT JOIN products p ON r.product_id = p.id WHERE r.status = ? ORDER BY r.created_at DESC LIMIT 6'
+      'SELECT r.name, r.rating, r.message, r.image_filename, r.audio_filename, p.title as product_title FROM reviews r LEFT JOIN products p ON r.product_id = p.id WHERE r.status = ? ORDER BY r.created_at DESC LIMIT 6'
     ).all('approved');
     const rc = db.prepare('SELECT COUNT(*) as count FROM reviews WHERE status = ?').get('approved');
     homeReviewCount = rc ? rc.count : 0;
@@ -361,7 +412,7 @@ router.post('/product/:slug/order', receiptUpload.single('receipt'), (req, res) 
 // SUBMIT REVIEW
 // ============================================================
 router.post('/product/:slug/review', reviewUpload.fields([
-  { name: 'image', maxCount: 1 },
+  { name: 'image', maxCount: 3 },
   { name: 'audio', maxCount: 1 }
 ]), (req, res) => {
   try {
@@ -369,13 +420,30 @@ router.post('/product/:slug/review', reviewUpload.fields([
     if (!product) return res.status(404).json({ error: 'Product not found' });
 
     const { name, phone, rating, message } = req.body;
-    const imageFile = req.files && req.files.image ? req.files.image[0].filename : '';
-    const audioFile = req.files && req.files.audio ? req.files.audio[0].filename : '';
+    const hasImages = req.files && req.files.image && req.files.image.length > 0;
+    const hasAudio = req.files && req.files.audio && req.files.audio.length > 0;
+    const hasMessage = message && message.trim();
+
+    // Validation: at least one of text/audio/image required
+    if (!hasMessage && !hasImages && !hasAudio) {
+      return res.status(400).json({ error: 'يرجى إضافة نص أو صورة أو تعليق صوتي على الأقل' });
+    }
+
+    // Store all image filenames as JSON array if multiple, or single string for backward compat
+    let imageFile = '';
+    if (hasImages) {
+      if (req.files.image.length === 1) {
+        imageFile = req.files.image[0].filename;
+      } else {
+        imageFile = JSON.stringify(req.files.image.map(f => f.filename));
+      }
+    }
+    const audioFile = hasAudio ? req.files.audio[0].filename : '';
 
     db.prepare(`
       INSERT INTO reviews (product_id, name, phone, rating, message, image_filename, audio_filename, status)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    `).run(product.id, name, phone || '', parseInt(rating) || 5, message, imageFile, audioFile, 'pending');
+    `).run(product.id, name, phone || '', parseInt(rating) || 5, message || '', imageFile, audioFile, 'pending');
 
     res.json({ success: true });
   } catch (err) {

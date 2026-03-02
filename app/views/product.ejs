@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="<%= typeof lang !== 'undefined' ? lang : 'ar' %>" dir="<%= typeof dir !== 'undefined' ? dir : 'rtl' %>">
 <head>
   <title><%= (product.meta_title ? product.meta_title : product.title) %> — <%= typeof siteName !== 'undefined' ? siteName : 'متجرنا' %></title>
   <%- include('partials/head') %>
@@ -277,10 +277,13 @@
               <div class="trust-card__stars">
                 <% for (let i = 1; i <= 5; i++) { %><%= i <= review.rating ? '★' : '☆' %><% } %>
               </div>
-              <p class="trust-card__text">"<%= review.message %>"</p>
+              <% if (review.message) { %><p class="trust-card__text">"<%= review.message %>"</p><% } %>
               <% if (review.image_filename) { %>
-                <div style="margin-bottom: 16px; text-align: center;">
-                  <img src="/uploads/reviews/<%= review.image_filename %>" alt="صورة من <%= review.name %>" style="max-width: 100%; border-radius: var(--radius-sm); max-height: 200px; object-fit: cover;" loading="lazy">
+                <% var _imgs = []; try { _imgs = JSON.parse(review.image_filename); } catch(e) { _imgs = [review.image_filename]; } %>
+                <div style="margin-bottom: 16px; display: flex; gap: 6px; flex-wrap: wrap; justify-content: center;">
+                  <% _imgs.forEach(function(img) { if(img) { %>
+                    <img src="/uploads/reviews/<%= img %>" alt="" style="max-width: <%= _imgs.length > 1 ? '48%' : '100%' %>; border-radius: var(--radius-sm); max-height: 200px; object-fit: cover;" loading="lazy">
+                  <% } }); %>
                 </div>
               <% } %>
               <% if (review.audio_filename && review.audio_filename.length > 0) { %>
@@ -347,25 +350,20 @@
           </div>
           <div class="form-group">
             <label class="form-label" for="feedbackMessage">
-              <span class="required">*</span> تعليقك
+              تعليقك (اختياري)
             </label>
-            <textarea id="feedbackMessage" name="message" class="form-input form-textarea" placeholder="اكتب تجربتك مع المنتج أو أي ملاحظة..." rows="4" required></textarea>
-            <div class="form-error">يرجى كتابة تعليقك</div>
+            <textarea id="feedbackMessage" name="message" class="form-input form-textarea" placeholder="اكتب تجربتك مع المنتج أو أي ملاحظة..." rows="4"></textarea>
           </div>
-          <!-- Image Upload -->
+          <!-- Image Upload (up to 3) -->
           <div class="form-group">
-            <label class="form-label">صورة (اختياري)</label>
+            <label class="form-label">صور (اختياري — حتى 3 صور)</label>
             <div class="feedback-upload-zone" id="feedbackImageZone">
               <div class="feedback-upload-zone__icon">📷</div>
-              <div class="feedback-upload-zone__text">اضغط لرفع صورة</div>
-              <div class="feedback-upload-zone__hint">JPG, PNG — الحد الأقصى 5MB</div>
-              <input type="file" id="feedbackImage" name="image" accept="image/*">
+              <div class="feedback-upload-zone__text">اضغط لرفع صور</div>
+              <div class="feedback-upload-zone__hint">JPG, PNG — الحد الأقصى 5MB لكل صورة</div>
+              <input type="file" id="feedbackImage" name="image" accept="image/*" multiple>
             </div>
-            <div class="feedback-upload-preview" id="feedbackImagePreview">
-              <button type="button" class="feedback-upload-preview__remove" data-target="feedbackImage">✕</button>
-              <img class="feedback-upload-preview__img" src="" alt="معاينة">
-              <div class="feedback-upload-preview__name"></div>
-            </div>
+            <div id="feedbackImagePreviews" style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px;"></div>
           </div>
           <!-- Voice Recording -->
           <div class="form-group">

@@ -587,9 +587,21 @@ function initFeedbackForm() {
       isValid = false;
     }
 
-    if (!message.value.trim()) {
-      showFieldError(message, 'يرجى كتابة تعليقك');
-      isValid = false;
+    // Check at least one content type
+    const feedbackImage = document.getElementById('feedbackImage');
+    const hasImages = feedbackImage && feedbackImage.files && feedbackImage.files.length > 0;
+    const hasAudio = !!window._voiceBlob;
+    const hasMessage = message && message.value.trim();
+
+    if (!hasMessage && !hasImages && !hasAudio) {
+      showToast('يرجى إضافة نص أو صورة أو تعليق صوتي على الأقل', 'error');
+      return;
+    }
+
+    // Validate max 3 images
+    if (hasImages && feedbackImage.files.length > 3) {
+      showToast('الحد الأقصى 3 صور', 'error');
+      return;
     }
 
     if (!isValid) {
@@ -605,12 +617,13 @@ function initFeedbackForm() {
     submitData.append('name', name.value.trim());
     if (phone) submitData.append('phone', phone.value.trim());
     submitData.append('rating', rating.value);
-    submitData.append('message', message.value.trim());
+    submitData.append('message', message ? message.value.trim() : '');
 
-    // Add image if uploaded
-    const feedbackImage = document.getElementById('feedbackImage');
-    if (feedbackImage && feedbackImage.files[0]) {
-      submitData.append('image', feedbackImage.files[0]);
+    // Add images if uploaded (up to 3)
+    if (hasImages) {
+      for (var fi = 0; fi < feedbackImage.files.length && fi < 3; fi++) {
+        submitData.append('image', feedbackImage.files[fi]);
+      }
     }
 
     // Add voice recording if available
@@ -762,38 +775,60 @@ function initReviewForm() {
   });
 }
 
-/* --- Feedback/Review Image Upload --- */
+/* --- Feedback/Review Image Upload (supports multiple) --- */
 function initFeedbackUploads() {
-  // Handle all feedback image upload zones
-  document.querySelectorAll('.feedback-upload-zone').forEach(zone => {
-    const input = zone.querySelector('input[type="file"]');
-    if (!input) return;
+  // Multi-image preview for feedbackImage
+  var feedbackImageInput = document.getElementById('feedbackImage');
+  var feedbackImagePreviews = document.getElementById('feedbackImagePreviews');
 
-    const previewContainer = zone.parentElement.querySelector('.feedback-upload-preview');
+  if (feedbackImageInput && feedbackImagePreviews) {
+    feedbackImageInput.addEventListener('change', function() {
+      feedbackImagePreviews.innerHTML = '';
+      var files = feedbackImageInput.files;
+      if (files.length > 3) {
+        showToast('الحد الأقصى 3 صور', 'error');
+        feedbackImageInput.value = '';
+        return;
+      }
+      for (var i = 0; i < files.length; i++) {
+        if (!files[i].type.startsWith('image/')) continue;
+        if (files[i].size > 5 * 1024 * 1024) {
+          showToast('حجم الصورة كبير جداً (الحد الأقصى 5 ميجابايت)', 'error');
+          continue;
+        }
+        (function(file) {
+          var reader = new FileReader();
+          reader.onload = function(evt) {
+            var div = document.createElement('div');
+            div.style.cssText = 'position:relative; width:80px; height:80px; border-radius:8px; overflow:hidden; border:2px solid var(--color-border,#e8e0d8);';
+            div.innerHTML = '<img src="' + evt.target.result + '" style="width:100%;height:100%;object-fit:cover;">';
+            feedbackImagePreviews.appendChild(div);
+          };
+          reader.readAsDataURL(file);
+        })(files[i]);
+      }
+    });
+  }
+
+  // Legacy single image preview (for reviews.ejs page)
+  document.querySelectorAll('.feedback-upload-zone').forEach(function(zone) {
+    var input = zone.querySelector('input[type="file"]');
+    if (!input || input.id === 'feedbackImage') return;
+
+    var previewContainer = zone.parentElement.querySelector('.feedback-upload-preview');
     if (!previewContainer) return;
 
-    const previewImg = previewContainer.querySelector('.feedback-upload-preview__img');
-    const previewName = previewContainer.querySelector('.feedback-upload-preview__name');
-    const removeBtn = previewContainer.querySelector('.feedback-upload-preview__remove');
+    var previewImg = previewContainer.querySelector('.feedback-upload-preview__img');
+    var previewName = previewContainer.querySelector('.feedback-upload-preview__name');
+    var removeBtn = previewContainer.querySelector('.feedback-upload-preview__remove');
 
-    input.addEventListener('change', (e) => {
-      const file = e.target.files[0];
+    input.addEventListener('change', function(e) {
+      var file = e.target.files[0];
       if (!file) return;
-
-      if (!file.type.startsWith('image/')) {
-        showToast('يرجى اختيار صورة فقط', 'error');
-        input.value = '';
-        return;
-      }
-
-      if (file.size > 5 * 1024 * 1024) {
-        showToast('حجم الصورة كبير جداً (الحد الأقصى 5 ميجابايت)', 'error');
-        input.value = '';
-        return;
-      }
-
-      const reader = new FileReader();
-      reader.onload = (evt) => {
+      if (!file.type.startsWith('image/')) { showToast('يرجى اختيار صورة فقط', 'error'); input.value = ''; return; }
+      if (file.size > 5 * 1024 * 1024) { showToast('حجم الصورة كبير جداً', 'error'); input.value = ''; return; }
+      var reader = new FileReader();
+      reader.onload = function(evt) {
         previewImg.src = evt.target.result;
         previewName.textContent = '✅ ' + file.name;
         previewContainer.classList.add('visible');
@@ -803,7 +838,7 @@ function initFeedbackUploads() {
     });
 
     if (removeBtn) {
-      removeBtn.addEventListener('click', (e) => {
+      removeBtn.addEventListener('click', function(e) {
         e.preventDefault();
         input.value = '';
         previewContainer.classList.remove('visible');

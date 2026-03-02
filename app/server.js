@@ -2,6 +2,7 @@ const express = require('express');
 const session = require('express-session');
 const path = require('path');
 const { initDatabase } = require('./database');
+const { getTranslator, getDirection } = require('./i18n');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -54,6 +55,28 @@ app.use((req, res, next) => {
     res.locals.fbPixelId = allSettings.fb_pixel_id || '';
     res.locals.tiktokPixelId = allSettings.tiktok_pixel_id || '';
     res.locals.customMetaTags = allSettings.custom_meta_tags || '';
+
+    // Language / i18n
+    const siteLang = allSettings.site_language || 'ar';
+    res.locals.siteLang = siteLang;
+    // For 'both' mode, determine active language from query or session
+    let activeLang = siteLang;
+    if (siteLang === 'both') {
+      if (req.query.lang === 'ar' || req.query.lang === 'fr') {
+        req.session.lang = req.query.lang;
+        activeLang = req.query.lang;
+      } else if (req.session.lang) {
+        activeLang = req.session.lang;
+      } else {
+        activeLang = 'ar'; // default to Arabic in both mode
+      }
+    }
+    res.locals.lang = activeLang;
+    res.locals.dir = getDirection(activeLang);
+    res.locals.t = getTranslator(activeLang);
+
+    // Cart mode
+    res.locals.cartMode = allSettings.cart_mode || 'drawer';
   } catch(e) {
     res.locals.siteName = 'متجرنا';
     res.locals.fontFamily = 'Cairo';
@@ -67,6 +90,11 @@ app.use((req, res, next) => {
     res.locals.fbPixelId = '';
     res.locals.tiktokPixelId = '';
     res.locals.customMetaTags = '';
+    res.locals.lang = 'ar';
+    res.locals.dir = 'rtl';
+    res.locals.siteLang = 'ar';
+    res.locals.t = getTranslator('ar');
+    res.locals.cartMode = 'drawer';
   }
 
   // Cart count for badge
@@ -76,6 +104,14 @@ app.use((req, res, next) => {
     res.locals.cartCount = countRow && countRow.total ? countRow.total : 0;
   } catch(e) {
     res.locals.cartCount = 0;
+  }
+
+  // Global categories for sidebar menu
+  try {
+    const { db } = require('./database');
+    res.locals.sidebarCategories = db.prepare('SELECT * FROM categories WHERE is_active = 1 ORDER BY sort_order').all();
+  } catch(e) {
+    res.locals.sidebarCategories = [];
   }
 
   next();

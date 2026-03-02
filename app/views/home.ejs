@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="<%= typeof lang !== 'undefined' ? lang : 'ar' %>" dir="<%= typeof dir !== 'undefined' ? dir : 'rtl' %>">
 <head>
   <%- include('partials/head') %>
-  <title><%= (typeof metaTitle !== 'undefined' && metaTitle) ? metaTitle : ((typeof siteName !== 'undefined' ? siteName : 'متجرنا') + ' — منتجاتنا') %></title>
+  <title><%= (typeof metaTitle !== 'undefined' && metaTitle) ? metaTitle : ((typeof siteName !== 'undefined' ? siteName : 'متجرنا') + ' — ' + t('our_products')) %></title>
 </head>
 <body>
   <div class="pattern-overlay"></div>
@@ -18,7 +18,10 @@
           </a>
         </div>
         <div style="display: flex; align-items: center; gap: 12px;">
-          <a href="/cart" id="cartLink" style="position: relative; font-size: 22px; color: var(--color-text); text-decoration: none;">🛒<span id="cartBadge" style="position: absolute; top: -8px; right: -8px; background: var(--color-error); color: white; font-size: 11px; font-weight: 700; min-width: 18px; height: 18px; border-radius: 50%; display: <%= (typeof cartCount !== 'undefined' && cartCount > 0) ? 'flex' : 'none' %>; align-items: center; justify-content: center;"><%= (typeof cartCount !== 'undefined' && cartCount > 0) ? cartCount : '0' %></span></a>
+          <a href="<%= (typeof cartMode !== 'undefined' && cartMode === 'drawer') ? 'javascript:void(0)' : '/cart' %>" id="cartLink" onclick="<%= (typeof cartMode !== 'undefined' && cartMode === 'drawer') ? 'openCartDrawer();return false;' : '' %>" style="position: relative; font-size: 22px; color: var(--color-text); text-decoration: none;">🛒<span id="cartBadge" style="position: absolute; top: -8px; right: -8px; background: var(--color-error); color: white; font-size: 11px; font-weight: 700; min-width: 18px; height: 18px; border-radius: 50%; display: <%= (typeof cartCount !== 'undefined' && cartCount > 0) ? 'flex' : 'none' %>; align-items: center; justify-content: center;"><%= (typeof cartCount !== 'undefined' && cartCount > 0) ? cartCount : '0' %></span></a>
+          <% if (typeof sidebarCategories !== 'undefined' && sidebarCategories && sidebarCategories.length > 0) { %>
+          <button type="button" onclick="openSidebar()" style="background: none; border: none; font-size: 22px; cursor: pointer; color: var(--color-text); padding: 4px; line-height: 1; opacity: 0.8;" title="<%= t('menu') %>">☰</button>
+          <% } %>
         </div>
       </div>
     </div>
@@ -83,8 +86,8 @@
   <section class="hero" style="padding-top: 30px; padding-bottom: 60px;">
     <div class="container">
       <div class="section-header" style="margin-top: 0;">
-        <span class="section-header__label">تسوق الآن</span>
-        <h1 class="section-header__title"><%= typeof currentCategory !== 'undefined' && currentCategory ? currentCategory.name : 'منتجاتنا' %></h1>
+        <span class="section-header__label"><%= t('shop_now') %></span>
+        <h1 class="section-header__title"><%= typeof currentCategory !== 'undefined' && currentCategory ? currentCategory.name : t('our_products') %></h1>
         <div class="section-header__divider"></div>
       </div>
 
@@ -123,7 +126,7 @@
             <div style="padding: 10px 12px 14px;">
               <h3 style="font-size: 13px; font-weight: 600; color: #333; margin: 0 0 6px; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;"><%= p.title %></h3>
               <div style="display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap;">
-                <span style="font-size: 16px; font-weight: 800; color: var(--color-primary);"><%= p.price %> <span style="font-size: 12px; font-weight: 600;">د.م</span></span>
+                <span style="font-size: 16px; font-weight: 800; color: var(--color-primary);"><%= p.price %> <span style="font-size: 12px; font-weight: 600;"><%= t('currency') %></span></span>
                 <% if (p.old_price && p.old_price > p.price) { %>
                   <span style="font-size: 12px; color: #aaa; text-decoration: line-through;"><%= p.old_price %></span>
                 <% } %>
@@ -134,13 +137,13 @@
       </div>
 
       <div id="loadingMore" style="text-align: center; padding: 20px; display: none;">
-        <span style="color: var(--color-text-muted);">جاري تحميل المزيد...</span>
+        <span style="color: var(--color-text-muted);"><%= t('loading_more') %></span>
       </div>
 
       <% if (products.length === 0) { %>
         <div style="text-align: center; padding: 60px 20px; color: var(--color-text-muted);">
           <p style="font-size: 48px; margin-bottom: 16px;">🏪</p>
-          <p style="font-size: 18px; font-weight: 600;">لا توجد منتجات متاحة حالياً</p>
+          <p style="font-size: 18px; font-weight: 600;"><%= t('no_products') %></p>
         </div>
       <% } %>
     </div>
@@ -151,25 +154,39 @@
   <section style="padding: 40px 0 50px; background: linear-gradient(135deg, #faf8f5 0%, #f0ebe5 100%);">
     <div class="container">
       <div class="section-header" style="margin-top: 0;">
-        <span class="section-header__label">ماذا يقول عملاؤنا</span>
-        <h2 class="section-header__title">آراء العملاء</h2>
+        <span class="section-header__label"><%= t('what_customers_say') %></span>
+        <h2 class="section-header__title"><%= t('customer_feedback') %></h2>
         <div class="section-header__divider"></div>
       </div>
 
       <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 24px;">
         <% latestReviews.forEach(function(rev) { %>
-          <div style="background: #fff; border-radius: 12px; padding: 16px; box-shadow: 0 1px 4px rgba(0,0,0,0.06);">
+          <div style="background: #fff; border-radius: 12px; padding: 14px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); overflow: hidden;">
             <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
-              <div style="width: 36px; height: 36px; border-radius: 50%; background: var(--color-primary); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0;"><%= (function(n){ var e=['😊','😎','🤩','😇','🥰','😄','🤗','😺','🦊','🐻','🐶','🐱','🐸','🦁','🐼','🐯','🐨','🦋','🌸','⭐']; if(!n) return e[0]; var h=0; for(var i=0;i<n.length;i++) h=((h<<5)-h)+n.charCodeAt(i); return e[Math.abs(h)%e.length]; })(rev.name || 'عميل') %></div>
+              <div style="width: 32px; height: 32px; border-radius: 50%; background: var(--color-primary); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0;"><%= (function(n){ var e=['😊','😎','🤩','😇','🥰','😄','🤗','😺','🦊','🐻','🐶','🐱','🐸','🦁','🐼','🐯','🐨','🦋','🌸','⭐']; if(!n) return e[0]; var h=0; for(var i=0;i<n.length;i++) h=((h<<5)-h)+n.charCodeAt(i); return e[Math.abs(h)%e.length]; })(rev.name || 'عميل') %></div>
               <div style="flex: 1; min-width: 0;">
-                <div style="font-size: 13px; font-weight: 700; color: #333; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"><%= rev.name || 'عميل' %></div>
-                <div style="color: #f0a500; font-size: 12px; letter-spacing: 1px;">
+                <div style="font-size: 12px; font-weight: 700; color: #333; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"><%= rev.name || 'عميل' %></div>
+                <div style="color: #f0a500; font-size: 11px; letter-spacing: 1px;">
                   <% for (var i = 1; i <= 5; i++) { %><%= i <= rev.rating ? '★' : '☆' %><% } %>
                 </div>
               </div>
             </div>
+            <% if (rev.image_filename) { %>
+              <div style="margin-bottom: 8px; border-radius: 8px; overflow: hidden;">
+                <img src="/uploads/reviews/<%= rev.image_filename %>" alt="" style="width: 100%; height: 120px; object-fit: cover; display: block;" loading="lazy">
+              </div>
+            <% } %>
             <% if (rev.message) { %>
-              <p style="font-size: 12px; color: #666; line-height: 1.6; margin: 0; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;"><%= rev.message %></p>
+              <p style="font-size: 12px; color: #666; line-height: 1.6; margin: 0 0 6px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;"><%= rev.message %></p>
+            <% } %>
+            <% if (rev.audio_filename) { %>
+              <div class="wa-audio-player" data-src="/uploads/reviews/<%= rev.audio_filename %>" style="margin-top: 4px;">
+                <button type="button" class="wa-play-btn" onclick="toggleWaAudio(this)" style="width: 30px; height: 30px; font-size: 12px;">▶</button>
+                <div class="wa-progress-wrap" onclick="seekWaAudio(event, this)">
+                  <div class="wa-waveform"></div>
+                </div>
+                <span class="wa-time" style="font-size: 11px;">0:00</span>
+              </div>
             <% } %>
           </div>
         <% }); %>
@@ -177,7 +194,7 @@
 
       <div style="text-align: center;">
         <a href="/feedback" style="display: inline-flex; align-items: center; gap: 8px; padding: 12px 32px; background: var(--color-primary); color: #fff; text-decoration: none; border-radius: 10px; font-size: 15px; font-weight: 700; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">
-          عرض كل التقييمات (<%= typeof homeReviewCount !== 'undefined' ? homeReviewCount : '' %>)
+          <%= t('view_all_reviews') %> (<%= typeof homeReviewCount !== 'undefined' ? homeReviewCount : '' %>)
         </a>
       </div>
     </div>
@@ -264,7 +281,7 @@
               '<div style="padding: 10px 12px 14px;">' +
               '<h3 style="font-size: 13px; font-weight: 600; color: #333; margin: 0 0 6px; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">' + p.title + '</h3>' +
               '<div style="display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap;">' +
-              '<span style="font-size: 16px; font-weight: 800; color: var(--color-primary);">' + p.price + ' <span style="font-size: 12px; font-weight: 600;">د.م</span></span>' +
+              '<span style="font-size: 16px; font-weight: 800; color: var(--color-primary);">' + p.price + ' <span style="font-size: 12px; font-weight: 600;"><%= t("currency") %></span></span>' +
               oldPriceHtml +
               '</div></div>';
 

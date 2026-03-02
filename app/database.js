@@ -446,6 +446,16 @@ async function initDatabase() {
     db.prepare("INSERT INTO admin_settings (setting_key, setting_value) VALUES (?, ?)").run('banner_interval', '4');
   }
 
+  // Language setting (ar, fr, both)
+  if (!db.prepare("SELECT 1 FROM admin_settings WHERE setting_key = 'site_language'").get()) {
+    db.prepare("INSERT INTO admin_settings (setting_key, setting_value) VALUES (?, ?)").run('site_language', 'ar');
+  }
+
+  // Cart mode (drawer, redirect, disabled)
+  if (!db.prepare("SELECT 1 FROM admin_settings WHERE setting_key = 'cart_mode'").get()) {
+    db.prepare("INSERT INTO admin_settings (setting_key, setting_value) VALUES (?, ?)").run('cart_mode', 'drawer');
+  }
+
   // Seed a default product if none exists
   const productCount = db.prepare('SELECT COUNT(*) as count FROM products').get();
   if (productCount.count === 0) {
