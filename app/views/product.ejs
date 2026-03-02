@@ -274,14 +274,15 @@
         .prv-card__txt { font-size: 14px; line-height: 1.7; color: var(--color-text-secondary); margin: 0; }
         .prv-card__imgs { display: flex; gap: 8px; margin-bottom: 10px; overflow-x: auto; scrollbar-width: none; }
         .prv-card__imgs::-webkit-scrollbar { display: none; }
-        .prv-card__imgs img { width: 80px; height: 80px; object-fit: cover; border-radius: 10px; flex-shrink: 0; border: 1px solid var(--color-border-light); }
+        .prv-card__imgs img { width: 110px; height: 110px; object-fit: cover; border-radius: 12px; flex-shrink: 0; border: 1px solid var(--color-border-light); cursor: pointer; transition: transform 0.2s; }
+        .prv-card__imgs img:hover { transform: scale(1.05); }
         .prv-card__stars { color: var(--color-star); font-size: 18px; letter-spacing: 2px; }
         @media (max-width: 600px) {
           .prv-card { padding: 14px 16px; border-radius: 12px; }
           .prv-card__av { width: 38px; height: 38px; font-size: 17px; }
           .prv-card__nm { font-size: 14px; }
           .prv-card__txt { font-size: 13px; }
-          .prv-card__imgs img { width: 70px; height: 70px; }
+          .prv-card__imgs img { width: 90px; height: 90px; }
         }
       </style>
       <div id="reviewsDisplay">
@@ -295,8 +296,11 @@
                 _imgs = _imgs.filter(function(img) { return !!img; });
               }
               var _pInit = (review.name || '?').charAt(0).toUpperCase();
+              var _pTextCheck = (review.name || '') + ' ' + (review.message || '');
+              var _pIsArabic = /[\u0600-\u06FF]/.test(_pTextCheck);
+              var _pCardDir = _pIsArabic ? 'rtl' : 'ltr';
             %>
-            <div class="prv-card animate-on-scroll">
+            <div class="prv-card animate-on-scroll" dir="<%= _pCardDir %>">
               <div class="prv-card__hdr">
                 <div class="prv-card__av"><%= _pInit %></div>
                 <div>

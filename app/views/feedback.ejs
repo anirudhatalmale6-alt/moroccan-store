@@ -15,18 +15,19 @@
       display: flex;
       align-items: center;
       gap: 28px;
+      direction: ltr;
     }
-    .rating-summary__left { text-align: center; min-width: 90px; }
-    .rating-summary__big { font-size: 42px; font-weight: 800; color: var(--color-text); line-height: 1; }
-    .rating-summary__stars { color: var(--color-star, #F5A623); font-size: 18px; letter-spacing: 2px; margin: 6px 0 4px; }
+    .rating-summary__left { text-align: center; min-width: 100px; }
+    .rating-summary__big { font-size: 44px; font-weight: 800; color: var(--color-text); line-height: 1; }
+    .rating-summary__stars { color: var(--color-star, #F5A623); font-size: 20px; letter-spacing: 2px; margin: 6px 0 4px; }
     .rating-summary__total { font-size: 12px; color: var(--color-text-muted); }
-    .rating-summary__bars { flex: 1; display: flex; flex-direction: column; gap: 5px; }
+    .rating-summary__bars { flex: 1; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
     .rating-bar-row { display: flex; align-items: center; gap: 8px; font-size: 13px; }
-    .rating-bar-row__label { color: var(--color-text-muted); min-width: 16px; text-align: center; font-weight: 600; }
-    .rating-bar-row__star { color: var(--color-star, #F5A623); font-size: 12px; }
-    .rating-bar-row__track { flex: 1; height: 8px; background: var(--color-border-light, #eee); border-radius: 4px; overflow: hidden; }
-    .rating-bar-row__fill { height: 100%; background: var(--color-star, #F5A623); border-radius: 4px; transition: width 0.5s ease; }
-    .rating-bar-row__count { color: var(--color-text-muted); font-size: 12px; min-width: 24px; text-align: end; }
+    .rating-bar-row__label { color: var(--color-text-muted); min-width: 14px; text-align: center; font-weight: 600; }
+    .rating-bar-row__star { color: var(--color-star, #F5A623); font-size: 13px; }
+    .rating-bar-row__track { flex: 1; height: 10px; background: var(--color-border-light, #eee); border-radius: 5px; overflow: hidden; min-width: 0; }
+    .rating-bar-row__fill { height: 100%; background: var(--color-star, #F5A623); border-radius: 5px; transition: width 0.5s ease; min-width: 2px; }
+    .rating-bar-row__count { color: var(--color-text-muted); font-size: 12px; min-width: 20px; text-align: center; }
 
     /* ---- Compact Hero ---- */
     .fb-hero { padding: 80px 0 16px; text-align: center; }
@@ -35,7 +36,7 @@
     /* ---- Reviews List (single column) ---- */
     .fb-list { padding: 8px 0 60px; }
 
-    /* ---- Feedback Card (new design) ---- */
+    /* ---- Feedback Card ---- */
     .rv-card {
       background: var(--color-card);
       border-radius: 16px;
@@ -75,7 +76,6 @@
       font-weight: 700;
       color: var(--color-text);
     }
-    /* Blue verified badge (Instagram style) */
     .rv-card__verified {
       display: inline-flex;
       align-items: center;
@@ -84,34 +84,17 @@
       height: 18px;
       flex-shrink: 0;
     }
-    .rv-card__verified svg {
-      width: 18px;
-      height: 18px;
-    }
+    .rv-card__verified svg { width: 18px; height: 18px; }
     /* Comment area */
-    .rv-card__body {
-      min-height: 32px;
-      margin-bottom: 10px;
-    }
-    .rv-card__text {
-      font-size: 14px;
-      line-height: 1.7;
-      color: var(--color-text-secondary);
-      margin: 0;
-    }
-    .rv-card__audio {
-      margin-top: 2px;
-    }
+    .rv-card__body { min-height: 32px; margin-bottom: 10px; }
+    .rv-card__text { font-size: 14px; line-height: 1.7; color: var(--color-text-secondary); margin: 0; }
+    .rv-card__audio { margin-top: 2px; }
     /* Stars at bottom */
-    .rv-card__stars {
-      color: var(--color-star, #F5A623);
-      font-size: 18px;
-      letter-spacing: 2px;
-    }
+    .rv-card__stars { color: var(--color-star, #F5A623); font-size: 18px; letter-spacing: 2px; }
     /* Image gallery within card */
     .rv-card__images {
       display: flex;
-      gap: 8px;
+      gap: 10px;
       margin-bottom: 12px;
       overflow-x: auto;
       -webkit-overflow-scrolling: touch;
@@ -119,70 +102,38 @@
     }
     .rv-card__images::-webkit-scrollbar { display: none; }
     .rv-card__images img {
-      width: 80px;
-      height: 80px;
+      width: 110px;
+      height: 110px;
       object-fit: cover;
-      border-radius: 10px;
+      border-radius: 12px;
       flex-shrink: 0;
       cursor: pointer;
       border: 1px solid var(--color-border-light);
       transition: transform 0.2s;
     }
     .rv-card__images img:hover { transform: scale(1.05); }
-
-    /* Product label */
-    .rv-card__product {
-      font-size: 12px;
-      color: var(--color-text-muted);
-      margin-top: 6px;
-    }
+    .rv-card__product { font-size: 12px; color: var(--color-text-muted); margin-top: 6px; }
 
     /* Lightbox */
-    .rv-lightbox {
-      display: none;
-      position: fixed;
-      inset: 0;
-      z-index: 9999;
-      background: rgba(0,0,0,0.85);
-      align-items: center;
-      justify-content: center;
-    }
+    .rv-lightbox { display: none; position: fixed; inset: 0; z-index: 9999; background: rgba(0,0,0,0.85); align-items: center; justify-content: center; }
     .rv-lightbox.active { display: flex; }
-    .rv-lightbox img {
-      max-width: 90vw;
-      max-height: 85vh;
-      object-fit: contain;
-      border-radius: 8px;
-    }
-    .rv-lightbox__close {
-      position: absolute;
-      top: 16px;
-      right: 16px;
-      width: 36px;
-      height: 36px;
-      background: rgba(255,255,255,0.2);
-      color: #fff;
-      border: none;
-      border-radius: 50%;
-      font-size: 20px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
+    .rv-lightbox img { max-width: 90vw; max-height: 85vh; object-fit: contain; border-radius: 8px; }
+    .rv-lightbox__close { position: absolute; top: 16px; right: 16px; width: 36px; height: 36px; background: rgba(255,255,255,0.2); color: #fff; border: none; border-radius: 50%; font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 
     /* ---- Responsive ---- */
     @media (max-width: 600px) {
-      .rating-summary { flex-direction: column; gap: 16px; padding: 16px; }
-      .rating-summary__left { display: flex; align-items: center; gap: 12px; }
-      .rating-summary__stars { margin: 0; }
+      .rating-summary { flex-direction: row; gap: 16px; padding: 16px; }
+      .rating-summary__left { min-width: 70px; }
+      .rating-summary__big { font-size: 36px; }
+      .rating-summary__stars { font-size: 16px; }
+      .rating-bar-row__track { height: 8px; }
       .fb-hero { padding: 72px 0 12px; }
       .rv-card { padding: 14px 16px; border-radius: 12px; }
       .rv-card__avatar { width: 38px; height: 38px; font-size: 17px; }
       .rv-card__name { font-size: 14px; }
       .rv-card__text { font-size: 13px; }
       .rv-card__stars { font-size: 16px; }
-      .rv-card__images img { width: 70px; height: 70px; }
+      .rv-card__images img { width: 90px; height: 90px; }
     }
   </style>
 </head>
@@ -226,12 +177,10 @@
       <div class="rating-summary">
         <div class="rating-summary__left">
           <div class="rating-summary__big"><%= avgRating %></div>
-          <div>
-            <div class="rating-summary__stars">
-              <% for (var i = 1; i <= 5; i++) { %><% if (i <= Math.round(parseFloat(avgRating))) { %>★<% } else { %>☆<% } %><% } %>
-            </div>
-            <div class="rating-summary__total"><%= reviewCount %> <%= t('reviews_count') %></div>
+          <div class="rating-summary__stars">
+            <% for (var i = 1; i <= 5; i++) { %><% if (i <= Math.round(parseFloat(avgRating))) { %>★<% } else { %>☆<% } %><% } %>
           </div>
+          <div class="rating-summary__total"><%= reviewCount %> <%= t('reviews_count') %></div>
         </div>
         <div class="rating-summary__bars">
           <% for (var star = 5; star >= 1; star--) { %>
@@ -269,15 +218,17 @@
               _fimgs = _fimgs.filter(function(img) { return !!img; });
             }
             var _initial = (review.name || '?').charAt(0).toUpperCase();
+            var _textToCheck = (review.name || '') + ' ' + (review.message || '');
+            var _isArabic = /[\u0600-\u06FF]/.test(_textToCheck);
+            var _cardDir = _isArabic ? 'rtl' : 'ltr';
           %>
-          <div class="rv-card animate-on-scroll">
-            <!-- Header: avatar circle + name + verified badge -->
+          <div class="rv-card animate-on-scroll" dir="<%= _cardDir %>">
             <div class="rv-card__header">
               <div class="rv-card__avatar"><%= _initial %></div>
               <div>
                 <div class="rv-card__name-row">
                   <span class="rv-card__name"><%= review.name || t('customer') %></span>
-                  <span class="rv-card__verified"><svg viewBox="0 0 24 24" fill="none"><path d="M9 12l2 2 4-4" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="10" fill="#1DA1F2"/><path d="M9 12l2 2 4-4" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                  <span class="rv-card__verified"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#1DA1F2"/><path d="M9 12l2 2 4-4" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
                 </div>
                 <% if (review.product_title) { %>
                   <div class="rv-card__product"><%= review.product_title %></div>
@@ -285,7 +236,6 @@
               </div>
             </div>
 
-            <!-- Comment (text or audio) -->
             <div class="rv-card__body">
               <% if (review.message) { %>
                 <p class="rv-card__text"><%= review.message %></p>
@@ -303,7 +253,6 @@
               <% } %>
             </div>
 
-            <!-- Images (thumbnail row) -->
             <% if (_fimgs.length > 0) { %>
               <div class="rv-card__images">
                 <% _fimgs.forEach(function(img) { %>
@@ -312,7 +261,6 @@
               </div>
             <% } %>
 
-            <!-- Stars at bottom -->
             <div class="rv-card__stars">
               <% for (var j = 1; j <= 5; j++) { %><% if (j <= review.rating) { %>★<% } else { %>☆<% } %><% } %>
             </div>
