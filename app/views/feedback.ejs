@@ -9,7 +9,7 @@
       background: var(--color-card);
       border-radius: var(--radius-lg);
       padding: 20px 24px;
-      margin-bottom: 24px;
+      margin-bottom: 20px;
       box-shadow: var(--shadow-sm);
       border: 1px solid var(--color-border-light);
       display: flex;
@@ -80,7 +80,7 @@
 
     /* ---- Compact Hero ---- */
     .fb-hero {
-      padding: 90px 0 20px;
+      padding: 80px 0 16px;
       text-align: center;
     }
     .fb-hero h1 {
@@ -91,102 +91,59 @@
       margin: 0;
     }
 
-    /* ---- Reviews List ---- */
-    .fb-list {
-      padding: 12px 0 60px;
+    /* ---- Reviews Grid ---- */
+    .fb-grid {
+      padding: 8px 0 60px;
+    }
+    .fb-grid__inner {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
     }
 
-    /* ---- Compact Review Card ---- */
-    .fb-card {
+    /* ---- Vertical Feedback Card (matches reference) ---- */
+    .fbc {
       background: var(--color-card);
-      border-radius: var(--radius-md, 12px);
-      padding: 14px 16px;
-      margin-bottom: 12px;
-      box-shadow: var(--shadow-sm);
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
       border: 1px solid var(--color-border-light);
-    }
-    .fb-card__header {
       display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 8px;
+      flex-direction: column;
     }
-    .fb-card__avatar {
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, var(--color-primary-light), var(--color-accent));
+
+    /* Image area at top */
+    .fbc__img-wrap {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 3/4;
+      overflow: hidden;
+      background: var(--color-bg-warm, #f8f5f0);
+    }
+    .fbc__img-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .fbc__img-placeholder {
+      width: 100%;
+      height: 100%;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 18px;
-      flex-shrink: 0;
-    }
-    .fb-card__name {
-      font-size: 14px;
-      font-weight: 600;
-      color: var(--color-text);
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      flex-wrap: wrap;
-    }
-    .fb-card__badge {
-      background: var(--color-success, #2D8F5E);
-      color: #fff;
-      font-size: 9px;
-      font-weight: 700;
-      padding: 2px 5px;
-      border-radius: 3px;
-      white-space: nowrap;
-    }
-    .fb-card__stars {
-      color: var(--color-star, #F5A623);
-      font-size: 13px;
-      letter-spacing: 1px;
-    }
-    .fb-card__product {
-      font-size: 11px;
-      color: var(--color-text-muted);
-      margin-top: 1px;
-    }
-    .fb-card__text {
-      font-size: 13px;
-      line-height: 1.6;
-      color: var(--color-text-secondary);
-      margin-bottom: 6px;
+      font-size: 48px;
+      background: linear-gradient(135deg, var(--color-bg-warm, #f8f5f0), var(--color-border-light, #eee));
     }
 
-    /* ---- Image Slider with Arrows ---- */
-    .fb-slider {
-      position: relative;
-      border-radius: var(--radius-md, 8px);
-      overflow: hidden;
-      margin-top: 8px;
-      max-width: 280px;
-    }
-    .fb-slider__track {
-      display: flex;
-      transition: transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    }
-    .fb-slider__slide {
-      flex: 0 0 100%;
-      min-width: 0;
-    }
-    .fb-slider__slide img {
-      width: 100%;
-      aspect-ratio: 4/3;
-      object-fit: cover;
-      display: block;
-      border-radius: var(--radius-md, 8px);
-    }
-    .fb-slider__arrow {
+    /* Slider arrows on image */
+    .fbc__arrow {
       position: absolute;
       top: 50%;
       transform: translateY(-50%);
-      width: 28px;
-      height: 28px;
-      background: rgba(0,0,0,0.5);
+      width: 26px;
+      height: 26px;
+      background: rgba(0,0,0,0.45);
       color: #fff;
       border: none;
       border-radius: 50%;
@@ -196,63 +153,101 @@
       align-items: center;
       justify-content: center;
       z-index: 2;
-      transition: background 0.2s;
       padding: 0;
       line-height: 1;
+      transition: background 0.2s;
     }
-    .fb-slider__arrow:hover {
-      background: rgba(0,0,0,0.7);
-    }
-    .fb-slider__arrow--prev {
-      left: 6px;
-    }
-    .fb-slider__arrow--next {
-      right: 6px;
-    }
-    [dir="rtl"] .fb-slider__arrow--prev {
-      left: auto;
-      right: 6px;
-    }
-    [dir="rtl"] .fb-slider__arrow--next {
-      right: auto;
-      left: 6px;
-    }
-    .fb-slider__dots {
+    .fbc__arrow:hover { background: rgba(0,0,0,0.7); }
+    .fbc__arrow--prev { left: 6px; }
+    .fbc__arrow--next { right: 6px; }
+    [dir="rtl"] .fbc__arrow--prev { left: auto; right: 6px; }
+    [dir="rtl"] .fbc__arrow--next { right: auto; left: 6px; }
+
+    .fbc__dots {
+      position: absolute;
+      bottom: 8px;
+      left: 50%;
+      transform: translateX(-50%);
       display: flex;
-      justify-content: center;
-      gap: 5px;
-      padding: 6px 0 2px;
+      gap: 4px;
     }
-    .fb-slider__dot {
+    .fbc__dot {
       width: 6px;
       height: 6px;
       border-radius: 50%;
-      background: var(--color-border);
-      cursor: pointer;
-      transition: background 0.2s;
+      background: rgba(255,255,255,0.5);
       border: none;
       padding: 0;
+      cursor: pointer;
+      transition: background 0.2s;
     }
-    .fb-slider__dot.active {
-      background: var(--color-primary);
+    .fbc__dot.active {
+      background: #fff;
     }
 
-    /* ---- Single image ---- */
-    .fb-single-img {
-      margin-top: 8px;
-      max-width: 200px;
+    .fbc__slider-track {
+      display: flex;
+      transition: transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      height: 100%;
     }
-    .fb-single-img img {
+    .fbc__slider-slide {
+      flex: 0 0 100%;
+      min-width: 0;
+      height: 100%;
+    }
+    .fbc__slider-slide img {
       width: 100%;
-      aspect-ratio: 4/3;
+      height: 100%;
       object-fit: cover;
-      border-radius: var(--radius-md, 8px);
-      border: 1px solid var(--color-border-light);
     }
 
-    /* ---- Audio Player ---- */
-    .fb-audio {
-      margin-top: 8px;
+    /* Info section below image */
+    .fbc__info {
+      padding: 12px 14px 16px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      flex: 1;
+    }
+    .fbc__name {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--color-text);
+      margin: 0;
+    }
+    .fbc__stars {
+      color: var(--color-star, #F5A623);
+      font-size: 16px;
+      letter-spacing: 2px;
+    }
+    .fbc__product {
+      font-size: 11px;
+      color: var(--color-text-muted);
+    }
+
+    /* Text/Audio content area (fixed min-height) */
+    .fbc__content {
+      padding: 0 14px 14px;
+      min-height: 40px;
+    }
+    .fbc__text {
+      font-size: 12px;
+      line-height: 1.6;
+      color: var(--color-text-secondary);
+      margin: 0;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .fbc__audio {
+      margin-top: 4px;
+    }
+    .fbc__audio .wa-audio-player {
+      transform: scale(0.85);
+      transform-origin: center;
     }
 
     /* ---- Responsive ---- */
@@ -268,10 +263,24 @@
         gap: 12px;
       }
       .rating-summary__stars { margin: 0; }
-      .fb-hero { padding: 80px 0 12px; }
-      .fb-card { padding: 12px 14px; }
-      .fb-slider { max-width: 220px; }
-      .fb-single-img { max-width: 160px; }
+      .fb-hero { padding: 72px 0 12px; }
+      .fb-grid__inner { gap: 10px; }
+      .fbc { border-radius: 12px; }
+      .fbc__info { padding: 10px 10px 12px; }
+      .fbc__name { font-size: 13px; }
+      .fbc__stars { font-size: 14px; }
+      .fbc__content { padding: 0 10px 10px; min-height: 32px; }
+      .fbc__text { font-size: 11px; }
+    }
+    @media (min-width: 768px) {
+      .fb-grid__inner {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+    @media (min-width: 1024px) {
+      .fb-grid__inner {
+        grid-template-columns: repeat(4, 1fr);
+      }
     }
   </style>
 </head>
@@ -311,7 +320,7 @@
 
   <!-- Rating Summary -->
   <section style="padding: 0 0 8px;">
-    <div class="container container--narrow">
+    <div class="container">
       <div class="rating-summary">
         <div class="rating-summary__left">
           <div class="rating-summary__big"><%= avgRating %></div>
@@ -342,9 +351,9 @@
     </div>
   </section>
 
-  <!-- Reviews List -->
-  <section class="fb-list">
-    <div class="container container--narrow">
+  <!-- Reviews Grid -->
+  <section class="fb-grid">
+    <div class="container">
       <% if (reviews.length === 0) { %>
         <div style="text-align: center; padding: 30px 16px; color: var(--color-text-muted);">
           <p style="font-size: 40px; margin-bottom: 12px;">💬</p>
@@ -352,74 +361,75 @@
           <p style="font-size: 13px;"><%= t('be_first_reviewer') %></p>
         </div>
       <% } else { %>
-        <% reviews.forEach(function(review, revIdx) { %>
-          <div class="fb-card animate-on-scroll">
-            <div class="fb-card__header">
-              <% if (review.name) { %>
-                <div class="fb-card__avatar"><%= (function(n){ var e=['😊','😎','🤩','😇','🥰','😄','🤗','😺','🦊','🐻','🐶','🐱','🐸','🦁','🐼','🐯','🐨','🦋','🌸','⭐']; if(!n) return e[0]; var h=0; for(var i=0;i<n.length;i++) h=((h<<5)-h)+n.charCodeAt(i); return e[Math.abs(h)%e.length]; })(review.name) %></div>
-              <% } else { %>
-                <div class="fb-card__avatar">⭐</div>
-              <% } %>
-              <div>
-                <div class="fb-card__name">
-                  <%= review.name || t('customer') %>
-                  <span class="fb-card__badge">✓ <%= t('verified') %></span>
-                </div>
-                <div class="fb-card__stars">
+        <div class="fb-grid__inner">
+          <% reviews.forEach(function(review, revIdx) { %>
+            <%
+              var _fimgs = [];
+              if (review.image_filename) {
+                try { _fimgs = JSON.parse(review.image_filename); } catch(e) { _fimgs = [review.image_filename]; }
+                _fimgs = _fimgs.filter(function(img) { return !!img; });
+              }
+            %>
+            <div class="fbc animate-on-scroll">
+              <!-- Image at top -->
+              <div class="fbc__img-wrap">
+                <% if (_fimgs.length === 0) { %>
+                  <div class="fbc__img-placeholder">
+                    <%= (function(n){ var e=['😊','😎','🤩','😇','🥰','😄','🤗','😺','🦊','🐻','🐶','🐱','🐸','🦁','🐼','🐯','🐨','🦋','🌸','⭐']; if(!n) return e[0]; var h=0; for(var i=0;i<n.length;i++) h=((h<<5)-h)+n.charCodeAt(i); return e[Math.abs(h)%e.length]; })(review.name || '') %>
+                  </div>
+                <% } else if (_fimgs.length === 1) { %>
+                  <img src="/uploads/reviews/<%= _fimgs[0] %>" alt="" loading="lazy">
+                <% } else { %>
+                  <div class="fbc__slider-track" id="fbTrack<%= revIdx %>" data-index="0" data-total="<%= _fimgs.length %>">
+                    <% _fimgs.forEach(function(img) { %>
+                      <div class="fbc__slider-slide">
+                        <img src="/uploads/reviews/<%= img %>" alt="" loading="lazy">
+                      </div>
+                    <% }); %>
+                  </div>
+                  <button type="button" class="fbc__arrow fbc__arrow--prev" onclick="fbcSlide(<%= revIdx %>, -1)">‹</button>
+                  <button type="button" class="fbc__arrow fbc__arrow--next" onclick="fbcSlide(<%= revIdx %>, 1)">›</button>
+                  <div class="fbc__dots">
+                    <% _fimgs.forEach(function(img, idx) { %>
+                      <button type="button" class="fbc__dot<%= idx === 0 ? ' active' : '' %>" onclick="fbcSlideTo(<%= revIdx %>, <%= idx %>)"></button>
+                    <% }); %>
+                  </div>
+                <% } %>
+              </div>
+
+              <!-- Name + Stars -->
+              <div class="fbc__info">
+                <p class="fbc__name"><%= review.name || t('customer') %></p>
+                <div class="fbc__stars">
                   <% for (var j = 1; j <= 5; j++) { %>
                     <% if (j <= review.rating) { %>★<% } else { %>☆<% } %>
                   <% } %>
                 </div>
                 <% if (review.product_title) { %>
-                  <div class="fb-card__product"><%= t('on_product') %>: <%= review.product_title %></div>
+                  <div class="fbc__product"><%= review.product_title %></div>
+                <% } %>
+              </div>
+
+              <!-- Text / Audio content -->
+              <div class="fbc__content">
+                <% if (review.message) { %>
+                  <p class="fbc__text"><%= review.message %></p>
+                <% } %>
+                <% if (review.audio_filename) { %>
+                  <div class="fbc__audio">
+                    <div class="wa-audio-player" data-src="/uploads/reviews/<%= review.audio_filename %>">
+                      <button type="button" class="wa-play-btn" onclick="toggleWaAudio(this)" style="width: 28px; height: 28px; font-size: 11px;">▶</button>
+                      <div class="wa-progress-wrap" onclick="seekWaAudio(event, this)">
+                        <div class="wa-waveform"></div>
+                      </div>
+                      <span class="wa-time" style="font-size: 11px;">0:00</span>
+                    </div>
+                  </div>
                 <% } %>
               </div>
             </div>
-
-            <% if (review.message) { %>
-              <div class="fb-card__text"><%= review.message %></div>
-            <% } %>
-
-            <% if (review.image_filename) { %>
-              <% var _fimgs = []; try { _fimgs = JSON.parse(review.image_filename); } catch(e) { _fimgs = [review.image_filename]; } %>
-              <% _fimgs = _fimgs.filter(function(img) { return !!img; }); %>
-              <% if (_fimgs.length === 1) { %>
-                <div class="fb-single-img">
-                  <img src="/uploads/reviews/<%= _fimgs[0] %>" alt="" loading="lazy">
-                </div>
-              <% } else if (_fimgs.length > 1) { %>
-                <div class="fb-slider" id="fbSlider<%= revIdx %>">
-                  <div class="fb-slider__track" data-index="0">
-                    <% _fimgs.forEach(function(img) { %>
-                      <div class="fb-slider__slide">
-                        <img src="/uploads/reviews/<%= img %>" alt="" loading="lazy">
-                      </div>
-                    <% }); %>
-                  </div>
-                  <button type="button" class="fb-slider__arrow fb-slider__arrow--prev" onclick="fbSlide('<%= revIdx %>', -1)">‹</button>
-                  <button type="button" class="fb-slider__arrow fb-slider__arrow--next" onclick="fbSlide('<%= revIdx %>', 1)">›</button>
-                  <div class="fb-slider__dots">
-                    <% _fimgs.forEach(function(img, idx) { %>
-                      <button type="button" class="fb-slider__dot<%= idx === 0 ? ' active' : '' %>" onclick="fbSlideTo('<%= revIdx %>', <%= idx %>)"></button>
-                    <% }); %>
-                  </div>
-                </div>
-              <% } %>
-            <% } %>
-
-            <% if (review.audio_filename) { %>
-              <div class="fb-audio">
-                <div class="wa-audio-player" data-src="/uploads/reviews/<%= review.audio_filename %>">
-                  <button type="button" class="wa-play-btn" onclick="toggleWaAudio(this)">▶</button>
-                  <div class="wa-progress-wrap" onclick="seekWaAudio(event, this)">
-                    <div class="wa-waveform"></div>
-                  </div>
-                  <span class="wa-time">0:00</span>
-                </div>
-              </div>
-            <% } %>
-          </div>
-        <% }); %>
+          <% }); %>
+        </div>
       <% } %>
     </div>
   </section>
@@ -427,11 +437,10 @@
   <%- include('partials/footer') %>
   <script src="/js/main.js"></script>
   <script>
-    function fbSlide(id, dir) {
-      var slider = document.getElementById('fbSlider' + id);
-      if (!slider) return;
-      var track = slider.querySelector('.fb-slider__track');
-      var total = track.children.length;
+    function fbcSlide(id, dir) {
+      var track = document.getElementById('fbTrack' + id);
+      if (!track) return;
+      var total = parseInt(track.dataset.total);
       var idx = parseInt(track.dataset.index || '0');
       var isRTL = document.documentElement.dir === 'rtl';
       idx += dir;
@@ -440,18 +449,20 @@
       track.dataset.index = idx;
       var offset = idx * 100;
       track.style.transform = isRTL ? 'translateX(' + offset + '%)' : 'translateX(-' + offset + '%)';
-      var dots = slider.querySelectorAll('.fb-slider__dot');
+      // Update dots
+      var wrap = track.parentElement;
+      var dots = wrap.querySelectorAll('.fbc__dot');
       dots.forEach(function(d, i) { d.classList.toggle('active', i === idx); });
     }
-    function fbSlideTo(id, target) {
-      var slider = document.getElementById('fbSlider' + id);
-      if (!slider) return;
-      var track = slider.querySelector('.fb-slider__track');
+    function fbcSlideTo(id, target) {
+      var track = document.getElementById('fbTrack' + id);
+      if (!track) return;
       var isRTL = document.documentElement.dir === 'rtl';
       track.dataset.index = target;
       var offset = target * 100;
       track.style.transform = isRTL ? 'translateX(' + offset + '%)' : 'translateX(-' + offset + '%)';
-      var dots = slider.querySelectorAll('.fb-slider__dot');
+      var wrap = track.parentElement;
+      var dots = wrap.querySelectorAll('.fbc__dot');
       dots.forEach(function(d, i) { d.classList.toggle('active', i === target); });
     }
   </script>
